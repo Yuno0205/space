@@ -5,6 +5,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  --geist-foreground: #000;
+  --geist-background: #fff;
 }
 
 @media (prefers-color-scheme: dark) {

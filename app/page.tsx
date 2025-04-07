@@ -246,7 +246,7 @@ export default function Home() {
       </div>
 
       {/* Advanced Features Section */}
-      <div className="w-full">
+      <div className="w-full flex justify-center items-center relative">
         <CPUComponent />
       </div>
 

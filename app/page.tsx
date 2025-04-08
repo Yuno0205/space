@@ -115,139 +115,19 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Features Section */}
-      <div className="mx-auto max-w-7xl px-6 lg:px-8 py-24 sm:py-32">
-        <div className="mx-auto max-w-2xl lg:text-center">
-          <h2 className="text-base font-semibold leading-7 text-indigo-600">
-            What&apos;s in Next.js?
-          </h2>
-          <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
-            Everything you need to build great products on the web.
-          </p>
-          <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-400">
-            Next.js provides a comprehensive set of features to help you build
-            modern web applications with React.
-          </p>
-        </div>
-        <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
-          <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
-            {features.map((feature) => (
-              <div key={feature.name} className="flex flex-col">
-                <dt className="flex items-center gap-x-3 text-base font-semibold leading-7 text-gray-900 dark:text-white">
-                  {feature.name}
-                </dt>
-                <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600 dark:text-gray-400">
-                  <p className="flex-auto">{feature.description}</p>
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      </div>
-
-      {/* Tooling Section */}
-      <div className="bg-black py-24 sm:py-32 relative overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px]"></div>
-        </div>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8 relative z-10">
-          <div className="mx-auto max-w-2xl lg:text-center mb-16">
-            <h2 className="text-4xl font-bold tracking-tight text-white sm:text-6xl pb-4">
-              Built on a foundation of fast, production-grade tooling
-            </h2>
-          </div>
-
-          <div className="relative">
-            {/* Powered By Text */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-              <div className="bg-zinc-800 rounded-xl px-6 py-3">
-                <p className="text-xl text-gray-400">Powered By</p>
-              </div>
-            </div>
-
-            {/* Connection Lines */}
-            <div className="absolute inset-0">
-              <svg className="w-full h-full" viewBox="0 0 1000 400">
-                {/* Horizontal line */}
-                <path d="M200 200 L800 200" stroke="#1a1a1a" strokeWidth="2" />
-                {/* Vertical lines */}
-                <path d="M500 100 L500 200" stroke="#1a1a1a" strokeWidth="2" />
-                {/* Lines to cards */}
-                <path d="M500 200 L200 300" stroke="#0ea5e9" strokeWidth="2" />
-                <path d="M500 200 L500 300" stroke="#dc2626" strokeWidth="2" />
-                <path d="M500 200 L800 300" stroke="#eab308" strokeWidth="2" />
-              </svg>
-            </div>
-
-            {/* Tool Cards */}
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 pt-20">
-              {/* React */}
-              <div className="rounded-2xl bg-zinc-900 p-8 ring-1 ring-white/10">
-                <div className="flex items-center gap-3">
-                  <Image
-                    src="/react.svg"
-                    alt="React"
-                    width={32}
-                    height={32}
-                    className="h-8 w-8 text-[#61DAFB]"
-                  />
-                  <h3 className="text-lg font-semibold text-white">React</h3>
-                </div>
-                <p className="mt-4 text-sm text-gray-400">
-                  The library for web and native user interfaces. Next.js is
-                  built on the latest React features, including Server
-                  Components and Actions.
-                </p>
-              </div>
-
-              {/* Turbopack */}
-              <div className="rounded-2xl bg-zinc-900 p-8 ring-1 ring-white/10">
-                <div className="flex items-center gap-3">
-                  <Image
-                    src="/turbopack.svg"
-                    alt="Turbopack"
-                    width={32}
-                    height={32}
-                    className="h-8 w-8"
-                  />
-                  <h3 className="text-lg font-semibold text-white">
-                    Turbopack
-                  </h3>
-                </div>
-                <p className="mt-4 text-sm text-gray-400">
-                  An incremental bundler optimized for JavaScript and
-                  TypeScript, written in Rust, and built into Next.js.
-                </p>
-              </div>
-
-              {/* SWC */}
-              <div className="rounded-2xl bg-zinc-900 p-8 ring-1 ring-white/10">
-                <div className="flex items-center gap-3">
-                  <Image
-                    src="/swc.svg"
-                    alt="SWC"
-                    width={32}
-                    height={32}
-                    className="h-8 w-8"
-                  />
-                  <h3 className="text-lg font-semibold text-white">
-                    Speedy Web Compiler
-                  </h3>
-                </div>
-                <p className="mt-4 text-sm text-gray-400">
-                  An extensible Rust based platform for the next generation of
-                  fast developer tools, and can be used for both compilation and
-                  minification.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Advanced Features Section */}
-      <div className="w-full flex justify-center items-center relative">
+      <div className="w-full min-h-[264px] overflow-hidden flex justify-center items-center relative z-1">
         <CPUComponent />
+        <div className="relative px-6 py-5 cpu z-1">
+          <div className="shine absolute w-full h-full"></div>
+          <div className="connector absolute flex flex-col gap-4">
+            <span className="item"></span>
+            <span className="item"></span>
+          </div>
+          <span className="data-text text-white text-2xl font-bold">
+            Powered By
+          </span>
+        </div>
       </div>
 
       {/* Getting Started Section */}
@@ -382,67 +262,6 @@ export default function Home() {
     </div>
   );
 }
-
-const features = [
-  {
-    name: "Built-in Optimizations",
-    description:
-      "Automatic Image, Font, and Script Optimizations for improved UX and Core Web Vitals.",
-  },
-  {
-    name: "Data Fetching",
-    description:
-      "Make your React component async and await your data. Next.js supports both server and client data fetching.",
-  },
-  {
-    name: "Server Actions",
-    description:
-      "Run server code by calling a function. Skip the API. Then, easily revalidate cached data and update your UI in one network roundtrip.",
-  },
-];
-
-// const advancedFeatures = [
-//   {
-//     name: "Server Components",
-//     description:
-//       "Write components that run on the server, reducing client-side JavaScript and improving performance.",
-//     example: `// app/page.tsx
-// export default async function Page() {
-//   const data = await fetchData();
-//   return <div>{data}</div>;
-// }`,
-//   },
-//   {
-//     name: "App Router",
-//     description:
-//       "A new file-system based router with support for layouts, nested routes, and server components.",
-//     example: `// app/blog/[slug]/page.tsx
-// export default function BlogPost({ params }) {
-//   return <div>Post: {params.slug}</div>;
-// }`,
-//   },
-//   {
-//     name: "Server Actions",
-//     description:
-//       "Write server-side functions that can be called directly from your components.",
-//     example: `// app/actions.ts
-// 'use server'
-// export async function submitForm(data) {
-//   // Handle form submission
-// }`,
-//   },
-//   {
-//     name: "Image Optimization",
-//     description:
-//       "Automatic image optimization with next/image, including lazy loading and responsive sizes.",
-//     example: `// app/components/Image.tsx
-// import Image from 'next/image'
-// export default function OptimizedImage() {
-//   return <Image src="/photo.jpg" alt="Photo" width={500} height={300} />;
-// }`,
-//   },
-// ];
-
 const community = [
   {
     name: "Discord",

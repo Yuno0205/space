@@ -1,5 +1,5 @@
 import React from "react";
-import "./CPUComponent.css";
+import "./style.scss";
 
 export default function CPUComponent() {
   return (
@@ -7,6 +7,7 @@ export default function CPUComponent() {
       fill="none"
       height="264"
       role="img"
+      className="absolute top-0"
       viewBox="0 0 891 264"
       width="891"
       data-lines="true"
@@ -450,13 +451,13 @@ export default function CPUComponent() {
           <animateTransform
             attributeName="gradientTransform"
             type="translate"
-            from="300 0"
-            to="-200 0"
+            from="120 0"
+            to="-40 0"
             dur="2s"
             repeatCount="indefinite"
           />
         </linearGradient>
-        {/* Gradient cho phần đi lên và rẽ trái */}
+        {/* Gradient cho phần ngang và rẽ trái */}
         <linearGradient
           gradientUnits="userSpaceOnUse"
           id="pink-pulse-2-up-left"
@@ -472,8 +473,8 @@ export default function CPUComponent() {
           <animateTransform
             attributeName="gradientTransform"
             type="translate"
-            from="-300 0"
-            to="10 0"
+            from="-250 0"
+            to="700 0"
             dur="2s"
             repeatCount="indefinite"
           />

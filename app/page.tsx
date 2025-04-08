@@ -124,6 +124,26 @@ export default function Home() {
             <span className="item"></span>
             <span className="item"></span>
           </div>
+          <div className="connector right-side absolute flex flex-col gap-4">
+            <span className="item"></span>
+            <span className="item"></span>
+          </div>
+          <div className="connector top-side absolute flex gap-4 justify-center">
+            <span className="item"></span>
+            <span className="item"></span>
+            <span className="item"></span>
+            <span className="item"></span>
+            <span className="item"></span>
+            <span className="item"></span>
+          </div>
+          <div className="connector bottom-side absolute flex gap-4 justify-center">
+            <span className="item"></span>
+            <span className="item"></span>
+            <span className="item"></span>
+            <span className="item"></span>
+            <span className="item"></span>
+            <span className="item"></span>
+          </div>
           <span className="data-text text-white text-2xl font-bold">
             Powered By
           </span>

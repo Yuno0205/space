@@ -84,6 +84,36 @@
 
     left: calc($connector-height * -1);
 
+    &.right-side {
+      left: auto;
+      right: calc($connector-height * -1);
+    }
+
+    &.top-side {
+      top: calc($connector-height * -1);
+      left: 50%;
+      transform: translateX(-50%);
+      gap: 18px;
+
+      .item {
+        width: $connector-width;
+        height: $connector-height;
+      }
+    }
+
+    &.bottom-side {
+      top: auto;
+      bottom: calc($connector-height * -1);
+      left: 50%;
+      transform: translateX(-50%);
+      gap: 18px;
+
+      .item {
+        width: $connector-width;
+        height: $connector-height;
+      }
+    }
+
     .item {
       width: $connector-height;
       height: $connector-width;

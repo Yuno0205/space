@@ -1,29 +1,36 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import Link from "next/link"
-import { Calendar, Clock, Tag, ArrowLeft, Bookmark, Share2 } from "lucide-react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { FadeIn } from "@/components/animations/fade-in"
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { Calendar, Clock, Tag, ArrowLeft, Bookmark, Share2 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { FadeIn } from "@/components/animations/fade-in";
 
 type BlogPostData = {
-  id: number
-  title: string
-  content: string
-  slug: string
-  date: string
-  readTime: string
-  categories: string[]
-  image?: string
+  id: number;
+  title: string;
+  content: string;
+  slug: string;
+  date: string;
+  readTime: string;
+  categories: string[];
+  image?: string;
   author: {
-    name: string
-    avatar: string
-  }
-}
+    name: string;
+    avatar: string;
+  };
+};
 
-export function BlogPost({ slug }: { slug: string }) {
+export function BlogPost() {
   // In a real app, you would fetch the post data based on the slug
   // This is just mock data for demonstration
   const post: BlogPostData = {
@@ -79,7 +86,7 @@ export function BlogPost({ slug }: { slug: string }) {
       name: "Nguyễn Văn A",
       avatar: "/placeholder.svg?height=100&width=100",
     },
-  }
+  };
 
   // Related posts (in a real app, you would fetch related posts)
   const relatedPosts = [
@@ -95,7 +102,7 @@ export function BlogPost({ slug }: { slug: string }) {
       slug: "5-phuong-phap-ghi-nho-tu-vung-tieng-anh-hieu-qua",
       date: "2025-03-15",
     },
-  ]
+  ];
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -106,11 +113,18 @@ export function BlogPost({ slug }: { slug: string }) {
         </Link>
       </FadeIn>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
         <Card className="overflow-hidden">
           {post.image && (
             <div className="w-full h-64 relative">
-              <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${post.image})` }}></div>
+              <div
+                className="w-full h-full bg-cover bg-center"
+                style={{ backgroundImage: `url(${post.image})` }}
+              ></div>
             </div>
           )}
           <CardHeader>
@@ -146,7 +160,10 @@ export function BlogPost({ slug }: { slug: string }) {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: post.content }}></div>
+            <div
+              className="prose prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: post.content }}
+            ></div>
           </CardContent>
           <CardFooter className="flex justify-between border-t border-white/10 pt-6">
             <div className="flex space-x-2">
@@ -178,8 +195,12 @@ export function BlogPost({ slug }: { slug: string }) {
               {relatedPosts.map((post) => (
                 <Link key={post.id} href={`/blog/${post.slug}`} className="block">
                   <div className="group">
-                    <h3 className="font-medium group-hover:text-white transition-colors">{post.title}</h3>
-                    <p className="text-sm text-gray-400">{new Date(post.date).toLocaleDateString("vi-VN")}</p>
+                    <h3 className="font-medium group-hover:text-white transition-colors">
+                      {post.title}
+                    </h3>
+                    <p className="text-sm text-gray-400">
+                      {new Date(post.date).toLocaleDateString("vi-VN")}
+                    </p>
                   </div>
                 </Link>
               ))}
@@ -188,5 +209,5 @@ export function BlogPost({ slug }: { slug: string }) {
         </Card>
       </motion.div>
     </div>
-  )
+  );
 }

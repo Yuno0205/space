@@ -1,21 +1,28 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { BookText, Check, X, ArrowRight, Bookmark, BookmarkCheck } from "lucide-react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { cn } from "@/lib/utils"
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { BookText, Check, X, ArrowRight, Bookmark, BookmarkCheck } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
 type VocabularyCard = {
-  id: number
-  word: string
-  definition: string
-  example: string
-  pronunciation: string
-  saved: boolean
-}
+  id: number;
+  word: string;
+  definition: string;
+  example: string;
+  pronunciation: string;
+  saved: boolean;
+};
 
 export function VocabularyPractice() {
   const [cards, setCards] = useState<VocabularyCard[]>([
@@ -59,50 +66,54 @@ export function VocabularyPractice() {
       pronunciation: "/ɪˈfɛm(ə)rəl/",
       saved: true,
     },
-  ])
+  ]);
 
-  const [currentCardIndex, setCurrentCardIndex] = useState(0)
-  const [isFlipped, setIsFlipped] = useState(false)
-  const [knownWords, setKnownWords] = useState<number[]>([])
-  const [unknownWords, setUnknownWords] = useState<number[]>([])
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [knownWords, setKnownWords] = useState<number[]>([]);
+  const [unknownWords, setUnknownWords] = useState<number[]>([]);
 
-  const currentCard = cards[currentCardIndex]
-  const progress = ((currentCardIndex + 1) / cards.length) * 100
+  const currentCard = cards[currentCardIndex];
+  const progress = ((currentCardIndex + 1) / cards.length) * 100;
 
   const flipCard = () => {
-    setIsFlipped(!isFlipped)
-  }
+    setIsFlipped(!isFlipped);
+  };
 
   const markAsKnown = () => {
     if (!knownWords.includes(currentCard.id)) {
-      setKnownWords([...knownWords, currentCard.id])
+      setKnownWords([...knownWords, currentCard.id]);
     }
-    nextCard()
-  }
+    nextCard();
+  };
 
   const markAsUnknown = () => {
     if (!unknownWords.includes(currentCard.id)) {
-      setUnknownWords([...unknownWords, currentCard.id])
+      setUnknownWords([...unknownWords, currentCard.id]);
     }
-    nextCard()
-  }
+    nextCard();
+  };
 
   const nextCard = () => {
     if (currentCardIndex < cards.length - 1) {
-      setCurrentCardIndex(currentCardIndex + 1)
-      setIsFlipped(false)
+      setCurrentCardIndex(currentCardIndex + 1);
+      setIsFlipped(false);
     }
-  }
+  };
 
   const toggleSaved = () => {
-    const updatedCards = [...cards]
-    updatedCards[currentCardIndex].saved = !updatedCards[currentCardIndex].saved
-    setCards(updatedCards)
-  }
+    const updatedCards = [...cards];
+    updatedCards[currentCardIndex].saved = !updatedCards[currentCardIndex].saved;
+    setCards(updatedCards);
+  };
 
   return (
     <div className="space-y-6">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
@@ -129,7 +140,7 @@ export function VocabularyPractice() {
               <div
                 className={cn(
                   "absolute inset-0 backface-hidden rounded-xl border border-white/10 bg-white/5 p-6 flex flex-col items-center justify-center",
-                  isFlipped ? "invisible" : "visible",
+                  isFlipped ? "invisible" : "visible"
                 )}
               >
                 <h3 className="text-3xl font-bold mb-2">{currentCard.word}</h3>
@@ -139,8 +150,8 @@ export function VocabularyPractice() {
                     variant="ghost"
                     size="icon"
                     onClick={(e) => {
-                      e.stopPropagation()
-                      toggleSaved()
+                      e.stopPropagation();
+                      toggleSaved();
                     }}
                     className="h-8 w-8"
                   >
@@ -158,7 +169,7 @@ export function VocabularyPractice() {
               <div
                 className={cn(
                   "absolute inset-0 backface-hidden rounded-xl border border-white/10 bg-white/5 p-6 flex flex-col",
-                  isFlipped ? "visible" : "invisible",
+                  isFlipped ? "visible" : "invisible"
                 )}
                 style={{ transform: "rotateY(180deg)" }}
               >
@@ -166,7 +177,7 @@ export function VocabularyPractice() {
                   <h4 className="font-medium mb-2">Định nghĩa:</h4>
                   <p className="text-gray-300 mb-4">{currentCard.definition}</p>
                   <h4 className="font-medium mb-2">Ví dụ:</h4>
-                  <p className="text-gray-300 italic">"{currentCard.example}"</p>
+                  <p className="text-gray-300 italic">&quot;{currentCard.example}&quot;</p>
                 </div>
                 <p className="text-sm text-gray-400 text-center">Nhấp để xem từ</p>
               </div>
@@ -226,5 +237,5 @@ export function VocabularyPractice() {
         </Card>
       </motion.div>
     </div>
-  )
+  );
 }

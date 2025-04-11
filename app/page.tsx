@@ -1,11 +1,11 @@
-import { ExploreCard } from "@/components/explore-card"
-import { MissionCard } from "@/components/mission-card"
-import { Newsletter } from "@/components/newsletter"
-import { FadeIn } from "@/components/animations/fade-in"
-import { AnimatedText } from "@/components/animations/animated-text"
-import { CountUp } from "@/components/animations/count-up"
-import { DashedHero } from "@/components/hero/dashed-hero"
-import { Footer } from "@/components/footer"
+import { ExploreCard } from "@/components/explore-card";
+import { MissionCard } from "@/components/mission-card";
+import { Newsletter } from "@/components/newsletter";
+import { FadeIn } from "@/components/animations/fade-in";
+import { AnimatedText } from "@/components/animations/animated-text";
+import { CountUp } from "@/components/animations/count-up";
+import { DashedHero } from "@/components/hero/dashed-hero";
+import { Footer } from "@/components/footer";
 
 export default function Home() {
   return (
@@ -15,8 +15,9 @@ export default function Home() {
         title="The React Framework for the Web"
         description={
           <>
-            Used by some of the world's largest companies, Next.js enables you to create{" "}
-            <span className="font-semibold">high-quality web applications</span> with the power of React components.
+            Used by some of the world largest companies, Next.js enables you to create{" "}
+            <span className="font-semibold">high-quality web applications</span> with the power of
+            React components.
           </>
         }
         primaryButtonText="Get Started"
@@ -152,5 +153,5 @@ export default function Home() {
       {/* Footer */}
       <Footer />
     </div>
-  )
+  );
 }

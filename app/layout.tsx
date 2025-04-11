@@ -1,13 +1,26 @@
+import type React from "react";
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
 
-const geist = Geist({ subsets: ["latin"] });
+import { MainSidebar } from "@/components/sidebar/main-sidebar";
+import { Logo } from "@/components/header/logo";
+import { UserDropdown } from "@/components/header/user-dropdown";
+import { ThemeProvider } from "@/components/theme-provider";
+import { cn } from "@/lib/utils";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+
+const inter = Inter({ subsets: ["latin"] });
+
 export const metadata: Metadata = {
-  title: "Personal Workspace",
-  description: "Your personal space for blogging and English learning",
+  title: "Space Explorer | Journey Through the Cosmos",
+  description:
+    "Discover the mysteries of space through immersive experiences, cutting-edge research, and breathtaking imagery.",
+  generator: "v0.dev",
 };
 
 export default function RootLayout({
@@ -16,15 +29,34 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={geist.className}>
-        <div className="flex flex-col min-h-screen">
-          <Header />
-          <main className="flex-grow bg-white dark:bg-gray-900">
-            {children}
-          </main>
-          <Footer />
-        </div>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={cn(
+          inter.className,
+          "min-h-screen bg-background text-foreground"
+        )}
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <SidebarProvider defaultOpen={true}>
+            <MainSidebar />
+            <SidebarInset className="relative">
+              <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b border-border bg-background/80 px-4 backdrop-blur-md">
+                <div className="flex items-center gap-4">
+                  <SidebarTrigger />
+                  <Logo />
+                </div>
+                <div className="flex-1" />
+                <UserDropdown />
+              </header>
+              <main>{children}</main>
+            </SidebarInset>
+          </SidebarProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

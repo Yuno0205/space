@@ -1,20 +1,27 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { Play, Pause, RotateCcw, CheckCircle, XCircle, Volume2 } from "lucide-react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
-import { Progress } from "@/components/ui/progress"
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Play, Pause, RotateCcw, CheckCircle, XCircle, Volume2 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 
 export function ListeningPractice() {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentQuestion, setCurrentQuestion] = useState(0)
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
-  const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false)
-  const [score, setScore] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
+  const [score, setScore] = useState(0);
 
   const listeningExercises = [
     {
@@ -56,50 +63,54 @@ export function ListeningPractice() {
       ],
       correctAnswer: "a",
     },
-  ]
+  ];
 
-  const currentExercise = listeningExercises[currentQuestion]
-  const progress = ((currentQuestion + 1) / listeningExercises.length) * 100
+  const currentExercise = listeningExercises[currentQuestion];
+  const progress = ((currentQuestion + 1) / listeningExercises.length) * 100;
 
   const togglePlayback = () => {
-    setIsPlaying(!isPlaying)
+    setIsPlaying(!isPlaying);
     // Here you would typically control the audio playback
-  }
+  };
 
   const resetAudio = () => {
-    setIsPlaying(false)
+    setIsPlaying(false);
     // Here you would typically reset the audio to the beginning
-  }
+  };
 
   const handleAnswerSelect = (value: string) => {
     if (!isAnswerSubmitted) {
-      setSelectedAnswer(value)
+      setSelectedAnswer(value);
     }
-  }
+  };
 
   const submitAnswer = () => {
     if (selectedAnswer && !isAnswerSubmitted) {
-      setIsAnswerSubmitted(true)
+      setIsAnswerSubmitted(true);
       if (selectedAnswer === currentExercise.correctAnswer) {
-        setScore(score + 1)
+        setScore(score + 1);
       }
     }
-  }
+  };
 
   const nextQuestion = () => {
     if (currentQuestion < listeningExercises.length - 1) {
-      setCurrentQuestion(currentQuestion + 1)
-      setSelectedAnswer(null)
-      setIsAnswerSubmitted(false)
-      setIsPlaying(false)
+      setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+      setIsAnswerSubmitted(false);
+      setIsPlaying(false);
     }
-  }
+  };
 
-  const isCorrect = selectedAnswer === currentExercise.correctAnswer
+  // const isCorrect = selectedAnswer === currentExercise.correctAnswer
 
   return (
     <div className="space-y-6">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -117,7 +128,12 @@ export function ListeningPractice() {
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
-                <Button onClick={togglePlayback} variant="outline" size="icon" className="h-12 w-12 rounded-full">
+                <Button
+                  onClick={togglePlayback}
+                  variant="outline"
+                  size="icon"
+                  className="h-12 w-12 rounded-full"
+                >
                   {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
                 </Button>
               </motion.div>
@@ -126,7 +142,12 @@ export function ListeningPractice() {
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
-                <Button onClick={resetAudio} variant="outline" size="icon" className="h-12 w-12 rounded-full">
+                <Button
+                  onClick={resetAudio}
+                  variant="outline"
+                  size="icon"
+                  className="h-12 w-12 rounded-full"
+                >
                   <RotateCcw className="h-6 w-6" />
                 </Button>
               </motion.div>
@@ -154,7 +175,10 @@ export function ListeningPractice() {
                       onClick={() => handleAnswerSelect(option.id)}
                       disabled={isAnswerSubmitted}
                     />
-                    <Label htmlFor={`option-${option.id}`} className="flex-1 cursor-pointer font-normal">
+                    <Label
+                      htmlFor={`option-${option.id}`}
+                      className="flex-1 cursor-pointer font-normal"
+                    >
                       {option.text}
                     </Label>
                     {isAnswerSubmitted && option.id === currentExercise.correctAnswer && (
@@ -162,7 +186,9 @@ export function ListeningPractice() {
                     )}
                     {isAnswerSubmitted &&
                       selectedAnswer === option.id &&
-                      option.id !== currentExercise.correctAnswer && <XCircle className="h-5 w-5 text-red-500" />}
+                      option.id !== currentExercise.correctAnswer && (
+                        <XCircle className="h-5 w-5 text-red-500" />
+                      )}
                   </div>
                 ))}
               </RadioGroup>
@@ -205,5 +231,5 @@ export function ListeningPractice() {
         </Card>
       </motion.div>
     </div>
-  )
+  );
 }

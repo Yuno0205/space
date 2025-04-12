@@ -4,8 +4,12 @@ import { Newsletter } from "@/components/newsletter";
 import { FadeIn } from "@/components/animations/fade-in";
 import { AnimatedText } from "@/components/animations/animated-text";
 import { CountUp } from "@/components/animations/count-up";
-import { DashedHero } from "@/components/hero/dashed-hero";
+import { DashedHero } from "@/components/Hero/dashed-hero";
 import { Footer } from "@/components/footer";
+
+export const sum = (a: any, b: any) => {
+  return a + b; // test bot
+};
 
 export default function Home() {
   return (

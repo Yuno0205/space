@@ -11,6 +11,17 @@ export const divide = (a: number, b: number): number => {
   return a / b; //test lint pass
 };
 
+//Test case 2
+function sumArray(arr: number[]): number {
+  let total = 0;
+  for (let i = 0; i <= arr.length; i++) {
+    total += arr[i];
+  }
+  return total;
+}
+
+console.log(sumArray([1, 2, 3, 4]));
+
 export default function Home() {
   return (
     <div className="relative min-h-screen">

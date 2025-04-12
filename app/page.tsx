@@ -11,17 +11,6 @@ export const divide = (a: number, b: number): number => {
   return a / b; //test lint pass
 };
 
-//Test case 2
-function sumArray(arr: number[]): number {
-  let total = 0;
-  for (let i = 0; i <= arr.length; i++) {
-    total += arr[i];
-  }
-  return total;
-}
-
-console.log(sumArray([1, 2, 3, 4]));
-
 export default function Home() {
   return (
     <div className="relative min-h-screen">
@@ -99,24 +88,27 @@ export default function Home() {
             <ExploreCard
               title="Black Holes"
               description="The mysterious cosmic entities where gravity pulls so much that even light cannot escape."
-              image="/placeholder.svg?height=400&width=600"
+              image="/assets/images/placeholder.svg?height=400&width=600"
               delay={0.2}
             />
             <ExploreCard
               title="Nebulae"
               description="Interstellar clouds of dust, hydrogen, helium and other ionized gases where stars are born."
-              image="/placeholder.svg?height=400&width=600"
+              image="/assets/images/placeholder.svg?height=400&width=600"
               delay={0.4}
             />
             <ExploreCard
               title="Exoplanets"
               description="Planets that orbit stars outside of our solar system, some potentially harboring life."
-              image="/placeholder.svg?height=400&width=600"
+              image="/assets/images/placeholder.svg?height=400&width=600"
               delay={0.6}
             />
           </div>
         </div>
       </section>
+
+      {/* CPU Component */}
+      {/* <CPUComponent /> */}
 
       {/* Missions Section */}
       <section className="relative py-16 px-4 border-t border-border">

@@ -1,17 +1,26 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import Link from "next/link"
-import type { ReactNode } from "react"
+import { motion } from "framer-motion";
+import Link from "next/link";
+import type { ReactNode } from "react";
 
 interface DashedHeroProps {
-  title: ReactNode
-  description: ReactNode
-  primaryButtonText?: string
-  primaryButtonHref?: string
-  secondaryButtonText?: string
-  secondaryButtonHref?: string
-  commandText?: string
+  title: ReactNode;
+  description: ReactNode;
+  primaryButtonText?: string;
+  primaryButtonHref?: string;
+  secondaryButtonText?: string;
+  secondaryButtonHref?: string;
+  commandText?: string;
+}
+
+export function sumEvenNumbers(arr: number[]): number {
+  return arr.reduce((acc, curr) => {
+    if (curr % 2 === 1) {
+      acc += curr;
+    }
+    return acc;
+  }, 0);
 }
 
 export function DashedHero({
@@ -104,5 +113,5 @@ export function DashedHero({
         </div>
       </div>
     </div>
-  )
+  );
 }

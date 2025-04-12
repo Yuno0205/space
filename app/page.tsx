@@ -7,8 +7,8 @@ import { CountUp } from "@/components/animations/count-up";
 import { DashedHero } from "@/components/Hero/dashed-hero";
 import { Footer } from "@/components/footer";
 
-export const sum = (a: any, b: any) => {
-  return a + b; // test bot
+export const divide = (a: number, b: number): number => {
+  return a / b; //test lint pass
 };
 
 export default function Home() {

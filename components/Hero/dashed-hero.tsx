@@ -14,15 +14,6 @@ interface DashedHeroProps {
   commandText?: string;
 }
 
-export function sumEvenNumbers(arr: number[]): number {
-  return arr.reduce((acc, curr) => {
-    if (curr % 2 === 1) {
-      acc += curr;
-    }
-    return acc;
-  }, 0);
-}
-
 export function DashedHero({
   title,
   description,

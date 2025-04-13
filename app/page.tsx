@@ -1,11 +1,11 @@
-import { ExploreCard } from "@/components/explore-card"
-import { MissionCard } from "@/components/mission-card"
-import { Newsletter } from "@/components/newsletter"
-import { FadeIn } from "@/components/animations/fade-in"
-import { AnimatedText } from "@/components/animations/animated-text"
-import { CountUp } from "@/components/animations/count-up"
-import { DashedHero } from "@/components/hero/dashed-hero"
-import { Footer } from "@/components/footer"
+import { ExploreCard } from "@/components/explore-card";
+import { MissionCard } from "@/components/mission-card";
+import { Newsletter } from "@/components/newsletter";
+import { FadeIn } from "@/components/animations/fade-in";
+import { AnimatedText } from "@/components/animations/animated-text";
+import { CountUp } from "@/components/animations/count-up";
+import { DashedHero } from "@/components/Hero/dashed-hero";
+import { Footer } from "@/components/footer";
 
 export default function Home() {
   return (
@@ -15,8 +15,9 @@ export default function Home() {
         title="The React Framework for the Web"
         description={
           <>
-            Used by some of the world's largest companies, Next.js enables you to create{" "}
-            <span className="font-semibold">high-quality web applications</span> with the power of React components.
+            Used by some of the world largest companies, Next.js enables you to create{" "}
+            <span className="font-semibold">high-quality web applications</span> with the power of
+            React components.
           </>
         }
         primaryButtonText="Get Started"
@@ -83,24 +84,27 @@ export default function Home() {
             <ExploreCard
               title="Black Holes"
               description="The mysterious cosmic entities where gravity pulls so much that even light cannot escape."
-              image="/placeholder.svg?height=400&width=600"
+              image="/assets/images/placeholder.svg?height=400&width=600"
               delay={0.2}
             />
             <ExploreCard
               title="Nebulae"
               description="Interstellar clouds of dust, hydrogen, helium and other ionized gases where stars are born."
-              image="/placeholder.svg?height=400&width=600"
+              image="/assets/images/placeholder.svg?height=400&width=600"
               delay={0.4}
             />
             <ExploreCard
               title="Exoplanets"
               description="Planets that orbit stars outside of our solar system, some potentially harboring life."
-              image="/placeholder.svg?height=400&width=600"
+              image="/assets/images/placeholder.svg?height=400&width=600"
               delay={0.6}
             />
           </div>
         </div>
       </section>
+
+      {/* CPU Component */}
+      {/* <CPUComponent /> */}
 
       {/* Missions Section */}
       <section className="relative py-16 px-4 border-t border-border">
@@ -152,5 +156,5 @@ export default function Home() {
       {/* Footer */}
       <Footer />
     </div>
-  )
+  );
 }

@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Bell, ChevronDown, LogOut, Settings, User } from "lucide-react"
+import { useState } from "react";
+import { Bell, ChevronDown, LogOut, Settings, User } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -10,17 +10,17 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export function UserDropdown() {
-  const [notificationCount, setNotificationCount] = useState(3)
+  const [notificationCount, setNotificationCount] = useState(3);
 
   const clearNotifications = () => {
-    setNotificationCount(0)
-  }
+    setNotificationCount(0);
+  };
 
   return (
     <div className="flex items-center gap-2">
@@ -45,13 +45,15 @@ export function UserDropdown() {
           <div className="max-h-80 overflow-y-auto">
             <DropdownMenuItem className="flex flex-col items-start py-2">
               <div className="font-medium">Mission Update</div>
-              <div className="text-sm text-muted-foreground">Proxima Centauri mission reached 80% completion</div>
+              <div className="text-sm text-muted-foreground">
+                Proxima Centauri mission reached 80% completion
+              </div>
               <div className="text-xs text-muted-foreground mt-1">2 hours ago</div>
             </DropdownMenuItem>
             <DropdownMenuItem className="flex flex-col items-start py-2">
               <div className="font-medium">New Research Published</div>
               <div className="text-sm text-muted-foreground">
-                "Quantum Entanglement in Deep Space" has been published
+                &quot;Quantum Entanglement in Deep Space&quot; has been published
               </div>
               <div className="text-xs text-muted-foreground mt-1">Yesterday</div>
             </DropdownMenuItem>
@@ -101,5 +103,5 @@ export function UserDropdown() {
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  )
+  );
 }

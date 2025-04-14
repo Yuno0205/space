@@ -88,3 +88,15 @@
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
+
+/* Custom scrollbars */
+.styled-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #eaeaea transparent;
+  scrollbar-gutter: stable;
+}
+
+.styled-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #eaeaea;
+  border-radius: 4px;
+}

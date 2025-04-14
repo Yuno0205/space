@@ -8,11 +8,7 @@ import { Logo } from "@/components/header/logo";
 import { UserDropdown } from "@/components/header/user-dropdown";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,32 +19,18 @@ export const metadata: Metadata = {
   generator: "v0.dev",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={cn(
-          inter.className,
-          "min-h-screen bg-background text-foreground"
-        )}
-      >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
+      <body className={cn(inter.className, "min-h-screen bg-background text-foreground")}>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <SidebarProvider defaultOpen={true}>
             <MainSidebar />
             <SidebarInset className="relative">
               <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b border-border bg-background/80 px-4 backdrop-blur-md">
                 <div className="flex items-center gap-4">
                   <SidebarTrigger />
-                  <Logo />
+                  {/* <Logo /> */}
                 </div>
                 <div className="flex-1" />
                 <UserDropdown />

@@ -4,7 +4,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 
 import { MainSidebar } from "@/components/sidebar/main-sidebar";
-import { Logo } from "@/components/header/logo";
 import { UserDropdown } from "@/components/header/user-dropdown";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";

@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { Typewriter } from "react-simple-typewriter";
 
 interface DashedHeroProps {
   title: ReactNode;
@@ -95,9 +96,15 @@ export function DashedHero({
                 transition={{ duration: 0.5, delay: 0.6 }}
                 className="font-mono text-sm text-gray-500"
               >
-                <span className="mr-2">▲</span>
-                <span className="mr-2">~</span>
-                {commandText}
+                <Typewriter
+                  words={["Developer.", "Blogger.", "Language Learner."]}
+                  loop
+                  cursor
+                  cursorStyle="|"
+                  typeSpeed={70}
+                  deleteSpeed={50}
+                  delaySpeed={1000}
+                />
               </motion.div>
             )}
           </div>

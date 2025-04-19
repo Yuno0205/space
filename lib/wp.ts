@@ -1,7 +1,5 @@
-// lib/wp.ts
-const WP_API_URL = "http://yuno-blog.local/graphql";
-
 export async function fetchWP(query: string) {
+  const WP_API_URL = process.env.NEXT_PUBLIC_WP_API_URL || "";
   const res = await fetch(WP_API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

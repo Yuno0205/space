@@ -77,7 +77,7 @@ export function UserDropdown() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="flex items-center gap-2 pl-2 pr-1">
             <Avatar className="h-8 w-8">
-              <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
+              <AvatarImage src="/assets/images/placeholder.svg?height=32&width=32" alt="User" />
               <AvatarFallback>US</AvatarFallback>
             </Avatar>
             <span className="hidden md:inline text-sm font-medium">User Name</span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Calendar, Clock, Tag, Search } from "lucide-react";
@@ -27,51 +27,35 @@ type BlogPost = {
   image?: string;
 };
 
-export function BlogList({ category }: { category?: string }) {
-  const [searchQuery, setSearchQuery] = useState("");
+type BlogListProps = {
+  initialPosts: BlogPost[];
+  category?: string;
+};
 
-  const blogPosts: BlogPost[] = [
-    {
-      id: 1,
-      title: "Cách học tiếng Anh hiệu quả với phương pháp Spaced Repetition",
-      excerpt:
-        "Khám phá cách áp dụng phương pháp lặp lại ngắt quãng để ghi nhớ từ vựng tiếng Anh lâu dài và hiệu quả.",
-      slug: "cach-hoc-tieng-anh-hieu-qua-voi-phuong-phap-spaced-repetition",
-      date: "2025-04-10",
-      readTime: "5 phút",
-      categories: ["tiếng-anh", "phương-pháp-học"],
-      image: "/assets/images/placeholder.svg?height=400&width=600",
-    },
-    {
-      id: 2,
-      title: "Tổng hợp các nguồn học React miễn phí chất lượng cao",
-      excerpt:
-        "Danh sách các tài liệu, khóa học và video hướng dẫn miễn phí giúp bạn học React từ cơ bản đến nâng cao.",
-      slug: "tong-hop-cac-nguon-hoc-react-mien-phi-chat-luong-cao",
-      date: "2025-04-05",
-      readTime: "7 phút",
-      categories: ["lập-trình", "react", "frontend"],
-      image: "/assets/images/placeholder.svg?height=400&width=600",
-    },
-  ];
+export function BlogList({ initialPosts, category }: BlogListProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialPosts);
+
+  useEffect(() => {
+    // Lọc bài viết theo từ khóa tìm kiếm
+    const filteredPosts = initialPosts.filter(
+      (post) =>
+        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.categories.some((cat) => cat.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+    setBlogPosts(filteredPosts);
+  }, [searchQuery, initialPosts]);
 
   // Filter posts by category if provided
   const filteredByCategory = category
     ? blogPosts.filter((post) => post.categories.includes(category))
     : blogPosts;
 
-  // Filter posts by search query
-  const filteredPosts = searchQuery
-    ? filteredByCategory.filter(
-        (post) =>
-          post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          post.categories.some((cat) => cat.toLowerCase().includes(searchQuery.toLowerCase()))
-      )
-    : filteredByCategory;
-
   // Get all unique categories
-  const allCategories = Array.from(new Set(blogPosts.flatMap((post) => post.categories))).sort();
+  const allCategories = Array.from(
+    new Set(initialPosts.flatMap((post) => post.categories.map(String)))
+  ).sort();
 
   return (
     <div className="space-y-6">
@@ -97,8 +81,8 @@ export function BlogList({ category }: { category?: string }) {
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="md:col-span-3 space-y-6">
-          {filteredPosts.length > 0 ? (
-            filteredPosts.map((post, index) => (
+          {filteredByCategory.length > 0 ? (
+            filteredByCategory.map((post, index) => (
               <motion.div
                 key={post.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -118,7 +102,10 @@ export function BlogList({ category }: { category?: string }) {
                       )}
                       <div className={post.image ? "md:w-2/3" : "w-full"}>
                         <CardHeader>
-                          <CardTitle className="text-xl">{post.title}</CardTitle>
+                          <CardTitle
+                            className="text-xl"
+                            dangerouslySetInnerHTML={{ __html: post.title }}
+                          />
                           <CardDescription className="flex items-center text-sm space-x-4">
                             <span className="flex items-center">
                               <Calendar className="mr-1 h-3 w-3" />
@@ -131,14 +118,17 @@ export function BlogList({ category }: { category?: string }) {
                           </CardDescription>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-gray-400">{post.excerpt}</p>
+                          <p
+                            className="text-gray-400"
+                            dangerouslySetInnerHTML={{ __html: post.excerpt }}
+                          />
                         </CardContent>
                         <CardFooter>
                           <div className="flex flex-wrap gap-2">
                             {post.categories.map((cat) => (
                               <Badge key={cat} variant="outline" className="text-xs">
                                 <Tag className="mr-1 h-3 w-3" />
-                                {cat.replace(/-/g, " ")}
+                                {String(cat).replace(/-/g, " ")}
                               </Badge>
                             ))}
                           </div>
@@ -197,7 +187,7 @@ export function BlogList({ category }: { category?: string }) {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {blogPosts.slice(0, 3).map((post) => (
+                  {initialPosts.slice(0, 3).map((post) => (
                     <Link key={post.id} href={`/blog/${post.slug}`} className="block">
                       <div className="group">
                         <h3 className="font-medium group-hover:text-white transition-colors">

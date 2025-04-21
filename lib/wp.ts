@@ -1,3 +1,14 @@
+export interface IWordpressPost {
+  id: number;
+  title: { rendered: string };
+  excerpt: { rendered: string };
+  slug: string;
+  date: string;
+  categories: number[];
+  jetpack_featured_media_url: string;
+  tags: number[];
+  content: { rendered: string };
+}
 export async function fetchPosts({
   page = 1,
   perPage = 10,
@@ -41,7 +52,7 @@ export async function fetchPosts({
       throw new Error(`Failed to fetch posts: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data: IWordpressPost[] = await response.json();
     return data;
   } catch (error) {
     console.error("Error fetching posts:", error);
@@ -56,16 +67,21 @@ export async function fetchPostBySlug(slug: string) {
     console.warn("NEXT_PUBLIC_WP_API_URL is not defined. Using default URL.");
   }
 
-  const endpoint = `${url || "https://public-api.wordpress.com/wp/v2/sites/mainhathao195.wordpress.com/posts"}?_embed&?slug=${slug}`;
-  const response = await fetch(endpoint, {
-    next: { revalidate: 0 },
-    cache: "no-store",
-  });
+  try {
+    const endpoint = `${url || "https://public-api.wordpress.com/wp/v2/sites/mainhathao195.wordpress.com/posts"}?_embed&slug=${slug}`;
+    const response = await fetch(endpoint, {
+      next: { revalidate: 0 },
+      cache: "no-store",
+    });
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch post: ${response.status} ${response.statusText}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch post: ${response.status} ${response.statusText}`);
+    }
+
+    const data: IWordpressPost[] = await response.json();
+    return data[0]; // API trả về mảng, lấy bài viết đầu tiên
+  } catch (error) {
+    console.error("Error fetching post by slug:", error);
+    throw error;
   }
-
-  const data = await response.json();
-  return data[0]; // API trả về mảng, lấy bài viết đầu tiên
 }

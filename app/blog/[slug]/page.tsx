@@ -1,5 +1,6 @@
 import { BlogPost } from "@/components/blog/blog-post";
 import { IBlogPost } from "../page";
+import { fetchPostBySlug } from "@/lib/wp";
 
 export type Post = IBlogPost & {
   content: string;
@@ -9,12 +10,9 @@ export type Post = IBlogPost & {
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
   const { slug } = await params;
 
-  const response = await fetch(
-    `https://public-api.wordpress.com/wp/v2/sites/mainhathao195.wordpress.com/posts?slug=${slug}`,
-    { next: { revalidate: 3600 } }
-  );
-  const posts = await response.json();
-  const data = posts[0]; // Get the first post (slug is unique)
+  const data = await fetchPostBySlug(slug); // Get the first post (slug is unique)
+
+  console.log("Slug post:", data); // Log the slug to check its value
 
   if (!data) {
     return <div>Post not found</div>;

@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import Link from "next/link";
-import { Calendar, Clock, Tag, Search } from "lucide-react";
+import { IBlogPost } from "@/app/blog/page";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -13,28 +12,20 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-
-type BlogPost = {
-  id: number;
-  title: string;
-  excerpt: string;
-  slug: string;
-  date: string;
-  readTime: string;
-  categories: string[];
-  image?: string;
-};
+import { motion } from "framer-motion";
+import { Calendar, Search, Tag } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import DOMPurify from "dompurify";
 
 type BlogListProps = {
-  initialPosts: BlogPost[];
+  initialPosts: IBlogPost[];
   category?: string;
 };
 
 export function BlogList({ initialPosts, category }: BlogListProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialPosts);
+  const [blogPosts, setBlogPosts] = useState<IBlogPost[]>(initialPosts);
 
   useEffect(() => {
     // Lọc bài viết theo từ khóa tìm kiếm
@@ -42,14 +33,14 @@ export function BlogList({ initialPosts, category }: BlogListProps) {
       (post) =>
         post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.categories.some((cat) => cat.toLowerCase().includes(searchQuery.toLowerCase()))
+        post.categories.some((cat) => String(cat).toLowerCase().includes(searchQuery.toLowerCase()))
     );
     setBlogPosts(filteredPosts);
   }, [searchQuery, initialPosts]);
 
   // Filter posts by category if provided
   const filteredByCategory = category
-    ? blogPosts.filter((post) => post.categories.includes(category))
+    ? blogPosts.filter((post) => post.categories.includes(Number(category)))
     : blogPosts;
 
   // Get all unique categories
@@ -104,23 +95,23 @@ export function BlogList({ initialPosts, category }: BlogListProps) {
                         <CardHeader>
                           <CardTitle
                             className="text-xl"
-                            dangerouslySetInnerHTML={{ __html: post.title }}
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.title) }}
                           />
                           <CardDescription className="flex items-center text-sm space-x-4">
                             <span className="flex items-center">
                               <Calendar className="mr-1 h-3 w-3" />
                               {new Date(post.date).toLocaleDateString("vi-VN")}
                             </span>
-                            <span className="flex items-center">
+                            {/* <span className="flex items-center">
                               <Clock className="mr-1 h-3 w-3" />
-                              {post.readTime}
-                            </span>
+                              {Math.ceil(post.excerpt.length / 200)} phút đọc
+                            </span> */}
                           </CardDescription>
                         </CardHeader>
                         <CardContent>
                           <p
                             className="text-gray-400"
-                            dangerouslySetInnerHTML={{ __html: post.excerpt }}
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.excerpt) }}
                           />
                         </CardContent>
                         <CardFooter>

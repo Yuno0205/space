@@ -34,7 +34,7 @@ export async function fetchPosts({
 
   try {
     const response = await fetch(apiUrl, {
-      next: { revalidate: 3600 },
+      next: { revalidate: 60 },
     });
 
     if (!response.ok) {
@@ -47,4 +47,25 @@ export async function fetchPosts({
     console.error("Error fetching posts:", error);
     throw error;
   }
+}
+
+export async function fetchPostBySlug(slug: string) {
+  const url = process.env.NEXT_PUBLIC_WP_API_URL;
+
+  if (!url) {
+    console.warn("NEXT_PUBLIC_WP_API_URL is not defined. Using default URL.");
+  }
+
+  const endpoint = `${url || "https://public-api.wordpress.com/wp/v2/sites/mainhathao195.wordpress.com/posts"}?_embed&?slug=${slug}`;
+  const response = await fetch(endpoint, {
+    next: { revalidate: 0 },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch post: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data[0]; // API trả về mảng, lấy bài viết đầu tiên
 }

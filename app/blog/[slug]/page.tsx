@@ -42,7 +42,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     image,
     tags,
     content: content?.rendered || "", // Use content.rendered if available, fallback to an empty string
-    readTime: `${Math.ceil((content?.rendered || "").length / 200)} min read`, // Calculate read time
+    readTime: `${Math.ceil((content?.rendered || "").length / 1000)} min read`, // Calculate read time
   };
 
   return (

@@ -40,7 +40,7 @@ export function BlogList({ initialPosts, category }: BlogListProps) {
 
   // Filter posts by category if provided
   const filteredByCategory = category
-    ? blogPosts.filter((post) => post.categories.includes(Number(category)))
+    ? blogPosts.filter((post) => post.categories.map(String).includes(category))
     : blogPosts;
 
   // Get all unique categories

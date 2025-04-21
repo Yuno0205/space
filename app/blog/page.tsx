@@ -1,7 +1,6 @@
 import { FadeIn } from "@/components/animations/fade-in";
 import { BlogList } from "@/components/blog/blog-list";
 import { fetchPosts } from "@/lib/wp";
-import { stripHtml } from "string-strip-html";
 
 export interface IBlogPost {
   id: number;
@@ -9,22 +8,36 @@ export interface IBlogPost {
   excerpt: string;
   slug: string;
   date: string;
-  categories: number[]; // Hoặc string[] nếu categories là chuỗi
+  categories: number[];
   image: string;
-  tags: number[]; // Hoặc string[] nếu tags là chuỗi
+  tags: number[];
 }
 
 export default async function BlogPage() {
-  const rawPosts = await fetchPosts();
+  let rawPosts = [];
+  try {
+    rawPosts = await fetchPosts();
+  } catch (error) {
+    console.error("Failed to fetch posts:", error);
+    return <div>Failed to load posts. Please try again later.</div>;
+  }
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
-  const posts = rawPosts.map((post) => ({
-    ...post,
-    title: stripHtml(post.title.rendered),
-    excerpt: stripHtml(post.excerpt.rendered),
+  const posts: IBlogPost[] = rawPosts.map((post: any) => ({
+    id: post.id,
+    title: post.title.rendered,
+    excerpt: post.excerpt.rendered,
+    slug: post.slug,
+    date: post.date,
+    categories: post.categories,
+    image: post.jetpack_featured_media_url,
+    tags: post.tags,
   }));
 
-  console.log("Processed posts data:", posts);
+  if (process.env.NODE_ENV === "development") {
+    console.log("Raw posts data:", rawPosts);
+    console.log("Processed posts data:", posts);
+  }
 
   return (
     <div className="container mx-auto py-8 px-4">

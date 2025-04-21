@@ -19,7 +19,7 @@ export async function fetchPosts({
   perPage?: number;
   categories?: number[];
   search?: string;
-} = {}) {
+} = {}): Promise<IWordpressPost[]> {
   const url = process.env.NEXT_PUBLIC_WP_API_URL;
 
   if (!url) {
@@ -60,7 +60,7 @@ export async function fetchPosts({
   }
 }
 
-export async function fetchPostBySlug(slug: string) {
+export async function fetchPostBySlug(slug: string): Promise<IWordpressPost | undefined> {
   const url = process.env.NEXT_PUBLIC_WP_API_URL;
 
   if (!url) {
@@ -68,7 +68,10 @@ export async function fetchPostBySlug(slug: string) {
   }
 
   try {
-    const endpoint = `${url || "https://public-api.wordpress.com/wp/v2/sites/mainhathao195.wordpress.com/posts"}?_embed&slug=${slug}`;
+    const baseUrl =
+      url || "https://public-api.wordpress.com/wp/v2/sites/mainhathao195.wordpress.com/posts";
+    const endpoint = `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}_embed&slug=${slug}`;
+
     const response = await fetch(endpoint, {
       next: { revalidate: 0 },
       cache: "no-store",
@@ -79,7 +82,8 @@ export async function fetchPostBySlug(slug: string) {
     }
 
     const data: IWordpressPost[] = await response.json();
-    return data[0]; // API trả về mảng, lấy bài viết đầu tiên
+    // API returns an array, return undefined if no posts found
+    return data.length > 0 ? data[0] : undefined;
   } catch (error) {
     console.error("Error fetching post by slug:", error);
     throw error;

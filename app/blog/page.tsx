@@ -34,11 +34,6 @@ export default async function BlogPage() {
     tags: post.tags,
   }));
 
-  if (process.env.NODE_ENV === "development") {
-    console.log("Raw posts data:", rawPosts);
-    console.log("Processed posts data:", posts);
-  }
-
   return (
     <div className="container mx-auto py-8 px-4">
       <FadeIn>

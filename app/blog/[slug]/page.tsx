@@ -12,8 +12,6 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
   const data = await fetchPostBySlug(slug); // Get the first post (slug is unique)
 
-  console.log("Slug post:", data); // Log the slug to check its value
-
   if (!data) {
     return <div>Post not found</div>;
   }
@@ -34,8 +32,8 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   // Create a new object with only the required properties
   const post: Post = {
     id,
-    title: title.rendered, // Assuming title is an object with a "rendered" property
-    excerpt: excerpt.rendered, // Assuming excerpt is an object with a "rendered" property
+    title: title?.rendered || "",
+    excerpt: excerpt?.rendered || "",
     slug: postSlug,
     date,
     categories,

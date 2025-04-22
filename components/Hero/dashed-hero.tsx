@@ -88,25 +88,24 @@ export function DashedHero({
               )}
             </motion.div>
 
-            {/* Command line */}
-            {commandText && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.6 }}
-                className="font-mono text-sm text-gray-500"
-              >
-                <Typewriter
-                  words={["Developer.", "Blogger.", "Language Learner."]}
-                  loop
-                  cursor
-                  cursorStyle="|"
-                  typeSpeed={70}
-                  deleteSpeed={50}
-                  delaySpeed={1000}
-                />
-              </motion.div>
-            )}
+            {/* Typewriter */}
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              className="font-mono text-sm text-gray-500"
+            >
+              <Typewriter
+                words={["Developer.", "Blogger.", "Language Learner."]}
+                loop
+                cursor
+                cursorStyle="|"
+                typeSpeed={70}
+                deleteSpeed={50}
+                delaySpeed={1000}
+              />
+            </motion.div>
           </div>
         </div>
       </div>

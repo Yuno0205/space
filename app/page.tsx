@@ -137,9 +137,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CPU Component */}
-      {/* <CPUComponent /> */}
-
       {/* Missions Section */}
       <section className="relative py-16 px-4 border-t border-border">
         <div className="container mx-auto max-w-5xl">

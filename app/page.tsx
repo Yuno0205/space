@@ -7,7 +7,8 @@ import { CountUp } from "@/components/animations/count-up";
 import { DashedHero } from "@/components/Hero/dashed-hero";
 import { Footer } from "@/components/footer";
 import CPUComponent from "@/components/CPU";
-import GalaxuHub from "@/components/GalaxyHub";
+
+import GalaxyHub from "@/components/GalaxyHub";
 
 export default function Home() {
   return (
@@ -26,8 +27,8 @@ export default function Home() {
         secondaryButtonText="Learn Next.js"
         commandText="npx create-next-app@latest"
       />
-
-      <GalaxuHub />
+      {/* Galaxy Hub */}
+      <GalaxyHub />
 
       {/* Stats Section */}
       <section className="relative py-16 px-4 border-t border-border">

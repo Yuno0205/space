@@ -1,13 +1,20 @@
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 
-export default async function GalaxuHub() {
+export default async function GalaxyHub() {
   const cookieStore = cookies();
   const supabase = createClient(cookieStore);
 
-  const { data: voca } = await supabase.from("vocabularies").select();
+  const { data: voca, error } = await supabase.from("vocabularies").select();
 
-  console.log("voca", voca);
+  if (error) {
+    // Consider proper error handling instead of just logging
+    console.error("Error fetching vocabularies:", error.message);
+    // Return an error state or fallback UI
+    return <div>Failed to load data</div>;
+  }
 
-  return <ul>Haha</ul>;
+  console.log("vocabularies", voca);
+
+  return null;
 }

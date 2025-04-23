@@ -20,7 +20,6 @@ export default function Home() {
         }
         primaryButtonText="Visit the English planet"
         secondaryButtonText="Explore the Next.js universe"
-        commandText="npx create-next-app@latest"
       />
       {/* Galaxy Hub */}
       <GalaxyHub />

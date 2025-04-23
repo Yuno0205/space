@@ -7,7 +7,6 @@ import { CountUp } from "@/components/animations/count-up";
 import { DashedHero } from "@/components/Hero/dashed-hero";
 import { Footer } from "@/components/footer";
 import CPUComponent from "@/components/CPU";
-
 import GalaxyHub from "@/components/GalaxyHub";
 
 export default function Home() {
@@ -15,16 +14,12 @@ export default function Home() {
     <div className="relative min-h-screen">
       {/* Hero Section */}
       <DashedHero
-        title="The React Framework for the Web"
+        title="Welcome to Space v1.0.0 - Initiate your learning warp drive today"
         description={
-          <>
-            Used by some of the world largest companies, Next.js enables you to create{" "}
-            <span className="font-semibold">high-quality web applications</span> with the power of
-            React components.
-          </>
+          <>Where I learn, code, and grow — each star a new concept, each orbit a breakthrough.</>
         }
-        primaryButtonText="Get Started"
-        secondaryButtonText="Learn Next.js"
+        primaryButtonText="Visit the English planet"
+        secondaryButtonText="Explore the Next.js universe"
         commandText="npx create-next-app@latest"
       />
       {/* Galaxy Hub */}

@@ -9,12 +9,12 @@ export default async function GalaxyHub() {
 
   if (error) {
     // Consider proper error handling instead of just logging
-    console.error("Error fetching vocabularies:", error.message);
+    // console.error("Error fetching vocabularies:", error.message);
     // Return an error state or fallback UI
     return <div>Failed to load data</div>;
   }
 
   console.log("vocabularies", voca);
 
-  return null;
+  return <div className="w-full flex items-center"></div>;
 }

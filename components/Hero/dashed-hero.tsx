@@ -80,12 +80,11 @@ export function DashedHero({
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-lg md:text-xl text-gray-400 max-w-3xl mb-16"
             >
-              <span className={cn("text-white font-bold text-3xl ", orbitron.className)}>
+              <span className={cn("text-white font-bold text-3xl pr-2", orbitron.className)}>
                 Space
               </span>
 
-              <div className="inline-block my-5 py-2">
-                {" "}
+              <div className="inline-block my-5 py-2 writer">
                 - Developed with{" "}
                 <span>
                   <ReactTyped
@@ -93,15 +92,14 @@ export function DashedHero({
                       const techName = Object.keys(tech)[0];
                       const techClass = tech[techName];
 
-                      // Tạo phần tử span với CSS class tương ứng cho mỗi từ
-                      return `<span class='${techClass} text-3xl font-semibold'>${techName}</span>`;
+                      // Create span element with corresponding CSS class for each tech stack
+                      return `<span class='${techClass} text-3xl font-semibold inline'>${techName}</span>`;
                     })}
                     typeSpeed={100}
                     backSpeed={50}
                     backDelay={1000}
                     startDelay={500}
                     loop
-                    className="orbitron-classname" // Thêm font tùy chọn của bạn ở đây
                   />
                 </span>
               </div>

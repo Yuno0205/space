@@ -22,3 +22,11 @@
 .wordpress-color {
   color: #21759b;
 }
+
+.writer {
+  span {
+    line-height: 40px; /* Đặt line-height mong muốn */
+    height: 30px;
+    display: inline-block;
+  }
+}

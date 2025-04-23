@@ -1,3 +1,5 @@
+import ComicButton from "../ComicButton";
+
 export default async function GalaxyHub() {
   // const cookieStore = cookies();
   // const supabase = createClient(cookieStore);
@@ -11,5 +13,9 @@ export default async function GalaxyHub() {
   //   return <div>Failed to load data</div>;
   // }
 
-  return <div className="w-full flex items-center"></div>;
+  return (
+    <div className="w-full flex items-center justify-center relative z-1 h-[79px]">
+      <ComicButton />
+    </div>
+  );
 }

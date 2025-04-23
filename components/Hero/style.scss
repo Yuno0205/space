@@ -1,0 +1,32 @@
+/* Các lớp CSS cho mỗi công nghệ */
+.react-color {
+  color: #61dafb;
+}
+
+.nextjs-color {
+  color: #fff;
+}
+
+.tailwind-color {
+  color: #38b2ac;
+}
+
+.typescript-color {
+  color: #007acc;
+}
+
+.supabase-color {
+  color: #ffa500;
+}
+
+.wordpress-color {
+  color: #21759b;
+}
+
+.writer {
+  span {
+    line-height: 40px; /* Đặt line-height mong muốn */
+    height: 30px;
+    display: inline-block;
+  }
+}

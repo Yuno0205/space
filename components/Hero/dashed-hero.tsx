@@ -3,6 +3,15 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { ReactTyped } from "react-typed";
+import { Orbitron } from "next/font/google";
+import "./style.scss";
+import { cn } from "@/lib/utils";
+
+const orbitron = Orbitron({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
 
 interface DashedHeroProps {
   title: ReactNode;
@@ -14,6 +23,18 @@ interface DashedHeroProps {
   commandText?: string;
 }
 
+type TechStackType = Record<string, string>;
+
+const TechStack: TechStackType[] = [
+  { "Next.js": "text-white" }, // Màu trắng cho Next.js
+  { React: "text-[#61DAFB]" }, // Màu xanh đặc trưng cho React
+  { "Tailwind CSS": "text-sky-400" }, // Màu xanh dương sáng cho Tailwind CSS
+  { TypeScript: "text-[#3178C6]" }, // Màu xanh lam đậm cho TypeScript
+  { Supabase: "text-[#3ECF8E]" }, // Màu xanh lá cây cho Supabase
+  { WordPress: "text-[#21759B]" }, // Màu xanh nước biển cho WordPress
+  { "Framer Motion": "text-[#0055FF]" }, // Màu xanh dương cho Framer Motion
+];
+
 export function DashedHero({
   title,
   description,
@@ -21,7 +42,6 @@ export function DashedHero({
   primaryButtonHref = "#",
   secondaryButtonText,
   secondaryButtonHref,
-  commandText,
 }: DashedHeroProps) {
   return (
     <div className="relative w-full py-24 px-4">
@@ -48,7 +68,7 @@ export function DashedHero({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-12"
+              className={`text-4xl md:text-5xl font-bold text-white mb-6 ${orbitron.className}`}
             >
               {title}
             </motion.h1>
@@ -60,7 +80,33 @@ export function DashedHero({
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-lg md:text-xl text-gray-400 max-w-3xl mb-16"
             >
-              {description}
+              <span className={cn("text-white font-bold text-3xl pr-2", orbitron.className)}>
+                Space
+              </span>
+
+              <div className="inline-block my-5 py-2 writer">
+                - Developed with{" "}
+                <span>
+                  <ReactTyped
+                    strings={TechStack.map((tech) => {
+                      const techName = Object.keys(tech)[0];
+                      const techClass = tech[techName];
+
+                      // Create span element with corresponding CSS class for each tech stack
+                      return `<span class='${techClass} text-3xl font-semibold inline'>${techName}</span>`;
+                    })}
+                    typeSpeed={100}
+                    backSpeed={50}
+                    backDelay={1000}
+                    startDelay={500}
+                    loop
+                  />
+                </span>
+              </div>
+
+              <br />
+
+              <span className="mt-5">{description}</span>
             </motion.div>
 
             {/* Buttons */}
@@ -86,20 +132,6 @@ export function DashedHero({
                 </Link>
               )}
             </motion.div>
-
-            {/* Command line */}
-            {commandText && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.6 }}
-                className="font-mono text-sm text-gray-500"
-              >
-                <span className="mr-2">▲</span>
-                <span className="mr-2">~</span>
-                {commandText}
-              </motion.div>
-            )}
           </div>
         </div>
       </div>

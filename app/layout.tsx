@@ -8,6 +8,7 @@ import { MainSidebar } from "@/components/sidebar/main-sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,6 +33,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   {/* <Logo /> */}
                 </div>
                 <div className="flex-1" />
+
+                <ThemeToggle />
                 <UserDropdown />
               </header>
               <main>{children}</main>

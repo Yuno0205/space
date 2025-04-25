@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { FadeIn } from "@/components/animations/fade-in"
+import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { FadeIn } from "@/components/animations/fade-in";
 
 export function Footer() {
   return (
@@ -14,17 +14,26 @@ export function Footer() {
               <h3 className="font-bold mb-4">Khám phá</h3>
               <ul className="space-y-2">
                 <li>
-                  <Link href="/english" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="/english"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Tiếng Anh
                   </Link>
                 </li>
                 <li>
-                  <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="/blog"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Blog
                   </Link>
                 </li>
                 <li>
-                  <Link href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="/dashboard"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Dashboard
                   </Link>
                 </li>
@@ -37,17 +46,26 @@ export function Footer() {
               <h3 className="font-bold mb-4">Liên kết</h3>
               <ul className="space-y-2">
                 <li>
-                  <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     GitHub
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Twitter
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     LinkedIn
                   </Link>
                 </li>
@@ -61,16 +79,13 @@ export function Footer() {
               <ul className="space-y-2">
                 <li className="flex items-center gap-2">
                   <span className="text-muted-foreground">Chế độ tối/sáng</span>
-                  <ThemeToggle />
                 </li>
                 <li>
-                  <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Ngôn ngữ
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                    Quyền riêng tư
                   </Link>
                 </li>
               </ul>
@@ -82,17 +97,26 @@ export function Footer() {
               <h3 className="font-bold mb-4">Pháp lý</h3>
               <ul className="space-y-2">
                 <li>
-                  <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Điều khoản
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Bảo mật
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Cookie
                   </Link>
                 </li>
@@ -103,12 +127,20 @@ export function Footer() {
 
         <FadeIn delay={0.5}>
           <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center">
-            <p className="text-muted-foreground text-sm mb-4 md:mb-0">© 2024 Workspace. All rights reserved.</p>
+            <p className="text-muted-foreground text-sm mb-4 md:mb-0">
+              © 2024 Workspace. All rights reserved.
+            </p>
             <div className="flex space-x-6">
-              <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link
+                href="#"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 Twitter
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link
+                href="#"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 GitHub
               </Link>
             </div>
@@ -116,5 +148,5 @@ export function Footer() {
         </FadeIn>
       </div>
     </footer>
-  )
+  );
 }

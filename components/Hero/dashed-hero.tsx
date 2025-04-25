@@ -7,6 +7,7 @@ import { ReactTyped } from "react-typed";
 import { Orbitron } from "next/font/google";
 import "./style.scss";
 import { cn } from "@/lib/utils";
+import ComicButton from "../ComicButton";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -41,7 +42,6 @@ export function DashedHero({
   primaryButtonText = "Get Started",
   primaryButtonHref = "#",
   secondaryButtonText,
-  secondaryButtonHref,
 }: DashedHeroProps) {
   return (
     <div className="relative w-full py-24 px-4">
@@ -68,7 +68,7 @@ export function DashedHero({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className={`text-4xl md:text-5xl font-bold text-white mb-6 ${orbitron.className}`}
+              className={`text-4xl md:text-5xl font-bold dark:text-white light:text-black mb-6 ${orbitron.className}`}
             >
               {title}
             </motion.h1>
@@ -80,7 +80,12 @@ export function DashedHero({
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-lg md:text-xl text-gray-400 max-w-3xl mb-16"
             >
-              <span className={cn("text-white font-bold text-3xl pr-2", orbitron.className)}>
+              <span
+                className={cn(
+                  "light:text-white dark:text-black font-bold text-3xl pr-2",
+                  orbitron.className
+                )}
+              >
                 Space
               </span>
 
@@ -123,14 +128,7 @@ export function DashedHero({
                 {primaryButtonText}
               </Link>
 
-              {secondaryButtonText && (
-                <Link
-                  href={secondaryButtonHref || "#"}
-                  className="inline-flex items-center justify-center rounded-md border border-white/20 bg-transparent px-8 py-3 text-base font-medium text-white transition-colors hover:bg-white/10"
-                >
-                  {secondaryButtonText}
-                </Link>
-              )}
+              {secondaryButtonText && <ComicButton />}
             </motion.div>
           </div>
         </div>

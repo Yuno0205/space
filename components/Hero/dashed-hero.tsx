@@ -82,7 +82,7 @@ export function DashedHero({
             >
               <span
                 className={cn(
-                  "light:text-white dark:text-black font-bold text-3xl pr-2",
+                  "text-black dark:text-white font-bold text-3xl pr-2",
                   orbitron.className
                 )}
               >

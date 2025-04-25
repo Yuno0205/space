@@ -10,7 +10,7 @@ import CPUComponent from "@/components/CPU";
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen bg-center dark:bg-[url('/assets/images/stars_bg.jpg')] light:bg-none">
+    <div className="relative min-h-screen bg-center dark:bg-[url('/assets/images/stars_bg.jpg')] bg-none">
       {/* Hero Section */}
       <DashedHero
         title="Welcome to Space v1.0.0 - Initiate your learning warp drive today"

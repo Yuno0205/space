@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { FadeIn } from "@/components/animations/fade-in";
+import Link from "next/link";
 
 export function Footer() {
   return (

@@ -7,11 +7,10 @@ import { CountUp } from "@/components/animations/count-up";
 import { DashedHero } from "@/components/Hero/dashed-hero";
 import { Footer } from "@/components/footer";
 import CPUComponent from "@/components/CPU";
-import GalaxyHub from "@/components/GalaxyHub";
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen bg-center dark:bg-[url('/assets/images/stars_bg.jpg')] bg-none">
       {/* Hero Section */}
       <DashedHero
         title="Welcome to Space v1.0.0 - Initiate your learning warp drive today"
@@ -21,8 +20,6 @@ export default function Home() {
         primaryButtonText="Visit the English planet"
         secondaryButtonText="Explore the Next.js universe"
       />
-      {/* Galaxy Hub */}
-      <GalaxyHub />
 
       {/* Stats Section */}
       <section className="relative py-16 px-4 border-t border-border">
@@ -89,7 +86,6 @@ export default function Home() {
             <span className="item"></span>
           </div>
           <div className="connector bottom-side absolute flex gap-4 justify-center">
-            <span className="item"></span>
             <span className="item"></span>
             <span className="item"></span>
             <span className="item"></span>

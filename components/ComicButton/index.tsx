@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 
 interface Star {
   x: number;
@@ -13,7 +13,7 @@ interface Star {
   twinkleSpeed: number;
 }
 
-const StarButton = () => {
+const ComicButton = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const buttonRef = useRef<HTMLAnchorElement>(null);
 
@@ -35,7 +35,7 @@ const StarButton = () => {
 
     // Mảng chứa ngôi sao
     const stars: Star[] = [];
-    const numStars = 25;
+    const numStars = 35;
 
     function createStar(): Star {
       return {
@@ -125,18 +125,19 @@ const StarButton = () => {
 
   return (
     <Link
-      href="https://x.ai/grok"
-      className="relative inline-block px-7 py-3.5 text-lg font-bold text-white bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl overflow-hidden transition-all duration-300 hover:scale-110 hover:shadow-[0_0_20px_rgba(255,255,255,0.4)]"
+      href="https://nextjs.org"
+      className="relative inline-block px-7 py-3.5 text-lg font-bold text-white bg-gradient-to-br from-gray-900  rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.4)]"
       ref={buttonRef}
+      target="_blank"
     >
       <canvas
         ref={canvasRef}
         className="absolute top-0 left-0 w-full h-full opacity-90 hover:opacity-100 transition-opacity duration-300"
         style={{ zIndex: -1 }}
       />
-      Mua Super
+      <span className={"font-semibold"}>Explore the Next.js Universe</span>
     </Link>
   );
 };
 
-export default StarButton;
+export default ComicButton;

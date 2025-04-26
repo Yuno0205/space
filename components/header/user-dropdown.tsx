@@ -80,7 +80,7 @@ export function UserDropdown() {
               <AvatarImage src="/assets/images/placeholder.svg?height=32&width=32" alt="User" />
               <AvatarFallback>US</AvatarFallback>
             </Avatar>
-            <span className="hidden md:inline text-sm font-medium">User Name</span>
+
             <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
         </DropdownMenuTrigger>

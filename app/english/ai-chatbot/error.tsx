@@ -1,6 +1,6 @@
 "use client";
 
-export default function Error() {
+export default function ErrorPage() {
   return (
     <div className={"absolute inset-0 grid place-content-center"}>
       <div className={"text-center"}>

@@ -1,10 +1,5 @@
-"use client";
+import ChatWrapper from "@/components/Hume/ChatWrapper";
 import { getHumeAccessToken } from "@/utils/getHumeAccessToken";
-import dynamic from "next/dynamic";
-
-const Chat = dynamic(() => import("@/components/Hume/Chat"), {
-  ssr: false,
-});
 
 export default async function Page() {
   const accessToken = await getHumeAccessToken();
@@ -15,7 +10,7 @@ export default async function Page() {
 
   return (
     <div className={"grow flex flex-col"}>
-      <Chat accessToken={accessToken} />
+      <ChatWrapper accessToken={accessToken} />
     </div>
   );
 }

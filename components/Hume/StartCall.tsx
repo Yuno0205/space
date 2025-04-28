@@ -33,9 +33,14 @@ export default function StartCall() {
                 className={"z-50 flex items-center gap-1.5"}
                 onClick={() => {
                   connect()
-                    .then(() => {})
-                    .catch(() => {})
-                    .finally(() => {});
+                    .then(() => {
+                      // Connection successful, no additional action needed
+                    })
+                    .catch((error) => {
+                      // Handle connection error
+                      console.error("Failed to connect to voice service:", error);
+                      // Consider showing an error toast or notification to the user
+                    });
                 }}
               >
                 <span>

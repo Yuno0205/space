@@ -6,23 +6,15 @@ import Controls from "./Controls";
 import StartCall from "./StartCall";
 import { ComponentRef, useRef } from "react";
 
-export default function ClientComponent({
-  accessToken,
-}: {
-  accessToken: string;
-}) {
+export default function ClientComponent({ accessToken }: { accessToken: string }) {
   const timeout = useRef<number | null>(null);
   const ref = useRef<ComponentRef<typeof Messages> | null>(null);
 
   // optional: use configId from environment variable
-  const configId = process.env['NEXT_PUBLIC_HUME_CONFIG_ID'];
-  
+  const configId = process.env["NEXT_PUBLIC_HUME_CONFIG_ID"];
+
   return (
-    <div
-      className={
-        "relative grow flex flex-col mx-auto w-full overflow-hidden h-[0px]"
-      }
-    >
+    <div className={"relative grow flex flex-col mx-auto w-full overflow-hidden "}>
       <VoiceProvider
         auth={{ type: "accessToken", value: accessToken }}
         configId={configId}

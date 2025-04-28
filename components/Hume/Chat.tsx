@@ -14,18 +14,21 @@ export default function ClientComponent({ accessToken }: { accessToken: string }
   const configId = process.env["NEXT_PUBLIC_HUME_CONFIG_ID"];
 
   return (
-    <div className={"relative grow flex flex-col mx-auto w-full overflow-hidden "}>
+    <div className={"relative grow flex flex-col mx-auto w-full overflow-hidden h-[0px] "}>
       <VoiceProvider
         auth={{ type: "accessToken", value: accessToken }}
         configId={configId}
         onMessage={() => {
+          console.log("onMessage triggered");
           if (timeout.current) {
             window.clearTimeout(timeout.current);
           }
 
           timeout.current = window.setTimeout(() => {
-            if (ref.current) {
+            if (ref.current && "scrollHeight" in ref.current && "scrollTo" in ref.current) {
               const scrollHeight = ref.current.scrollHeight;
+
+              console.log("scrollHeight", scrollHeight);
 
               ref.current.scrollTo({
                 top: scrollHeight,

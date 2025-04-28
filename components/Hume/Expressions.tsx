@@ -9,7 +9,7 @@ export default function Expressions({ values }: { values: Record<string, number>
   const top3 = R.pipe(
     values,
     R.entries(),
-    R.sortBy(([, value]) => value),
+    R.sortBy(([_key, value]) => value),
     R.reverse(),
     R.take(3)
   );

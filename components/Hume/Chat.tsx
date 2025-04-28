@@ -18,6 +18,9 @@ export default function ClientComponent({ accessToken }: { accessToken: string }
       <VoiceProvider
         auth={{ type: "accessToken", value: accessToken }}
         configId={configId}
+        onError={(error) => {
+          console.error("Voice provider error:", error);
+        }}
         onMessage={() => {
           console.log("onMessage triggered");
           if (timeout.current) {

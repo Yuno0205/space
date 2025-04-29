@@ -2,17 +2,19 @@
 import { expressionColors, isExpressionColor } from "@/utils/HumeAi/expressionColors";
 import { expressionLabels } from "@/utils/HumeAi/expressionLabels";
 import { motion } from "framer-motion";
-import { CSSProperties } from "react";
+import { CSSProperties, use, useMemo } from "react";
 import * as R from "remeda";
 
 export default function Expressions({ values }: { values: Record<string, number> }) {
-  const top3 = R.pipe(
-    values,
-    R.entries(),
-    R.sortBy(([, value]) => value),
-    R.reverse(),
-    R.take(3)
-  );
+  const top3 = useMemo(() => {
+    return R.pipe(
+      values,
+      R.entries(),
+      R.sortBy(([, value]) => value),
+      R.reverse(),
+      R.take(3)
+    );
+  }, [values]);
 
   return (
     <div className={"text-xs p-3 w-full border-t border-border flex flex-col md:flex-row gap-3"}>

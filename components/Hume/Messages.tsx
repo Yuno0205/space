@@ -3,10 +3,10 @@ import { cn } from "@/lib/utils";
 import { useVoice } from "@humeai/voice-react";
 import Expressions from "./Expressions";
 import { AnimatePresence, motion } from "framer-motion";
-import { ComponentRef, forwardRef } from "react";
+import { ComponentRef, forwardRef, memo } from "react";
 
-const Messages = forwardRef<ComponentRef<typeof motion.div>, Record<never, never>>(
-  function Messages(_, ref) {
+const Messages = memo(
+  forwardRef<ComponentRef<typeof motion.div>, Record<never, never>>(function Messages(_, ref) {
     const { messages } = useVoice();
 
     return (
@@ -56,7 +56,7 @@ const Messages = forwardRef<ComponentRef<typeof motion.div>, Record<never, never
         </motion.div>
       </motion.div>
     );
-  }
+  })
 );
 
 export default Messages;

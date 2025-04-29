@@ -5,7 +5,7 @@ import { FadeIn } from "@/components/animations/fade-in";
 import { AnimatedText } from "@/components/animations/animated-text";
 import { CountUp } from "@/components/animations/count-up";
 import { DashedHero } from "@/components/Hero/dashed-hero";
-import { Footer } from "@/components/footer";
+import { Footer } from "@/components/Footer/footer";
 import CPUComponent from "@/components/CPU";
 
 export default function Home() {

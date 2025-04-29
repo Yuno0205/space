@@ -51,7 +51,7 @@ const navigationItems = [
     href: "/english",
     items: [
       { title: "Tổng quan", href: "/english" },
-      { title: "Trò chuyện", href: "/english/dialoge" },
+      { title: "Trò chuyện với EVI", href: "/english/dialoge" },
       { title: "Luyện nghe", href: "/english/listening" },
       { title: "Luyện nói", href: "/english/speaking" },
       { title: "Luyện đọc", href: "/english/reading" },

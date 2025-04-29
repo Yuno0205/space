@@ -22,7 +22,6 @@ export default function ClientComponent({ accessToken }: { accessToken: string }
           console.error("Voice provider error:", error);
         }}
         onMessage={() => {
-          console.log("onMessage triggered");
           if (timeout.current) {
             window.clearTimeout(timeout.current);
           }
@@ -30,8 +29,6 @@ export default function ClientComponent({ accessToken }: { accessToken: string }
           timeout.current = window.setTimeout(() => {
             if (ref.current && "scrollHeight" in ref.current && "scrollTo" in ref.current) {
               const scrollHeight = ref.current.scrollHeight;
-
-              console.log("scrollHeight", scrollHeight);
 
               ref.current.scrollTo({
                 top: scrollHeight,

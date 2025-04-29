@@ -5,7 +5,7 @@ import { Mic, MicOff, Phone } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import MicFFT from "./MicFFT";
-import { cn } from "@/utils";
+import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Toggle } from "../ui/toggle";
 

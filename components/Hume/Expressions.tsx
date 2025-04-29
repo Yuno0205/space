@@ -1,6 +1,6 @@
 "use client";
-import { expressionColors, isExpressionColor } from "@/utils/expressionColors";
-import { expressionLabels } from "@/utils/expressionLabels";
+import { expressionColors, isExpressionColor } from "@/utils/HumeAi/expressionColors";
+import { expressionLabels } from "@/utils/HumeAi/expressionLabels";
 import { motion } from "framer-motion";
 import { CSSProperties } from "react";
 import * as R from "remeda";
@@ -9,7 +9,7 @@ export default function Expressions({ values }: { values: Record<string, number>
   const top3 = R.pipe(
     values,
     R.entries(),
-    R.sortBy(([_key, value]) => value),
+    R.sortBy(([, value]) => value),
     R.reverse(),
     R.take(3)
   );

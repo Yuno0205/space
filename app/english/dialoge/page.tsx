@@ -1,5 +1,5 @@
 import ChatWrapper from "@/components/Hume/ChatWrapper";
-import { getHumeAccessToken } from "@/utils/getHumeAccessToken";
+import { getHumeAccessToken } from "@/utils/HumeAi/getHumeAccessToken";
 
 export default async function Page() {
   const accessToken = await getHumeAccessToken();

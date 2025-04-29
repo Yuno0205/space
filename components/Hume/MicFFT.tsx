@@ -1,16 +1,10 @@
 "use client";
 
-import { cn } from "@/utils";
+import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { AutoSizer } from "react-virtualized";
 
-export default function MicFFT({
-  fft,
-  className,
-}: {
-  fft: number[];
-  className?: string;
-}) {
+export default function MicFFT({ fft, className }: { fft: number[]; className?: string }) {
   return (
     <div className={"relative size-full"}>
       <AutoSizer>

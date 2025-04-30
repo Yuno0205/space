@@ -1,18 +1,19 @@
 "use client";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   BookOpen,
+  BookText,
   ChevronDown,
+  FileText,
   Home,
-  ImageIcon,
   LayoutDashboard,
   Rocket,
   Search,
-  BookText,
-  FileText,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Input } from "@/components/ui/input";
 import {
   Sidebar,
   SidebarContent,
@@ -27,13 +28,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 
 // Navigation data
 const navigationItems = [
@@ -55,6 +50,7 @@ const navigationItems = [
     href: "/english",
     items: [
       { title: "Tổng quan", href: "/english" },
+      { title: "Trò chuyện với EVI", href: "/english/dialogue" },
       { title: "Luyện nghe", href: "/english/listening" },
       { title: "Luyện nói", href: "/english/speaking" },
       { title: "Luyện đọc", href: "/english/reading" },
@@ -88,17 +84,17 @@ const navigationItems = [
       { title: "Đã hoàn thành", href: "/projects/completed" },
     ],
   },
-  {
-    title: "Tài liệu",
-    icon: ImageIcon,
-    href: "/resources",
-    items: [
-      { title: "Bài viết", href: "/resources/articles" },
-      { title: "Video", href: "/resources/videos" },
-      { title: "Sách", href: "/resources/books" },
-      { title: "Mã nguồn", href: "/resources/code" },
-    ],
-  },
+  // {
+  //   title: "Tài liệu",
+  //   icon: ImageIcon,
+  //   href: "/resources",
+  //   items: [
+  //     { title: "Bài viết", href: "/resources/articles" },
+  //     { title: "Video", href: "/resources/videos" },
+  //     { title: "Sách", href: "/resources/books" },
+  //     { title: "Mã nguồn", href: "/resources/code" },
+  //   ],
+  // },
 ];
 
 export function MainSidebar() {

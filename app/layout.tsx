@@ -3,12 +3,13 @@ import { Inter } from "next/font/google";
 import type React from "react";
 import "./globals.css";
 
-import { UserDropdown } from "@/components/header/user-dropdown";
+import { UserDropdown } from "@/components/Header/user-dropdown";
 import { MainSidebar } from "@/components/sidebar/main-sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
+
 import { ThemeToggle } from "@/components/theme-toggle";
+import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"] });
 

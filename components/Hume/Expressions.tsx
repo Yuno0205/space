@@ -2,7 +2,7 @@
 import { expressionColors, isExpressionColor } from "@/utils/HumeAi/expressionColors";
 import { expressionLabels } from "@/utils/HumeAi/expressionLabels";
 import { motion } from "framer-motion";
-import { CSSProperties, use, useMemo } from "react";
+import { CSSProperties, useMemo } from "react";
 import * as R from "remeda";
 
 export default function Expressions({ values }: { values: Record<string, number> }) {

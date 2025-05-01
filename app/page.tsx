@@ -6,7 +6,9 @@ import { AnimatedText } from "@/components/animations/animated-text";
 import { CountUp } from "@/components/animations/count-up";
 import { DashedHero } from "@/components/Hero/dashed-hero";
 import { Footer } from "@/components/Footer/footer";
-import CPUComponent from "@/components/CPU";
+import CPUComponent from "@/components/PowerBy";
+import { Card } from "@/components/ui/card";
+import PowerBy from "@/components/PowerBy";
 
 export default function Home() {
   return (
@@ -28,9 +30,9 @@ export default function Home() {
             <FadeIn delay={0.1}>
               <div className="flex flex-col items-center">
                 <p className="text-3xl md:text-4xl font-bold">
-                  <CountUp end={200} suffix="+" />
+                  <CountUp end={3000} suffix="+" />
                 </p>
-                <p className="text-sm text-muted-foreground">Space Missions</p>
+                <p className="text-sm text-muted-foreground">Vocabulary across topics</p>
               </div>
             </FadeIn>
 
@@ -64,37 +66,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CPU Component */}
-      <div className="w-full min-h-[264px] overflow-hidden flex justify-center items-center relative z-1">
-        <CPUComponent />
-        <div className="relative px-6 py-5 cpu z-1">
-          <div className="shine absolute w-full h-full"></div>
-          <div className="connector absolute flex flex-col gap-4">
-            <span className="item"></span>
-            <span className="item"></span>
-          </div>
-          <div className="connector right-side absolute flex flex-col gap-4">
-            <span className="item"></span>
-            <span className="item"></span>
-          </div>
-          <div className="connector top-side absolute flex gap-4 justify-center">
-            <span className="item"></span>
-            <span className="item"></span>
-            <span className="item"></span>
-            <span className="item"></span>
-            <span className="item"></span>
-            <span className="item"></span>
-          </div>
-          <div className="connector bottom-side absolute flex gap-4 justify-center">
-            <span className="item"></span>
-            <span className="item"></span>
-            <span className="item"></span>
-            <span className="item"></span>
-            <span className="item"></span>
-          </div>
-          <span className="data-text text-white text-2xl font-bold">Powered By</span>
-        </div>
-      </div>
+      {/* Power by section */}
+      <PowerBy />
 
       {/* Explore Section */}
       <section className="relative py-16 px-4">

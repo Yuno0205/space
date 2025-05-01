@@ -6,6 +6,9 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
+    --accents-1: #111111;
+    --accents-2: #333333;
+    --supabase-color: 153.1deg 60.2% 52.7%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;

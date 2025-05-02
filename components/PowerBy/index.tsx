@@ -135,7 +135,7 @@ export default function PowerBy() {
             />
             <path
               d="M412 263.5L412 184"
-              stroke="url(#pink-pulse-1)"
+              stroke="url(#pink-pulse-2)"
               strokeLinecap="round"
               strokeWidth="2"
             />
@@ -480,6 +480,7 @@ export default function PowerBy() {
               href="https://react.dev/"
               target="_blank"
               className="font-semibold text-xl flex gap-2 items-center"
+              rel="noopener noreferrer"
             >
               React
               <ArrowUpRight className="ml-1 h-6 w-6" />
@@ -502,6 +503,7 @@ export default function PowerBy() {
               href="https://supabase.com/"
               target="_blank"
               className="font-semibold text-xl flex gap-2 items-center"
+              rel="noopener noreferrer"
             >
               Supabase
               <ArrowUpRight className="ml-1 h-6 w-6" />
@@ -518,6 +520,7 @@ export default function PowerBy() {
               href="https://wordpress.com/"
               target="_blank"
               className="font-semibold text-xl flex gap-2 items-center"
+              rel="noopener noreferrer"
             >
               Wordpress
               <ArrowUpRight className="ml-1 h-6 w-6" />

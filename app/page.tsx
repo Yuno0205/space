@@ -1,13 +1,11 @@
-import { ExploreCard } from "@/components/explore-card";
-import { MissionCard } from "@/components/mission-card";
-import { Newsletter } from "@/components/newsletter";
-import { FadeIn } from "@/components/animations/fade-in";
 import { AnimatedText } from "@/components/animations/animated-text";
 import { CountUp } from "@/components/animations/count-up";
-import { DashedHero } from "@/components/Hero/dashed-hero";
+import { FadeIn } from "@/components/animations/fade-in";
+import { ExploreCard } from "@/components/explore-card";
 import { Footer } from "@/components/Footer/footer";
-import CPUComponent from "@/components/PowerBy";
-import { Card } from "@/components/ui/card";
+import { DashedHero } from "@/components/Hero/dashed-hero";
+import { MissionCard } from "@/components/mission-card";
+import { Newsletter } from "@/components/newsletter";
 import PowerBy from "@/components/PowerBy";
 
 export default function Home() {

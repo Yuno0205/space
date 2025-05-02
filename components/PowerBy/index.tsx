@@ -3,11 +3,13 @@ import "./style.scss";
 import { Card } from "../ui/card";
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
 export default function PowerBy() {
   return (
     <>
       <div className="w-full min-h-[264px] overflow-hidden flex justify-center items-center relative z-1">
+        {/* SVG vẽ CPU animation */}
         <svg
           fill="none"
           height="264"
@@ -358,9 +360,9 @@ export default function PowerBy() {
               x2="637"
               y2="154"
             >
-              <stop stopColor="#FF4A81" stopOpacity="0" />
-              <stop offset="0.1" stopColor="#FF4A81" />
-              <stop offset="0.3" stopColor="#DF6CF6" />
+              <stop stopColor="#3ECF8E" stopOpacity="0" />
+              <stop offset="0.1" stopColor="#3ECF8E" />
+              <stop offset="0.3" stopColor="#7EE7B2" />
               <stop offset="0.5" stopColor="#0196FF" stopOpacity="0" />
               <animateTransform
                 attributeName="gradientTransform"
@@ -380,9 +382,9 @@ export default function PowerBy() {
               x2="547"
               y2="164"
             >
-              <stop stopColor="#FF4A81" stopOpacity="0" />
-              <stop offset="0.1" stopColor="#FF4A81" />
-              <stop offset="0.3" stopColor="#DF6CF6" />
+              <stop stopColor="#3ECF8E" stopOpacity="0" />
+              <stop offset="0.1" stopColor="#3ECF8E" />
+              <stop offset="0.3" stopColor="#7EE7B2" />
               <stop offset="0.5" stopColor="#0196FF" stopOpacity="0" />
               <animateTransform
                 attributeName="gradientTransform"
@@ -441,6 +443,7 @@ export default function PowerBy() {
             </linearGradient>
           </defs>
         </svg>
+        {/* The connector of the CPU */}
         <div className="relative px-6 py-5 cpu z-1">
           <div className="shine absolute w-full h-full"></div>
           <div className="connector absolute flex flex-col gap-4">
@@ -473,17 +476,57 @@ export default function PowerBy() {
         <Card className="w-1/3 min-h-[240px]  rounded-lg p-6 item relative flex flex-col justify-between ">
           <Image src="/assets/images/react-logo.png" alt="react-logo" width={40} height={40} />
           <div className="flex flex-col gap-2">
-            <Link href="https://react.dev/" target="_blank" className="font-semibold text-xl">
+            <Link
+              href="https://react.dev/"
+              target="_blank"
+              className="font-semibold text-xl flex gap-2 items-center"
+            >
               React
+              <ArrowUpRight className="ml-1 h-6 w-6" />
             </Link>
-            <span>
+            <span className="text-sm text-gray-500">
               The library for web and native user interfaces. Next.js is built on the latest React
               features, including Server Components and Actions.
             </span>
           </div>
         </Card>
-        <div className="w-1/3 h-[264px] bg-white rounded-lg"></div>
-        <div className="w-1/3 h-[264px] bg-white rounded-lg"></div>
+        <Card className="w-1/3 min-h-[240px]  rounded-lg p-6 item relative flex flex-col justify-between ">
+          <Image
+            src="/assets/images/supabase-logo-icon.png"
+            alt="react-logo"
+            width={40}
+            height={40}
+          />
+          <div className="flex flex-col gap-2">
+            <Link
+              href="https://supabase.com/"
+              target="_blank"
+              className="font-semibold text-xl flex gap-2 items-center"
+            >
+              Supabase
+              <ArrowUpRight className="ml-1 h-6 w-6" />
+            </Link>
+            <span className="text-sm text-gray-500">
+              Open-source Firebase alternative. Built-in Auth, Realtime DB, and PostgreSQL.
+            </span>
+          </div>
+        </Card>
+        <Card className="w-1/3 min-h-[240px]  rounded-lg p-6 item relative flex flex-col justify-between ">
+          <Image src="/assets/images/wordpress.png" alt="react-logo" width={40} height={40} />
+          <div className="flex flex-col gap-2">
+            <Link
+              href="https://wordpress.com/"
+              target="_blank"
+              className="font-semibold text-xl flex gap-2 items-center"
+            >
+              Wordpress
+              <ArrowUpRight className="ml-1 h-6 w-6" />
+            </Link>
+            <span className="text-sm text-gray-500">
+              The most popular CMS. Power your site with themes and plugins.
+            </span>
+          </div>
+        </Card>
       </div>
     </>
   );

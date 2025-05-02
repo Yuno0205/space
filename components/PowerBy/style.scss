@@ -13,7 +13,7 @@
     0 2px 4px rgba(0, 0, 0, 0.1),
     0 6px 4px -2px rgba(0, 0, 0, 0.15),
     inset 0 -3px 1px -1px rgba(0, 0, 0, 0.25);
-  transform: translateY(9px);
+  transform: translate(-7px, 9px);
 
   &::before {
     content: "";
@@ -180,4 +180,25 @@
     mask-composite: exclude;
     pointer-events: none;
   }
+}
+
+.item:nth-child(2)::before {
+  background: conic-gradient(
+    from 180deg at 50% 50%,
+    var(--accents-2) 0deg,
+    var(--accents-2) 176deg,
+    #3ecf8e 193deg,
+    var(--accents-2) 217deg,
+    var(--accents-2) 1turn
+  );
+}
+.item:last-child::before {
+  background: conic-gradient(
+    from 180deg at 50% 50%,
+    var(--accents-2) 0deg,
+    var(--accents-2) 176deg,
+    #ffbc31 193deg,
+    var(--accents-2) 217deg,
+    var(--accents-2) 1turn
+  );
 }

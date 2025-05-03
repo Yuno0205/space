@@ -1,6 +1,6 @@
-import { AnimatedText } from "@/utils/animations/animated-text";
-import { CountUp } from "@/utils/animations/count-up";
-import { FadeIn } from "@/utils/animations/fade-in";
+import { AnimatedText } from "@/components/animations/animated-text";
+import { CountUp } from "@/components/animations/count-up";
+import { FadeIn } from "@/components/animations/fade-in";
 import { ExploreCard } from "@/components/explore-card";
 import { Footer } from "@/components/Footer/footer";
 import { DashedHero } from "@/components/Hero/dashed-hero";

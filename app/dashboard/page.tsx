@@ -1,7 +1,7 @@
-import { LearningProgress } from "@/components/Dashboard/learning-progress";
-import { TaskManager } from "@/components/Dashboard/task-manager";
-import { PomodoroTimer } from "@/components/Dashboard/pomodoro-timer";
-import { ResourceCollection } from "@/components/Dashboard/resource-collection";
+import { LearningProgress } from "@/components/dashboard/learning-progress"
+import { TaskManager } from "@/components/dashboard/task-manager"
+import { PomodoroTimer } from "@/components/dashboard/pomodoro-timer"
+import { ResourceCollection } from "@/components/dashboard/resource-collection"
 
 export default function DashboardPage() {
   return (
@@ -23,5 +23,5 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

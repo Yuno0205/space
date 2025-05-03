@@ -1,5 +1,5 @@
-import { FadeIn } from "@/utils/animations/fade-in";
-import { MissionCard } from "@/components/mission-card";
+import { FadeIn } from "@/components/animations/fade-in"
+import { MissionCard } from "@/components/mission-card"
 
 export default function MissionsPage() {
   return (
@@ -7,9 +7,8 @@ export default function MissionsPage() {
       <FadeIn>
         <h1 className="text-4xl font-bold mb-6">Space Missions</h1>
         <p className="text-gray-400 mb-10 max-w-3xl">
-          Explore our ongoing and upcoming space missions. From deep space exploration to orbital
-          research, our missions push the boundaries of human knowledge and technological
-          capabilities.
+          Explore our ongoing and upcoming space missions. From deep space exploration to orbital research, our missions
+          push the boundaries of human knowledge and technological capabilities.
         </p>
       </FadeIn>
 
@@ -75,5 +74,5 @@ export default function MissionsPage() {
         </FadeIn>
       </div>
     </div>
-  );
+  )
 }

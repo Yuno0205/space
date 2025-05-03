@@ -1,5 +1,5 @@
-import { FadeIn } from "@/utils/animations/fade-in";
-import { BlogList } from "@/components/Blog/blog-list";
+import { FadeIn } from "@/components/animations/fade-in";
+import { BlogList } from "@/components/blog/blog-list";
 import { fetchPosts } from "@/lib/wp";
 
 export interface IBlogPost {

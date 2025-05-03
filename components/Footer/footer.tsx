@@ -1,6 +1,6 @@
 "use client";
 
-import { FadeIn } from "@/utils/animations/fade-in";
+import { FadeIn } from "@/components/animations/fade-in";
 import Link from "next/link";
 
 export function Footer() {

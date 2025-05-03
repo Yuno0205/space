@@ -1,7 +1,7 @@
 "use client";
 
 import { Post } from "@/app/blog/[slug]/page";
-import { FadeIn } from "@/utils/animations/fade-in";
+import { FadeIn } from "@/components/animations/fade-in";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

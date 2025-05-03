@@ -1,5 +1,5 @@
-import { FadeIn } from "@/utils/animations/fade-in";
-import { EnglishDashboard } from "@/components/English/english-dashboard";
+import { FadeIn } from "@/components/animations/fade-in"
+import { EnglishDashboard } from "@/components/english/english-dashboard"
 
 export default function EnglishPage() {
   return (
@@ -10,5 +10,5 @@ export default function EnglishPage() {
 
       <EnglishDashboard />
     </div>
-  );
+  )
 }

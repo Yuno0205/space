@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Space Explorer | Journey Through the Cosmos",
+  title: "Space | Nhật Hào Personal Workspace",
   description:
     "Discover the mysteries of space through immersive experiences, cutting-edge research, and breathtaking imagery.",
   generator: "v0.dev",

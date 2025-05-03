@@ -1,4 +1,4 @@
-import { FadeIn } from "@/components/animations/fade-in";
+import { FadeIn } from "@/utils/animations/fade-in";
 // import { ReadingPractice } from "@/components/english/reading-practice"
 
 export default function ReadingPage() {

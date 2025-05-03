@@ -1,4 +1,4 @@
-import { FadeIn } from "@/components/animations/fade-in";
+import { FadeIn } from "@/utils/animations/fade-in";
 // import { WritingPractice } from "@/components/english/writing-practice"
 
 export default function WritingPage() {

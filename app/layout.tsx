@@ -4,7 +4,7 @@ import type React from "react";
 import "./globals.css";
 
 import { UserDropdown } from "@/components/Header/user-dropdown";
-import { MainSidebar } from "@/components/sidebar/main-sidebar";
+import { MainSidebar } from "@/components/Sidebar/main-sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 

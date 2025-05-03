@@ -1,4 +1,4 @@
-import { FadeIn } from "@/components/animations/fade-in";
+import { FadeIn } from "@/utils/animations/fade-in";
 // import { SpeakingPractice } from "@/components/english/speaking-practice"
 
 export default function SpeakingPage() {

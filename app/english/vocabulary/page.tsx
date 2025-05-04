@@ -1,5 +1,5 @@
-import { FadeIn } from "@/components/animations/fade-in"
-import { VocabularyPractice } from "@/components/english/vocabulary-practice"
+import { FadeIn } from "@/components/animations/fade-in";
+import { VocabularyPractice } from "@/components/English/vocabulary-practice";
 
 export default function VocabularyPage() {
   return (
@@ -10,5 +10,5 @@ export default function VocabularyPage() {
 
       <VocabularyPractice />
     </div>
-  )
+  );
 }

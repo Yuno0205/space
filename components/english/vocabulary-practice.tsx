@@ -168,10 +168,10 @@ export function VocabularyPractice() {
               {/* Back of card */}
               <div
                 className={cn(
-                  "absolute inset-0 backface-hidden rounded-xl border border-white/10 bg-white/5 p-6 flex flex-col",
+                  "absolute inset-0  rounded-xl border border-white/10 bg-white/5 p-6 flex flex-col",
                   isFlipped ? "visible" : "invisible"
                 )}
-                style={{ transform: "rotateY(180deg)" }}
+                style={{ transform: "rotateY(-180deg)" }}
               >
                 <div className="flex-1">
                   <h4 className="font-medium mb-2">Định nghĩa:</h4>

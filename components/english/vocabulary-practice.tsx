@@ -24,7 +24,7 @@ type VocabularyCard = {
   saved: boolean;
 };
 
-export function VocabularyPractice() {
+export function VocabularyPractice({ vocabularies }: { vocabularies: any[] }) {
   const [cards, setCards] = useState<VocabularyCard[]>([
     {
       id: 1,

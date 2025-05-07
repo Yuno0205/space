@@ -1,7 +1,16 @@
 import { FadeIn } from "@/components/animations/fade-in";
 import { VocabularyPractice } from "@/components/English/vocabulary-practice";
+import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 
-export default function VocabularyPage() {
+export default async function VocabularyPage() {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  const { data: voca, error } = await supabase.from("vocabularies").select().limit(100);
+
+  console.log(voca, error);
+
   return (
     <div className="container mx-auto py-8 px-4">
       <FadeIn>

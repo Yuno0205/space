@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { BookText, Check, X, ArrowRight, Bookmark, BookmarkCheck } from "lucide-react";
+import { BookText, Check, X, ArrowRight, Bookmark, BookmarkCheck, Volume2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -14,57 +14,59 @@ import {
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { Badge } from "../ui/badge";
 
 type VocabularyCard = {
   id: number;
   word: string;
+  phonetic?: string;
+  audio_url?: string;
+  word_type?: string;
   definition: string;
+  translation?: string;
   example: string;
-  pronunciation: string;
-  saved: boolean;
+  synonyms?: string[];
+  antonyms?: string[];
 };
 
 export function VocabularyPractice() {
   const [cards, setCards] = useState<VocabularyCard[]>([
     {
       id: 1,
-      word: "Ambiguous",
-      definition: "Open to more than one interpretation; not having one obvious meaning.",
-      example: "The instructions were ambiguous and confusing.",
-      pronunciation: "/æmˈbɪɡjuəs/",
-      saved: false,
+      word: "ephemeral",
+      phonetic: "/ɪˈfɛm(ə)rəl/",
+      audio_url: "https://example.com/audio/ephemeral.mp3",
+      word_type: "adjective",
+      definition: "Lasting for a very short time.",
+      translation: "Ngắn ngủi, thoáng qua",
+      example: "The ephemeral nature of fashion trends makes it hard to keep up.",
+      synonyms: ["fleeting", "transitory", "momentary"],
+      antonyms: ["permanent", "enduring", "everlasting"],
     },
     {
       id: 2,
-      word: "Benevolent",
-      definition: "Well meaning and kindly.",
-      example: "A benevolent smile.",
-      pronunciation: "/bəˈnɛvələnt/",
-      saved: true,
+      word: "serendipity",
+      phonetic: "/ˌsɛr.ənˈdɪp.ɪ.ti/",
+      audio_url: "https://example.com/audio/serendipity.mp3",
+      word_type: "noun",
+      definition:
+        "The occurrence and development of events by chance in a happy or beneficial way.",
+      translation: "Tình cờ may mắn",
+      example: "The discovery of penicillin was a serendipity.",
+      synonyms: ["chance", "luck", "fortune"],
+      antonyms: ["misfortune", "design", "plan"],
     },
     {
       id: 3,
-      word: "Conundrum",
-      definition: "A confusing and difficult problem or question.",
-      example: "She faced the conundrum of choosing between her career and family.",
-      pronunciation: "/kəˈnʌndrəm/",
-      saved: false,
-    },
-    {
-      id: 4,
-      word: "Diligent",
-      definition: "Having or showing care and conscientiousness in one's work or duties.",
-      example: "She was diligent in her studies.",
-      pronunciation: "/ˈdɪlɪdʒənt/",
-      saved: false,
-    },
-    {
-      id: 5,
-      word: "Ephemeral",
-      definition: "Lasting for a very short time.",
-      example: "The ephemeral nature of fashion trends.",
-      pronunciation: "/ɪˈfɛm(ə)rəl/",
-      saved: true,
+      word: "ubiquitous",
+      phonetic: "/juːˈbɪk.wɪ.təs/",
+      audio_url: "https://example.com/audio/ubiquitous.mp3",
+      word_type: "adjective",
+      definition: "Present, appearing, or found everywhere.",
+      translation: "Phổ biến, có mặt khắp nơi",
+      example: "Mobile phones are now ubiquitous in modern society.",
+      synonyms: ["omnipresent", "universal", "pervasive"],
+      antonyms: ["rare", "scarce", "limited"],
     },
   ]);
 
@@ -101,12 +103,6 @@ export function VocabularyPractice() {
     }
   };
 
-  const toggleSaved = () => {
-    const updatedCards = [...cards];
-    updatedCards[currentCardIndex].saved = !updatedCards[currentCardIndex].saved;
-    setCards(updatedCards);
-  };
-
   return (
     <div className="space-y-6">
       <motion.div
@@ -129,7 +125,7 @@ export function VocabularyPractice() {
           </CardHeader>
           <CardContent className="flex justify-center pb-0">
             <motion.div
-              className="w-full max-w-md aspect-[3/2] relative cursor-pointer"
+              className="w-full max-w-md aspect-square relative cursor-pointer"
               onClick={flipCard}
               initial={false}
               animate={{ rotateY: isFlipped ? 180 : 0 }}
@@ -139,45 +135,79 @@ export function VocabularyPractice() {
               {/* Front of card */}
               <div
                 className={cn(
-                  "absolute inset-0 backface-hidden rounded-xl border border-white/10 bg-white/5 p-6 flex flex-col items-center justify-center",
+                  "absolute h-full inset-0 backface-hidden rounded-xl border border-white/10 bg-white/5 p-6 flex flex-col items-center justify-center",
                   isFlipped ? "invisible" : "visible"
                 )}
               >
                 <h3 className="text-3xl font-bold mb-2">{currentCard.word}</h3>
-                <p className="text-gray-400">{currentCard.pronunciation}</p>
-                <div className="absolute top-4 right-4">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleSaved();
-                    }}
-                    className="h-8 w-8"
-                  >
-                    {currentCard.saved ? (
-                      <BookmarkCheck className="h-5 w-5 text-yellow-500" />
-                    ) : (
-                      <Bookmark className="h-5 w-5" />
-                    )}
-                  </Button>
+                <div className="flex items-center mb-2 gap-2">
+                  <p className="text-gray-400">{currentCard.phonetic}</p>
+                  {currentCard.id && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-full"
+                      // onClick={playAudio}
+                    >
+                      <Volume2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
+                {currentCard.word_type && (
+                  <Badge variant="outline" className="mt-2">
+                    {currentCard.word_type}
+                  </Badge>
+                )}
+                <div className="absolute top-4 right-4"></div>
                 <p className="text-sm text-gray-400 mt-4">Nhấp để xem định nghĩa</p>
               </div>
 
               {/* Back of card */}
               <div
                 className={cn(
-                  "absolute inset-0  rounded-xl border border-white/10 bg-white/5 p-6 flex flex-col",
+                  "absolute inset-0 h-full rounded-xl border border-white/10 bg-white/5 p-6 flex flex-col",
                   isFlipped ? "visible" : "invisible"
                 )}
                 style={{ transform: "rotateY(-180deg)" }}
               >
-                <div className="flex-1">
-                  <h4 className="font-medium mb-2">Định nghĩa:</h4>
-                  <p className="text-gray-300 mb-4">{currentCard.definition}</p>
-                  <h4 className="font-medium mb-2">Ví dụ:</h4>
-                  <p className="text-gray-300 italic">&quot;{currentCard.example}&quot;</p>
+                <div className="flex-1 space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Định nghĩa:</h4>
+                    <p className="text-gray-300 mb-1">{currentCard.definition}</p>
+                    {currentCard.translation && (
+                      <p className="text-gray-400 italic">({currentCard.translation})</p>
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-2">Ví dụ:</h4>
+                    <p className="text-gray-300 italic">&quot;{currentCard.example}&quot;</p>
+                  </div>
+
+                  {currentCard.synonyms && currentCard.synonyms.length > 0 && (
+                    <div>
+                      <h4 className="font-medium mb-2">Từ đồng nghĩa:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {currentCard.synonyms.map((synonym, index) => (
+                          <Badge key={index} variant="secondary">
+                            {synonym}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {currentCard.antonyms && currentCard.antonyms.length > 0 && (
+                    <div>
+                      <h4 className="font-medium mb-2">Từ trái nghĩa:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {currentCard.antonyms.map((antonym, index) => (
+                          <Badge key={index} variant="outline">
+                            {antonym}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <p className="text-sm text-gray-400 text-center">Nhấp để xem từ</p>
               </div>

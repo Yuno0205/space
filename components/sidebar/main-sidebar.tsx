@@ -50,12 +50,13 @@ const navigationItems = [
     href: "/english",
     items: [
       { title: "Tổng quan", href: "/english" },
+      { title: "Từ vựng", href: "/english/vocabulary" },
       { title: "Trò chuyện với EVI", href: "/english/dialogue" },
       { title: "Luyện nghe", href: "/english/listening" },
       { title: "Luyện nói", href: "/english/speaking" },
       { title: "Luyện đọc", href: "/english/reading" },
       { title: "Luyện viết", href: "/english/writing" },
-      { title: "Từ vựng", href: "/english/vocabulary" },
+      { title: "Ôn tập", href: "/english/revise" },
     ],
   },
   {

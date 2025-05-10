@@ -117,7 +117,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
               {/* Front of card */}
               <div
                 className={cn(
-                  "absolute h-full inset-0 backface-hidden rounded-xl border border-white/10 bg-white/5 p-6 flex flex-col items-center justify-center",
+                  "absolute h-full inset-0 backface-hidden rounded-xl border dark:border-white/10 border-black/20  bg-white/5 p-6 flex flex-col items-center justify-center",
                   isFlipped ? "invisible" : "visible"
                 )}
               >
@@ -136,7 +136,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
                   )}
                 </div>
                 {currentCard.word_type && (
-                  <Badge variant="outline" className="mt-2">
+                  <Badge variant="outline" className="mt-2 capitalize px-4 py-2">
                     {currentCard.word_type}
                   </Badge>
                 )}
@@ -147,7 +147,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
               {/* Back of card */}
               <div
                 className={cn(
-                  "absolute inset-0 h-full rounded-xl border border-white/10 bg-white/5 p-6 flex flex-col",
+                  "absolute inset-0 h-full rounded-xl border dark:border-white/10 border-black/20 bg-white/5 p-6 flex flex-col",
                   isFlipped ? "visible" : "invisible"
                 )}
                 style={{ transform: "rotateY(-180deg)" }}
@@ -174,7 +174,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
                           ? currentCard.synonyms
                           : currentCard.synonyms.split(",").map((s) => s.trim())
                         ).map((synonym, idx) => (
-                          <Badge key={idx} variant="secondary">
+                          <Badge key={idx} variant="secondary" className="capitalize px-4 py-2">
                             {synonym}
                           </Badge>
                         ))}
@@ -191,7 +191,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
                           ? currentCard.antonyms
                           : currentCard.antonyms.split(",").map((s) => s.trim())
                         ).map((antonym, idx) => (
-                          <Badge key={idx} variant="outline">
+                          <Badge key={idx} variant="outline" className="capitalize px-4 py-2">
                             {antonym}
                           </Badge>
                         ))}

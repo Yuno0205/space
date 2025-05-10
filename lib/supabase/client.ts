@@ -1,12 +1,10 @@
-import { createBrowserClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 
-export const createClient = () => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Supabase environment variables are not set");
-  }
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Supabase URL and Anon Key must be provided");
+}
 
-  return createBrowserClient(supabaseUrl, supabaseKey);
-};
+export const supabaseBrowser = createClient(supabaseUrl, supabaseAnonKey);

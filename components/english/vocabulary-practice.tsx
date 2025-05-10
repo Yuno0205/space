@@ -1,8 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { BookText, Check, X, ArrowRight, Bookmark, BookmarkCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -11,70 +9,49 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { ArrowRight, BookText, Check, Volume2, X } from "lucide-react";
+import { useState } from "react";
+import { Badge } from "../ui/badge";
+import { supabaseBrowser as supabase } from "@/lib/supabase/client";
 
 type VocabularyCard = {
-  id: number;
+  id: string;
   word: string;
-  definition: string;
+  phonetic?: string;
+  audio_url?: string;
+  word_type?: string;
+  definition?: string;
+  translation?: string;
   example: string;
-  pronunciation: string;
-  saved: boolean;
+  synonyms?: string;
+  antonyms?: string;
 };
 
-export function VocabularyPractice() {
-  const [cards, setCards] = useState<VocabularyCard[]>([
-    {
-      id: 1,
-      word: "Ambiguous",
-      definition: "Open to more than one interpretation; not having one obvious meaning.",
-      example: "The instructions were ambiguous and confusing.",
-      pronunciation: "/æmˈbɪɡjuəs/",
-      saved: false,
-    },
-    {
-      id: 2,
-      word: "Benevolent",
-      definition: "Well meaning and kindly.",
-      example: "A benevolent smile.",
-      pronunciation: "/bəˈnɛvələnt/",
-      saved: true,
-    },
-    {
-      id: 3,
-      word: "Conundrum",
-      definition: "A confusing and difficult problem or question.",
-      example: "She faced the conundrum of choosing between her career and family.",
-      pronunciation: "/kəˈnʌndrəm/",
-      saved: false,
-    },
-    {
-      id: 4,
-      word: "Diligent",
-      definition: "Having or showing care and conscientiousness in one's work or duties.",
-      example: "She was diligent in her studies.",
-      pronunciation: "/ˈdɪlɪdʒənt/",
-      saved: false,
-    },
-    {
-      id: 5,
-      word: "Ephemeral",
-      definition: "Lasting for a very short time.",
-      example: "The ephemeral nature of fashion trends.",
-      pronunciation: "/ɪˈfɛm(ə)rəl/",
-      saved: true,
-    },
-  ]);
+export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyCard[] }) {
+  const [cards] = useState<VocabularyCard[]>(vocabularies);
 
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [knownWords, setKnownWords] = useState<number[]>([]);
-  const [unknownWords, setUnknownWords] = useState<number[]>([]);
+  const [knownWords, setKnownWords] = useState<string[]>([]);
+  const [unknownWords, setUnknownWords] = useState<string[]>([]);
 
   const currentCard = cards[currentCardIndex];
   const progress = ((currentCardIndex + 1) / cards.length) * 100;
+
+  async function handleKnown(id: string) {
+    // Không cần cookies(), supabaseBrowser tự quản anon key
+    await supabase.from("vocabularies").update({ is_learned: true }).eq("id", id);
+    await supabase.from("review_queue").upsert({
+      vocab_id: id,
+      repetition_count: 1,
+      interval_days: 1,
+      easiness_factor: 2.5,
+      next_review: new Date(Date.now() + 86400000).toISOString(),
+    });
+  }
 
   const flipCard = () => {
     setIsFlipped(!isFlipped);
@@ -84,6 +61,7 @@ export function VocabularyPractice() {
     if (!knownWords.includes(currentCard.id)) {
       setKnownWords([...knownWords, currentCard.id]);
     }
+    handleKnown(currentCard.id);
     nextCard();
   };
 
@@ -101,10 +79,10 @@ export function VocabularyPractice() {
     }
   };
 
-  const toggleSaved = () => {
-    const updatedCards = [...cards];
-    updatedCards[currentCardIndex].saved = !updatedCards[currentCardIndex].saved;
-    setCards(updatedCards);
+  const playAudio = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!currentCard.audio_url) return;
+    new Audio(currentCard.audio_url).play().catch(console.error);
   };
 
   return (
@@ -129,7 +107,7 @@ export function VocabularyPractice() {
           </CardHeader>
           <CardContent className="flex justify-center pb-0">
             <motion.div
-              className="w-full max-w-md aspect-[3/2] relative cursor-pointer"
+              className="w-full max-w-md aspect-square relative cursor-pointer"
               onClick={flipCard}
               initial={false}
               animate={{ rotateY: isFlipped ? 180 : 0 }}
@@ -139,45 +117,87 @@ export function VocabularyPractice() {
               {/* Front of card */}
               <div
                 className={cn(
-                  "absolute inset-0 backface-hidden rounded-xl border border-white/10 bg-white/5 p-6 flex flex-col items-center justify-center",
+                  "absolute h-full inset-0 backface-hidden rounded-xl border dark:border-white/10 border-black/20  bg-white/5 p-6 flex flex-col items-center justify-center",
                   isFlipped ? "invisible" : "visible"
                 )}
               >
                 <h3 className="text-3xl font-bold mb-2">{currentCard.word}</h3>
-                <p className="text-gray-400">{currentCard.pronunciation}</p>
-                <div className="absolute top-4 right-4">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleSaved();
-                    }}
-                    className="h-8 w-8"
-                  >
-                    {currentCard.saved ? (
-                      <BookmarkCheck className="h-5 w-5 text-yellow-500" />
-                    ) : (
-                      <Bookmark className="h-5 w-5" />
-                    )}
-                  </Button>
+                <div className="flex items-center mb-2 gap-2">
+                  <p className="text-gray-400">{currentCard.phonetic}</p>
+                  {currentCard.audio_url && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-full"
+                      onClick={(e) => playAudio(e)}
+                    >
+                      <Volume2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
+                {currentCard.word_type && (
+                  <Badge variant="outline" className="mt-2 capitalize px-4 py-2">
+                    {currentCard.word_type}
+                  </Badge>
+                )}
+                <div className="absolute top-4 right-4"></div>
                 <p className="text-sm text-gray-400 mt-4">Nhấp để xem định nghĩa</p>
               </div>
 
               {/* Back of card */}
               <div
                 className={cn(
-                  "absolute inset-0 backface-hidden rounded-xl border border-white/10 bg-white/5 p-6 flex flex-col",
+                  "absolute inset-0 h-full rounded-xl border dark:border-white/10 border-black/20 bg-white/5 p-6 flex flex-col",
                   isFlipped ? "visible" : "invisible"
                 )}
-                style={{ transform: "rotateY(180deg)" }}
+                style={{ transform: "rotateY(-180deg)" }}
               >
-                <div className="flex-1">
-                  <h4 className="font-medium mb-2">Định nghĩa:</h4>
-                  <p className="text-gray-300 mb-4">{currentCard.definition}</p>
-                  <h4 className="font-medium mb-2">Ví dụ:</h4>
-                  <p className="text-gray-300 italic">&quot;{currentCard.example}&quot;</p>
+                <div className="flex-1 space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Định nghĩa:</h4>
+                    <p className="text-gray-300 mb-1">{currentCard.definition}</p>
+                    {currentCard.translation && (
+                      <p className="text-gray-400 italic">({currentCard.translation})</p>
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-2">Ví dụ:</h4>
+                    <p className="text-gray-300 italic">&quot;{currentCard.example}&quot;</p>
+                  </div>
+
+                  {/* Từ đồng nghĩa */}
+                  {currentCard.synonyms && (
+                    <div>
+                      <h4 className="font-medium mb-2">Từ đồng nghĩa:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {(Array.isArray(currentCard.synonyms)
+                          ? currentCard.synonyms
+                          : currentCard.synonyms.split(",").map((s) => s.trim())
+                        ).map((synonym, idx) => (
+                          <Badge key={idx} variant="secondary" className="capitalize px-4 py-2">
+                            {synonym}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Từ trái nghĩa */}
+                  {currentCard.antonyms && (
+                    <div>
+                      <h4 className="font-medium mb-2">Từ trái nghĩa:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {(Array.isArray(currentCard.antonyms)
+                          ? currentCard.antonyms
+                          : currentCard.antonyms.split(",").map((s) => s.trim())
+                        ).map((antonym, idx) => (
+                          <Badge key={idx} variant="outline" className="capitalize px-4 py-2">
+                            {antonym}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <p className="text-sm text-gray-400 text-center">Nhấp để xem từ</p>
               </div>

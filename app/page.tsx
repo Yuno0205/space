@@ -28,7 +28,7 @@ export default function Home() {
             <FadeIn delay={0.1}>
               <div className="flex flex-col items-center">
                 <p className="text-3xl md:text-4xl font-bold">
-                  <CountUp end={3000} suffix="+" />
+                  <CountUp end={3} suffix="K+" />
                 </p>
                 <p className="text-sm text-muted-foreground">Vocabulary across topics</p>
               </div>

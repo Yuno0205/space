@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { BookText, Check, X, ArrowRight, Bookmark, BookmarkCheck, Volume2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -11,9 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { ArrowRight, BookText, Check, Volume2, X } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "../ui/badge";
 
 type VocabularyCard = {
@@ -22,53 +22,15 @@ type VocabularyCard = {
   phonetic?: string;
   audio_url?: string;
   word_type?: string;
-  definition: string;
+  definition?: string;
   translation?: string;
   example: string;
-  synonyms?: string[];
-  antonyms?: string[];
+  synonyms?: string;
+  antonyms?: string;
 };
 
-export function VocabularyPractice() {
-  const [cards, setCards] = useState<VocabularyCard[]>([
-    {
-      id: 1,
-      word: "ephemeral",
-      phonetic: "/ɪˈfɛm(ə)rəl/",
-      audio_url: "https://example.com/audio/ephemeral.mp3",
-      word_type: "adjective",
-      definition: "Lasting for a very short time.",
-      translation: "Ngắn ngủi, thoáng qua",
-      example: "The ephemeral nature of fashion trends makes it hard to keep up.",
-      synonyms: ["fleeting", "transitory", "momentary"],
-      antonyms: ["permanent", "enduring", "everlasting"],
-    },
-    {
-      id: 2,
-      word: "serendipity",
-      phonetic: "/ˌsɛr.ənˈdɪp.ɪ.ti/",
-      audio_url: "https://example.com/audio/serendipity.mp3",
-      word_type: "noun",
-      definition:
-        "The occurrence and development of events by chance in a happy or beneficial way.",
-      translation: "Tình cờ may mắn",
-      example: "The discovery of penicillin was a serendipity.",
-      synonyms: ["chance", "luck", "fortune"],
-      antonyms: ["misfortune", "design", "plan"],
-    },
-    {
-      id: 3,
-      word: "ubiquitous",
-      phonetic: "/juːˈbɪk.wɪ.təs/",
-      audio_url: "https://example.com/audio/ubiquitous.mp3",
-      word_type: "adjective",
-      definition: "Present, appearing, or found everywhere.",
-      translation: "Phổ biến, có mặt khắp nơi",
-      example: "Mobile phones are now ubiquitous in modern society.",
-      synonyms: ["omnipresent", "universal", "pervasive"],
-      antonyms: ["rare", "scarce", "limited"],
-    },
-  ]);
+export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyCard[] }) {
+  const [cards] = useState<VocabularyCard[]>(vocabularies);
 
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -101,6 +63,12 @@ export function VocabularyPractice() {
       setCurrentCardIndex(currentCardIndex + 1);
       setIsFlipped(false);
     }
+  };
+
+  const playAudio = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!currentCard.audio_url) return;
+    new Audio(currentCard.audio_url).play().catch(console.error);
   };
 
   return (
@@ -142,12 +110,12 @@ export function VocabularyPractice() {
                 <h3 className="text-3xl font-bold mb-2">{currentCard.word}</h3>
                 <div className="flex items-center mb-2 gap-2">
                   <p className="text-gray-400">{currentCard.phonetic}</p>
-                  {currentCard.id && (
+                  {currentCard.audio_url && (
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 rounded-full"
-                      // onClick={playAudio}
+                      onClick={(e) => playAudio(e)}
                     >
                       <Volume2 className="h-4 w-4" />
                     </Button>
@@ -183,12 +151,16 @@ export function VocabularyPractice() {
                     <p className="text-gray-300 italic">&quot;{currentCard.example}&quot;</p>
                   </div>
 
-                  {currentCard.synonyms && currentCard.synonyms.length > 0 && (
+                  {/* Từ đồng nghĩa */}
+                  {currentCard.synonyms && (
                     <div>
                       <h4 className="font-medium mb-2">Từ đồng nghĩa:</h4>
                       <div className="flex flex-wrap gap-2">
-                        {currentCard.synonyms.map((synonym, index) => (
-                          <Badge key={index} variant="secondary">
+                        {(Array.isArray(currentCard.synonyms)
+                          ? currentCard.synonyms
+                          : currentCard.synonyms.split(",").map((s) => s.trim())
+                        ).map((synonym, idx) => (
+                          <Badge key={idx} variant="secondary">
                             {synonym}
                           </Badge>
                         ))}
@@ -196,12 +168,16 @@ export function VocabularyPractice() {
                     </div>
                   )}
 
-                  {currentCard.antonyms && currentCard.antonyms.length > 0 && (
+                  {/* Từ trái nghĩa */}
+                  {currentCard.antonyms && (
                     <div>
                       <h4 className="font-medium mb-2">Từ trái nghĩa:</h4>
                       <div className="flex flex-wrap gap-2">
-                        {currentCard.antonyms.map((antonym, index) => (
-                          <Badge key={index} variant="outline">
+                        {(Array.isArray(currentCard.antonyms)
+                          ? currentCard.antonyms
+                          : currentCard.antonyms.split(",").map((s) => s.trim())
+                        ).map((antonym, idx) => (
+                          <Badge key={idx} variant="outline">
                             {antonym}
                           </Badge>
                         ))}

@@ -45,7 +45,7 @@ export async function fetchPosts({
 
   try {
     const response = await fetch(apiUrl, {
-      next: { revalidate: 3600 },
+      next: { revalidate: 3600 * 24 },
     });
 
     if (!response.ok) {

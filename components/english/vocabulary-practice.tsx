@@ -15,9 +15,10 @@ import { motion } from "framer-motion";
 import { ArrowRight, BookText, Check, Volume2, X } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "../ui/badge";
+import { supabaseBrowser as supabase } from "@/lib/supabase/client";
 
 type VocabularyCard = {
-  id: number;
+  id: string;
   word: string;
   phonetic?: string;
   audio_url?: string;
@@ -34,11 +35,23 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
 
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [knownWords, setKnownWords] = useState<number[]>([]);
-  const [unknownWords, setUnknownWords] = useState<number[]>([]);
+  const [knownWords, setKnownWords] = useState<string[]>([]);
+  const [unknownWords, setUnknownWords] = useState<string[]>([]);
 
   const currentCard = cards[currentCardIndex];
   const progress = ((currentCardIndex + 1) / cards.length) * 100;
+
+  async function handleKnown(id: string) {
+    // Không cần cookies(), supabaseBrowser tự quản anon key
+    await supabase.from("vocabularies").update({ is_learned: true }).eq("id", id);
+    await supabase.from("review_queue").upsert({
+      vocab_id: id,
+      repetition_count: 1,
+      interval_days: 1,
+      easiness_factor: 2.5,
+      next_review: new Date(Date.now() + 86400000).toISOString(),
+    });
+  }
 
   const flipCard = () => {
     setIsFlipped(!isFlipped);
@@ -48,6 +61,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
     if (!knownWords.includes(currentCard.id)) {
       setKnownWords([...knownWords, currentCard.id]);
     }
+    handleKnown(currentCard.id);
     nextCard();
   };
 

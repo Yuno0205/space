@@ -1,7 +1,7 @@
 import { FadeIn } from "@/components/animations/fade-in";
 import { AlphabetCourses } from "@/components/courses/alphabet-courses";
 
-export default function SpeakingPage() {
+export default async function SpeakingPage() {
   return (
     <div className="container mx-auto py-8 px-4">
       <FadeIn>

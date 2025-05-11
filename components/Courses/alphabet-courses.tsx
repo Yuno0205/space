@@ -1,10 +1,7 @@
-"use client";
-
-import { useState } from "react";
-import { motion } from "framer-motion";
-
 import { Course } from "@/types/course";
 import { LetterCard } from "./letter-card";
+import { supabaseBrowser } from "@/lib/supabase/client";
+import Link from "next/link";
 
 export const demoAlphabetCourses: Course[] = [
   {
@@ -56,26 +53,22 @@ export const demoAlphabetCourses: Course[] = [
     completed_words: 12,
   },
 ];
+export async function AlphabetCourses() {
+  const { data, error } = await supabaseBrowser.from("courses").select().limit(6).order("letter", {
+    ascending: true,
+  });
 
-export function AlphabetCourses() {
-  const [hoveredLetter, setHoveredLetter] = useState<string | null>(null);
-
+  if (error) {
+    console.error("Error fetching courses:", error);
+    return <div>Error loading courses</div>;
+  }
+  console.log(data);
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {demoAlphabetCourses.map((course, index) => (
-        <motion.div
-          key={course.letter}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: index * 0.1 }}
-        >
-          <LetterCard
-            course={course}
-            isHovered={hoveredLetter === course.letter}
-            onHover={() => setHoveredLetter(course.letter)}
-            onLeave={() => setHoveredLetter(null)}
-          />
-        </motion.div>
+      {data.map((course) => (
+        <Link href={`/english/speaking/${course.letter}`} key={course.id}>
+          <LetterCard course={course} />
+        </Link>
       ))}
     </div>
   );

@@ -1,14 +1,28 @@
 import ComicButton from "@/components/ComicButton";
-import { createClient } from "@/lib/supabase/server";
-import { cookies } from "next/headers";
+import { supabaseBrowser as supabase } from "@/lib/supabase/client";
 
 export default async function Ideas() {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
-
-  const { data: voca, error } = await supabase.from("vocabularies").select();
-
-  console.log(voca, error);
+  const { data, error } = await supabase
+    .from("courses")
+    .select(
+      `
+      id,
+      letter,
+      name,
+      total_words,
+      phonetic,
+      audio_url,
+      completed_words,
+      vocabularies: vocabularies (
+        id,
+        word,
+        definition,
+        is_learned
+      )
+    `
+    )
+    .order("letter", { ascending: true });
+  console.log(data);
 
   if (error) {
     // Consider proper error handling instead of just logging

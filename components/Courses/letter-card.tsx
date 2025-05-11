@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import type { Course } from "@/types/course";
 import { motion } from "framer-motion";
 import { Pause, Play } from "lucide-react";
+import Link from "next/link";
 import { useRef, useState } from "react";
 
 interface LetterCardProps {
@@ -69,7 +70,14 @@ export function LetterCard({ course }: LetterCardProps) {
             <span className="text-sm font-medium text-white">{progressPercentage}%</span>
           </div>
 
-          <div className="w-full h-1 bg-zinc-800 overflow-hidden">
+          <div
+            className="w-full h-1 bg-zinc-800 overflow-hidden"
+            role="progressbar"
+            aria-valuenow={progressPercentage}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Course completion progress"
+          >
             <motion.div
               className="h-full bg-white"
               initial={{ width: 0 }}
@@ -90,7 +98,7 @@ export function LetterCard({ course }: LetterCardProps) {
           variant="outline"
           className="w-full bg-transparent border border-zinc-700 hover:bg-zinc-800 text-white"
         >
-          Continue Learning
+          <Link href={`/english/courses/${course.letter}`}>Continue Learning</Link>
         </Button>
       </div>
     </Card>

@@ -1,18 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
-import { cn } from "@/lib/utils";
-import { ArrowRight, Mic, RefreshCw, X, Check, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
 } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { VocabularyCard } from "@/types/vocabulary";
+import { ArrowRight, Check, Mic, Volume2, X } from "lucide-react";
+import { useState } from "react";
+import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 
 // Dữ liệu mẫu từ code gốc của bạn
 export const exampleCards = [
@@ -50,8 +51,8 @@ export const exampleCards = [
 
 export default function SpeakingPractice() {
   // Lấy luôn dữ liệu giả
-  const [cards] = useState(exampleCards);
-  const [index, setIndex] = useState(0);
+  const [cards] = useState<VocabularyCard[]>(exampleCards);
+  const [index, setIndex] = useState<number>(0);
   const currentCard = cards[index];
 
   const { transcript, listening, resetTranscript } = useSpeechRecognition();
@@ -96,10 +97,14 @@ export default function SpeakingPractice() {
       resetTranscript();
       setFeedback("");
       setScore(0);
-      SpeechRecognition.startListening({
-        language: "en-US",
-        continuous: false,
-      });
+      try {
+        SpeechRecognition.startListening({
+          language: "en-US",
+          continuous: false,
+        });
+      } catch (error) {
+        console.log("Error starting speech recognition:", error);
+      }
     }
   };
 
@@ -121,7 +126,33 @@ export default function SpeakingPractice() {
         </CardHeader>
         <CardContent className="text-center space-y-4">
           <h2 className="text-3xl font-bold">{currentCard.word}</h2>
-          <p className="text-gray-500">{currentCard.phonetic}</p>
+          <div className="flex items-center justify-center space-x-2">
+            <p className="text-gray-500">{currentCard.phonetic}</p>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full h-10 w-10"
+              onClick={() => {
+                if (currentCard.audio_url) {
+                  const audio = new Audio(currentCard.audio_url);
+                  audio.play().catch((err) => {
+                    console.error("Audio playback error:", err);
+                    if ("speechSynthesis" in window) {
+                      const utterance = new SpeechSynthesisUtterance(currentCard.word);
+                      utterance.lang = "en-US";
+                      window.speechSynthesis.speak(utterance);
+                    }
+                  });
+                } else if ("speechSynthesis" in window) {
+                  const utterance = new SpeechSynthesisUtterance(currentCard.word);
+                  utterance.lang = "en-US";
+                  window.speechSynthesis.speak(utterance);
+                }
+              }}
+            >
+              <Volume2 className="h-5 w-5" />
+            </Button>
+          </div>
           <Button
             size="lg"
             className={cn("rounded-full h-16 w-16", listening ? "bg-red-500" : "bg-primary")}

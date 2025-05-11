@@ -16,19 +16,7 @@ import { ArrowRight, BookText, Check, Volume2, X } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "../ui/badge";
 import { supabaseBrowser as supabase } from "@/lib/supabase/client";
-
-type VocabularyCard = {
-  id: string;
-  word: string;
-  phonetic?: string;
-  audio_url?: string;
-  word_type?: string;
-  definition?: string;
-  translation?: string;
-  example: string;
-  synonyms?: string;
-  antonyms?: string;
-};
+import { VocabularyCard } from "@/types/vocabulary";
 
 export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyCard[] }) {
   const [cards] = useState<VocabularyCard[]>(vocabularies);

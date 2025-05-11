@@ -15,7 +15,7 @@ export function CourseCard({ course }: CourseCardProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const progressPercentage = Math.round((course.completed_words / course.total_words) * 100);
+  const progressPercentage = Math.round((course.completed_words / course.total_words) * 100) || 0;
 
   const toggleAudio = () => {
     if (!audioRef.current) {

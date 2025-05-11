@@ -1,5 +1,5 @@
 import { FadeIn } from "@/components/animations/fade-in";
-// import { SpeakingPractice } from "@/components/english/speaking-practice"
+import { AlphabetCourses } from "@/components/courses/alphabet-courses";
 
 export default function SpeakingPage() {
   return (
@@ -8,7 +8,7 @@ export default function SpeakingPage() {
         <h1 className="text-3xl font-bold mb-8">Luyện Nói Tiếng Anh</h1>
       </FadeIn>
 
-      {/* <SpeakingPractice /> */}
+      <AlphabetCourses />
     </div>
   );
 }

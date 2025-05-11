@@ -1,5 +1,5 @@
 import { FadeIn } from "@/components/animations/fade-in";
-import { ListeningPractice } from "@/components/English/listening-practice";
+import { ListeningPractice } from "@/components/english/listening-practice";
 
 export default function ListeningPage() {
   return (

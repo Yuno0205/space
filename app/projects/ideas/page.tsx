@@ -23,41 +23,6 @@ const SpeakingTest = () => {
     targetText.split(" ").map((word) => ({ text: word, color: "text-gray-300" }))
   );
 
-  // Hàm phân tích phát âm (cải tiến)
-  const analyzePronunciation = useCallback((spokenText: string, targetText: string) => {
-    const targetWords = targetText.toLowerCase().split(" ");
-    const spokenWords = spokenText.toLowerCase().split(" ");
-    const analyzedWords = [];
-    let correctCount = 0;
-    const totalWords = targetWords.length;
-    let wordScore = 0;
-
-    for (let i = 0; i < totalWords; i++) {
-      if (spokenWords[i] === targetWords[i]) {
-        analyzedWords.push({ text: targetWords[i], color: "text-green-500" }); // Đúng
-        correctCount++;
-      } else if (spokenWords[i] && spokenWords[i].length > 0) {
-        // Kiểm tra sự tương đồng (đơn giản hóa)
-        let similarity = 0;
-        for (let j = 0; j < Math.min(spokenWords[i].length, targetWords[i].length); j++) {
-          if (spokenWords[i][j] === targetWords[i][j]) {
-            similarity++;
-          }
-        }
-        if (similarity >= targetWords[i].length * 0.5) {
-          // Ngưỡng tương đồng (có thể điều chỉnh)
-          analyzedWords.push({ text: targetWords[i], color: "text-yellow-500" }); // Gần đúng
-        } else {
-          analyzedWords.push({ text: targetWords[i], color: "text-red-500" }); // Sai
-        }
-      } else {
-        analyzedWords.push({ text: targetWords[i], color: "text-red-500" }); // Sai
-      }
-    }
-    wordScore = (correctCount / totalWords) * 100;
-    return { analyzedWords, finalScore: Math.round(wordScore) };
-  }, []);
-
   useEffect(() => {
     // Kiểm tra tính tương thích của trình duyệt với Web Speech API
     if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
@@ -122,7 +87,7 @@ const SpeakingTest = () => {
         recognition.onend = null;
       }
     };
-  }, [recognition, analyzePronunciation]);
+  }, []);
 
   const startListening = () => {
     if (recognition && !isListening) {
@@ -135,6 +100,41 @@ const SpeakingTest = () => {
       recognition.stop();
     }
   };
+
+  // Hàm phân tích phát âm (cải tiến)
+  const analyzePronunciation = useCallback((spokenText: string, targetText: string) => {
+    const targetWords = targetText.toLowerCase().split(" ");
+    const spokenWords = spokenText.toLowerCase().split(" ");
+    const analyzedWords = [];
+    let correctCount = 0;
+    const totalWords = targetWords.length;
+    let wordScore = 0;
+
+    for (let i = 0; i < totalWords; i++) {
+      if (spokenWords[i] === targetWords[i]) {
+        analyzedWords.push({ text: targetWords[i], color: "text-green-500" }); // Đúng
+        correctCount++;
+      } else if (spokenWords[i] && spokenWords[i].length > 0) {
+        // Kiểm tra sự tương đồng (đơn giản hóa)
+        let similarity = 0;
+        for (let j = 0; j < Math.min(spokenWords[i].length, targetWords[i].length); j++) {
+          if (spokenWords[i][j] === targetWords[i][j]) {
+            similarity++;
+          }
+        }
+        if (similarity >= targetWords[i].length * 0.5) {
+          // Ngưỡng tương đồng (có thể điều chỉnh)
+          analyzedWords.push({ text: targetWords[i], color: "text-yellow-500" }); // Gần đúng
+        } else {
+          analyzedWords.push({ text: targetWords[i], color: "text-red-500" }); // Sai
+        }
+      } else {
+        analyzedWords.push({ text: targetWords[i], color: "text-red-500" }); // Sai
+      }
+    }
+    wordScore = (correctCount / totalWords) * 100;
+    return { analyzedWords, finalScore: Math.round(wordScore) };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-8">
@@ -152,9 +152,7 @@ const SpeakingTest = () => {
               </span>
             ))}
           </div>
-          <p className="text-gray-400 mb-4">
-            Nhấn nút `&quot`Bắt đầu nói`&quot` và đọc to câu trên.
-          </p>
+          <p className="text-gray-400 mb-4">Nhấn nút `Bắt đầu nói` và đọc to câu trên.</p>
           <div className="flex items-center gap-4">
             <Button
               onClick={startListening}

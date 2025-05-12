@@ -98,7 +98,7 @@ export function LetterCard({ course }: LetterCardProps) {
           variant="outline"
           className="w-full bg-transparent border border-zinc-700 hover:bg-zinc-800 text-white"
         >
-          <Link href={`/english/courses/${course.letter}`}>Continue Learning</Link>
+          Continue Learning
         </Button>
       </div>
     </Card>

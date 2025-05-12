@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import Head from "next/head";
-import PronunciationChecker from "@/components/PronunciationChecker";
 
 const exercises = [
   {
@@ -20,11 +19,11 @@ const exercises = [
 
 const SpeakingPage: React.FC = () => {
   const [currentExercise, setCurrentExercise] = useState(0);
-  const [score, setScore] = useState(0);
+  const [, setScore] = useState(0);
 
-  const handleScoreChange = (newScore: number) => {
-    setScore(newScore);
-  };
+  // const handleScoreChange = (newScore: number) => {
+  //   setScore(newScore);
+  // };
 
   const goToNextExercise = () => {
     if (currentExercise < exercises.length - 1) {
@@ -80,11 +79,6 @@ const SpeakingPage: React.FC = () => {
               </button>
             </div>
           </div>
-
-          <PronunciationChecker
-            targetText={exercises[currentExercise].text}
-            onScoreChange={handleScoreChange}
-          />
         </div>
       </main>
     </div>

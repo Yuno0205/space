@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import type { Course } from "@/types/course";
 import { motion } from "framer-motion";
 import { Pause, Play } from "lucide-react";
-import Link from "next/link";
 import { useRef, useState } from "react";
 
 interface LetterCardProps {

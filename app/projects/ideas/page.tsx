@@ -18,7 +18,7 @@ const SpeakingTest = () => {
   const [error, setError] = useState<string | null>(null);
   const [score, setScore] = useState<number | null>(null); // Thêm state để lưu điểm
 
-  const targetText = "Account for"; // Câu mẫu
+  const targetText = "Abandon"; // Câu mẫu
   const [words, setWords] = useState<{ text: string; color: string }[]>(
     targetText.split(" ").map((word) => ({ text: word, color: "text-gray-300" }))
   );

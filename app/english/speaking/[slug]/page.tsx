@@ -1,19 +1,24 @@
 "use client";
 import React, { useState } from "react";
-import Head from "next/head";
 
 const exercises = [
   {
     id: 1,
     text: "ephemeral",
+    phonetic: "/ɪˈfɛmərəl/",
+    audioUrl: "/audio/ephemeral.mp3",
   },
   {
     id: 2,
     text: "abandon",
+    phonetic: "/əˈbændən/",
+    audioUrl: "/audio/abandon.mp3",
   },
   {
     id: 3,
     text: "knowledge",
+    phonetic: "/ˈnɑlɪdʒ/",
+    audioUrl: "/audio/knowledge.mp3",
   },
 ];
 
@@ -41,11 +46,6 @@ const SpeakingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 py-12">
-      <Head>
-        <title>Luyện phát âm tiếng Anh</title>
-        <meta name="description" content="Ứng dụng luyện phát âm tiếng Anh" />
-      </Head>
-
       <main className="container mx-auto px-4">
         <h1 className="text-3xl font-bold text-center mb-8">Luyện phát âm tiếng Anh</h1>
 
@@ -54,6 +54,10 @@ const SpeakingPage: React.FC = () => {
             <h2 className="text-xl font-semibold">
               Bài tập {currentExercise + 1}/{exercises.length}
             </h2>
+            <div className="text-center">
+              <h3 className="text-3xl font-bold mb-2">{exercises[currentExercise].text}</h3>
+              <p className="text-gray-500">{exercises[currentExercise].phonetic}</p>
+            </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={goToPrevExercise}

@@ -317,10 +317,10 @@ const SpeakingTest: React.FC = () => {
     if (recognitionRef.current && !isListening) {
       try {
         recognitionRef.current.start();
-      } catch (e: any) {
+      } catch (e: unknown) {
         // Catch DOMException if start() is called too soon after a previous stop(), etc.
         console.error("Error starting recognition:", e);
-        if (e.name === "InvalidStateError") {
+        if (e instanceof Error && e.name === "InvalidStateError") {
           setError("Lỗi trạng thái nhận diện, vui lòng thử lại sau giây lát.");
         } else {
           setError("Không thể bắt đầu nhận diện giọng nói.");

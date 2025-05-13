@@ -8,15 +8,6 @@ import { Mic, Volume2, AlertTriangle } from "lucide-react"; // MicOff was not us
 
 // Import CMU Pronouncing Dictionary as named export
 import { dictionary } from "cmu-pronouncing-dictionary";
-console.log("CMU Dictionary type:", typeof dictionary);
-if (typeof dictionary === "object" && dictionary !== null) {
-  console.log("CMU Dictionary keys count:", Object.keys(dictionary).length);
-  // Log một vài từ mẫu xem có trong dictionary không
-  console.log("Dictionary entry for 'THE':", (dictionary as any)["THE"]);
-  console.log("Dictionary entry for 'abandon':", (dictionary as any)["abandon"]);
-} else {
-  console.error("CMU Dictionary is not loaded or is not an object!");
-}
 
 type DictType = Record<string, string | string[]>;
 
@@ -75,9 +66,15 @@ const SpeakingTest: React.FC = () => {
     };
 
     srInstance.onresult = (event: SpeechRecognitionEvent) => {
-      const spokenText = event.results[0][0].transcript.trim();
+      console.log("REC: onresult - Result received!");
+      const bestAlternative = event.results[0][0]; // Kết quả tốt nhất
+      const spokenText = bestAlternative.transcript.trim();
+      const confidence = bestAlternative.confidence; // Đây là điểm confidence (0.0 đến 1.0)
+
+      console.log("REC: Spoken text:", spokenText, "Confidence:", confidence);
       setTranscript(spokenText);
-      analyzePronunciation(targetText, spokenText);
+      // Truyền cả confidence vào analyzePronunciation
+      analyzePronunciation(targetText, spokenText, confidence);
     };
 
     srInstance.onerror = (event: SpeechRecognitionErrorEvent) => {
@@ -208,101 +205,125 @@ const SpeakingTest: React.FC = () => {
   /**
    * Analyzes the spoken text against the target text for pronunciation scoring.
    */
-  const analyzePronunciation = (currentTargetText: string, spokenText: string) => {
+  const analyzePronunciation = (
+    currentTargetText: string,
+    spokenText: string,
+    sttConfidence: number // Thêm tham số này
+  ) => {
+    console.log(
+      "ANALYZE: Called with target:",
+      currentTargetText,
+      "spoken:",
+      spokenText,
+      "STT Confidence:",
+      sttConfidence
+    );
+
     const tgtWords = currentTargetText.toLowerCase().split(/\s+/).filter(Boolean);
     const spkWords = spokenText.toLowerCase().split(/\s+/).filter(Boolean);
 
-    // 1. Word Accuracy and Display
+    // 1. Word Accuracy and Display (giữ nguyên hoặc có thể điều chỉnh nhẹ nếu muốn)
     let correctWordCount = 0;
     const wordDisplays: WordDisplay[] = [];
     tgtWords.forEach((targetWord, i) => {
-      const spokenWord = spkWords[i] || ""; // Get corresponding spoken word, or empty if not spoken
+      const currentSpokenWord = spkWords[i] || ""; // Đổi tên biến để tránh nhầm lẫn với spokenText tổng
+      const originalTargetWord = targetText.split(/\s+/).filter(Boolean)[i]; // Lấy từ gốc để hiển thị đúng case
 
-      if (spokenWord === targetWord) {
-        wordDisplays.push({
-          text: targetText.split(/\s+/).filter(Boolean)[i],
-          color: "text-green-500",
-        });
+      if (currentSpokenWord === targetWord) {
+        wordDisplays.push({ text: originalTargetWord, color: "text-green-500" });
         correctWordCount++;
-      } else if (spokenWord) {
-        // If a word was spoken but it's not a perfect match
-        const similarity = levenshteinSimilarity(spokenWord, targetWord);
+      } else if (currentSpokenWord) {
+        const similarity = levenshteinSimilarity(currentSpokenWord, targetWord);
         wordDisplays.push({
-          text: targetText.split(/\s+/).filter(Boolean)[i],
+          text: originalTargetWord,
           color: similarity >= 0.7 ? "text-yellow-500" : "text-red-500",
         });
       } else {
-        // Word was expected but not spoken
-        wordDisplays.push({
-          text: targetText.split(/\s+/).filter(Boolean)[i],
-          color: "text-red-500",
-        });
+        wordDisplays.push({ text: originalTargetWord, color: "text-red-500" });
       }
     });
     setWords(wordDisplays);
     const wordScore =
       tgtWords.length > 0 ? Math.round((correctWordCount / tgtWords.length) * 100) : 0;
 
-    // 2. Phoneme Score (using Levenshtein similarity for phoneme sequences)
-    let phonemeMatchSum = 0;
+    // 2. Phoneme Score (Cải tiến với sttConfidence)
+    let phonemeMatchContributionSum = 0;
     let wordsWithPhonemesCount = 0;
 
-    console.log("--- Testing getPhonemes ---");
-    console.log("Phonemes for 'Abandon':", getPhonemes("Abandon"));
-    console.log("Phonemes for 'the':", getPhonemes("the"));
-    console.log("Phonemes for 'mission':", getPhonemes("mission"));
-
     tgtWords.forEach((targetWord, i) => {
-      const spokenWord = spkWords[i] || "";
-      const targetPhonemes = getPhonemes(targetWord);
+      const currentSpokenWord = spkWords[i] || ""; // Từ được nói tương ứng
+      const targetPhonemes = getPhonemes(targetWord); // P_target
 
       if (targetPhonemes) {
-        // Only score if the target word has a known phoneme representation
+        // Chỉ tính điểm nếu từ mục tiêu có âm vị
         wordsWithPhonemesCount++;
-        const spokenPhonemes = getPhonemes(spokenWord);
-        if (spokenPhonemes) {
-          const phonemeSeqSimilarity = levenshteinSimilarity(spokenPhonemes, targetPhonemes);
-          phonemeMatchSum += phonemeSeqSimilarity;
+        const spokenWordCanonicalPhonemes = getPhonemes(currentSpokenWord); // P_spoken_canonical
+
+        let wordPhonemeSimilarity = 0; // Điểm tương đồng âm vị cơ bản
+        if (spokenWordCanonicalPhonemes) {
+          wordPhonemeSimilarity = levenshteinSimilarity(
+            targetPhonemes,
+            spokenWordCanonicalPhonemes
+          );
+        }
+        // Nếu currentSpokenWord rỗng (không nói), wordPhonemeSimilarity sẽ là 0 do spokenWordCanonicalPhonemes rỗng
+
+        // Điều chỉnh điểm dựa trên sttConfidence VÀ việc từ có được nhận diện đúng không
+        if (targetWord === currentSpokenWord && currentSpokenWord !== "") {
+          // Nếu STT nhận diện ĐÚNG TỪ, điểm âm vị của từ này sẽ bị ảnh hưởng bởi độ tự tin của STT.
+          // Nếu STT rất tự tin (gần 1.0), điểm giữ nguyên cao.
+          // Nếu STT kém tự tin, điểm sẽ giảm xuống, ngụ ý phát âm có thể chưa chuẩn.
+          // Bạn có thể dùng sttConfidence, sttConfidence^2 (để phạt nặng hơn nếu confidence thấp), etc.
+          phonemeMatchContributionSum +=
+            wordPhonemeSimilarity * (sttConfidence > 0 ? sttConfidence : 0.1); // Đảm bảo confidence không quá thấp làm mất hết điểm
         } else {
-          phonemeMatchSum += 0; // Penalize if spoken word has no phonemes or wasn't spoken
+          // Nếu STT nhận diện SAI TỪ, hoặc KHÔNG NÓI TỪ đó:
+          // wordPhonemeSimilarity đã phản ánh sự khác biệt giữa âm vị của từ mục tiêu và từ (sai) được nói,
+          // hoặc là 0 nếu không nói. Không cần nhân thêm với sttConfidence ở đây.
+          phonemeMatchContributionSum += wordPhonemeSimilarity;
         }
       }
     });
+
     const phonemeScore =
-      wordsWithPhonemesCount > 0 ? Math.round((phonemeMatchSum / wordsWithPhonemesCount) * 100) : 0;
+      wordsWithPhonemesCount > 0
+        ? Math.round((phonemeMatchContributionSum / wordsWithPhonemesCount) * 100)
+        : 0;
 
-    // 3. Accent Proxy (heuristic)
-    const accentProxy = Math.min(100, phonemeScore + 10); // Slight boost over phoneme score
+    // 3. Accent Proxy (có thể cũng điều chỉnh bằng sttConfidence)
+    // Ví dụ: làm cho nó nhạy hơn với phonemeScore đã được điều chỉnh
+    const accentProxy = Math.min(
+      100,
+      Math.max(0, phonemeScore + Math.round(15 * (sttConfidence > 0 ? sttConfidence : 0.5) - 5))
+    );
 
-    // 4. Rhythm Proxy (heuristic)
-    const rhythmProxy = Math.max(0, wordScore - 10); // Based on word accuracy
+    // 4. Rhythm Proxy (giữ nguyên hoặc điều chỉnh nếu muốn)
+    const rhythmProxy = Math.max(0, wordScore - 10);
 
-    // 5. Speed Score (more like completeness/coverage)
-    let speedScore = 100;
+    let speedScore = 100; // << KHỞI TẠO BẰNG 100
+    // ... (logic tính speedScore như cũ) ...
     if (tgtWords.length > 0) {
       const rate = spkWords.length / tgtWords.length;
       if (rate < 0.7) {
-        // Spoke too few words
-        speedScore = Math.round(100 * rate * rate); // Sharper penalty for very few words
+        // Trường hợp 1
+        speedScore = Math.round(100 * rate * rate);
       } else if (rate > 1.3) {
-        // Spoke too many words
-        // Penalize more for extra words: (rate - 1.3) is the excess ratio
-        // Max penalty if rate is e.g. 2.0 (double words) -> (0.7 * 150) = 105 -> score becomes 0
+        // Trường hợp 2
         speedScore = Math.round(100 - (rate - 1.3) * 150);
       }
-      // If rate is between 0.7 and 1.3, speedScore remains high (close to 100)
-      // Can add smoother transition here if desired.
-      // For example, if 0.7 <= rate <= 1.3, speedScore = 100 - Math.abs(1-rate)*50
+      // << THIẾU TRƯỜNG HỢP ELSE Ở ĐÂY >>
+      // Nếu rate nằm trong khoảng [0.7, 1.3], không có điều kiện nào được khớp,
+      // speedScore sẽ giữ nguyên giá trị khởi tạo là 100.
     } else if (spkWords.length > 0) {
-      speedScore = 0; // Target was empty, but user spoke.
-    } // If both are 0, speed is 100 (or could be 0, depends on desired logic)
+      speedScore = 0;
+    }
     speedScore = Math.max(0, Math.min(100, speedScore));
 
-    // Final Score Calculation (weights can be adjusted)
+    // Final Score Calculation
     const finalScore = Math.round(
-      phonemeScore * 0.45 + // Increased weight for phonemes
+      phonemeScore * 0.5 + // Tăng trọng số cho phonemeScore đã được điều chỉnh
         accentProxy * 0.2 +
-        rhythmProxy * 0.15 + // Reduced weight for rhythm proxy
+        rhythmProxy * 0.1 + // Giảm nhẹ rhythm proxy
         speedScore * 0.2
     );
 
@@ -347,7 +368,7 @@ const SpeakingTest: React.FC = () => {
       speechSynthesis.cancel(); // Stop any ongoing speech before starting new one
     }
     const utterance = new SpeechSynthesisUtterance(targetText);
-    utterance.lang = "en-US";
+    utterance.lang = "en-UK";
     // Optional: find and set a specific voice
     // const voices = speechSynthesis.getVoices();
     // const enVoice = voices.find(voice => voice.lang === "en-US");

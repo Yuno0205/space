@@ -4,9 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Mic, Volume2, AlertTriangle } from "lucide-react"; // MicOff was not used, removed for now
-
-// Import CMU Pronouncing Dictionary as named export
+import { Mic, Volume2, AlertTriangle } from "lucide-react";
 import { dictionary } from "cmu-pronouncing-dictionary";
 
 type DictType = Record<string, string | string[]>;
@@ -22,7 +20,14 @@ interface DetailScores {
   speed: number; // Represents completeness/coverage
 }
 
-const sampleSentences = ["abandon"];
+const sampleSentences = [
+  "Amazing",
+  "Hello world",
+  "Good morning",
+  "Have a great day!",
+  "What is your name?",
+  "Where are you from?",
+];
 
 const SpeakingTest: React.FC = () => {
   const [targetText, setTargetText] = useState(sampleSentences[0]);
@@ -58,7 +63,7 @@ const SpeakingTest: React.FC = () => {
     const srInstance = new SpeechRecognitionAPI();
     srInstance.continuous = false; // Process after user stops speaking
     srInstance.interimResults = false; // Only final results
-    srInstance.lang = "en-US";
+    srInstance.lang = "en-UK"; // Set language to English (UK)
 
     srInstance.onstart = () => {
       setIsListening(true);
@@ -67,11 +72,14 @@ const SpeakingTest: React.FC = () => {
 
     srInstance.onresult = (event: SpeechRecognitionEvent) => {
       console.log("REC: onresult - Result received!");
-      const bestAlternative = event.results[0][0]; // Kết quả tốt nhất
-      const spokenText = bestAlternative.transcript.trim();
+      {
+        /* event.results là một danh sách các kết quả nhận diện (SpeechRecognitionResultList). 
+        Danh sách này giống như một mảng, chứa các đối tượng SpeechRecognitionResult */
+      }
+      const bestAlternative = event.results[0][0]; // Lấy kết quả tốt nhất từ phần tử đầu tiên
+      const spokenText = bestAlternative.transcript.trim(); // Lấy văn bản đã nói
       const confidence = bestAlternative.confidence; // Đây là điểm confidence (0.0 đến 1.0)
 
-      console.log("REC: Spoken text:", spokenText, "Confidence:", confidence);
       setTranscript(spokenText);
       // Truyền cả confidence vào analyzePronunciation
       analyzePronunciation(targetText, spokenText, confidence);
@@ -97,32 +105,9 @@ const SpeakingTest: React.FC = () => {
 
     recognitionRef.current = srInstance;
 
-    if (typeof dictionary === "object" && dictionary !== null) {
-      const keys = Object.keys(dictionary);
-      if (keys.length > 0) {
-        console.log("DICTIONARY_DEBUG: First 20 keys:", keys.slice(0, 20));
-        // Thử tìm một từ cụ thể bằng cách lặp qua các key
-        let foundTheKey = null;
-        for (const key of keys) {
-          if (key.toUpperCase() === "THE") {
-            // So sánh không phân biệt hoa thường để tìm
-            foundTheKey = key;
-            break;
-          }
-        }
-        if (foundTheKey) {
-          console.log(
-            `DICTIONARY_DEBUG: Found 'THE' as key: '${foundTheKey}'. Value:`,
-            (dictionary as any)[foundTheKey]
-          );
-        } else {
-          console.log("DICTIONARY_DEBUG: 'THE' not found by iterating keys.");
-        }
-      }
-    }
-
     // Cleanup: abort any ongoing recognition when the component unmounts or before re-running the effect
     return () => {
+      // Abort the recognition if it's still running
       recognitionRef.current?.abort();
     };
   }, []); // Empty dependency array: runs only once on mount
@@ -132,7 +117,6 @@ const SpeakingTest: React.FC = () => {
    * Handles cases where the dictionary entry might be an array of pronunciations.
    */
   const getPhonemes = (word: string): string => {
-    console.log(`GET_PHONEMES: ---- Called with word: "${word}" (Type: ${typeof word}) ----`);
     if (!word || typeof word !== "string") {
       // Kiểm tra kỹ hơn kiểu dữ liệu
       console.log("GET_PHONEMES: Word is empty or not a string, returning empty string.");
@@ -140,7 +124,6 @@ const SpeakingTest: React.FC = () => {
     }
 
     const lowerWord = word.toLowerCase().trim(); // Thêm .trim() để loại bỏ khoảng trắng thừa
-    console.log(`GET_PHONEMES: lowerWord for lookup: "${lowerWord}"`);
 
     if (
       typeof dictionary !== "object" ||
@@ -151,21 +134,15 @@ const SpeakingTest: React.FC = () => {
       return "";
     }
 
-    // Log thử truy cập trực tiếp với một key chắc chắn đúng (chữ thường) từ dictionary
-    // console.log("GET_PHONEMES: Manual test for 'abandon' in this scope:", (dictionary as DictType)['abandon']);
-
     const phonemeEntry = (dictionary as DictType)[lowerWord];
-    console.log(`GET_PHONEMES: Entry for "${lowerWord}" from dictionary is:`, phonemeEntry);
 
     if (Array.isArray(phonemeEntry)) {
-      console.log(`GET_PHONEMES: Entry is an array. Length: ${phonemeEntry.length}`);
+      // Nếu phonemeEntry là một mảng, lấy phần tử đầu tiên
       const result = phonemeEntry.length > 0 ? phonemeEntry[0] : "";
-      console.log(`GET_PHONEMES: Returning from array case: "${result}"`);
       return result;
     }
 
     const result = phonemeEntry || "";
-    console.log(`GET_PHONEMES: Returning from string/undefined case: "${result}"`);
     return result;
   };
 
@@ -210,19 +187,12 @@ const SpeakingTest: React.FC = () => {
     spokenText: string,
     sttConfidence: number // Thêm tham số này
   ) => {
-    console.log(
-      "ANALYZE: Called with target:",
-      currentTargetText,
-      "spoken:",
-      spokenText,
-      "STT Confidence:",
-      sttConfidence
-    );
-
+    //  filter(Boolean) sẽ loại bỏ tất cả các giá trị "falsy" ra khỏi mảng. Trong ngữ cảnh này,
+    //  nó chủ yếu dùng để loại bỏ các chuỗi rỗng ("") mà có thể đã được tạo ra bởi phương thức split.
     const tgtWords = currentTargetText.toLowerCase().split(/\s+/).filter(Boolean);
     const spkWords = spokenText.toLowerCase().split(/\s+/).filter(Boolean);
 
-    // 1. Word Accuracy and Display (giữ nguyên hoặc có thể điều chỉnh nhẹ nếu muốn)
+    // 1. Word Accuracy and Display
     let correctWordCount = 0;
     const wordDisplays: WordDisplay[] = [];
     tgtWords.forEach((targetWord, i) => {
@@ -233,7 +203,12 @@ const SpeakingTest: React.FC = () => {
         wordDisplays.push({ text: originalTargetWord, color: "text-green-500" });
         correctWordCount++;
       } else if (currentSpokenWord) {
+        // Case này là người nói đã nói một từ gì đó chứ không phải chuỗi rỗng,
+        // chỉ là không đúng với từ mục tiêu
+        // Tính toán "độ tương đồng Levenshtein" giữa từ người dùng nói và từ mục tiêu.
+        // Hàm levenshteinSimilarity trả về một giá trị từ 0 đến 1 (1 là giống hệt, 0 là hoàn toàn khác).
         const similarity = levenshteinSimilarity(currentSpokenWord, targetWord);
+
         wordDisplays.push({
           text: originalTargetWord,
           color: similarity >= 0.7 ? "text-yellow-500" : "text-red-500",
@@ -245,6 +220,8 @@ const SpeakingTest: React.FC = () => {
     setWords(wordDisplays);
     const wordScore =
       tgtWords.length > 0 ? Math.round((correctWordCount / tgtWords.length) * 100) : 0;
+
+    console.log("Điểm từ:", wordScore);
 
     // 2. Phoneme Score (Cải tiến với sttConfidence)
     let phonemeMatchContributionSum = 0;
@@ -358,7 +335,7 @@ const SpeakingTest: React.FC = () => {
       recognitionRef.current.stop();
     }
   };
-
+  // Function to handle speaking the sample sentence
   const handleSpeakSample = () => {
     if (!window.speechSynthesis) {
       setError("Trình duyệt không hỗ trợ phát âm mẫu (Speech Synthesis).");

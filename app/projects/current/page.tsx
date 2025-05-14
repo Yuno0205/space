@@ -2,6 +2,8 @@
 
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { motion } from "framer-motion";
+import animationData from "@/public/animations/not-found.json";
+import Lottie from "lottie-react";
 
 export default function SpaceLoading() {
   return (
@@ -13,11 +15,7 @@ export default function SpaceLoading() {
 
       {/* Lottie Animation */}
       <div className="absolute left-1/2 top-1/2 w-full max-w-xl -translate-x-1/2 -translate-y-1/2 transform">
-        <DotLottieReact
-          src="https://lottie.host/43e11119-84c5-4d34-86de-778380d44f6e/faSVJbQnVV.lottie"
-          loop
-          autoplay
-        />
+        <Lottie animationData={animationData} loop autoplay />
       </div>
 
       {/* Loading text and progress */}

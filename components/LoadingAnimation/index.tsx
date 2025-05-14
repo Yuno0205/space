@@ -1,10 +1,9 @@
-// components/LoadingAnimation.tsx
 "use client";
 
-import React from "react";
+import spaceshipAnimationData from "@/public/animations/spaceship.json"; // Đường dẫn tới file JSON
 import { AnimatePresence, motion } from "framer-motion";
 import Lottie, { LottieComponentProps } from "lottie-react";
-import spaceshipAnimationData from "@/public/animations/spaceship.json"; // Đường dẫn tới file JSON
+import React from "react";
 
 const LoadingAnimation: React.FC = () => {
   const lottieOptions: LottieComponentProps = {
@@ -60,7 +59,8 @@ const LoadingAnimation: React.FC = () => {
     <AnimatePresence>
       <motion.div
         className="flex flex-col items-center justify-center h-full w-full bg-black bg-cover bg-center text-gray-200 font-inter p-5 relative overflow-hidden"
-        // Animation cho toàn bộ container loading (fade in)
+        role="status"
+        aria-live="polite"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}

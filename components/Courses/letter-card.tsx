@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import type { Course } from "@/types/course";
 import { motion } from "framer-motion";
 import { Pause, Play } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface LetterCardProps {
   course: Course;
@@ -15,6 +15,24 @@ export function LetterCard({ course }: LetterCardProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressPercentage = Math.round((course.completed_words / course.total_words) * 100) || 0;
+
+  useEffect(() => {
+    if (!audioRef.current && course.audio_url) {
+      audioRef.current = new Audio(course.audio_url);
+      audioRef.current.onended = () => setIsPlaying(false);
+      audioRef.current.onerror = () => {
+        console.error(`Failed to load audio: ${course.audio_url}`);
+        setIsPlaying(false);
+      };
+    }
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, [course.audio_url]);
 
   const toggleAudio = () => {
     if (!audioRef.current) return;

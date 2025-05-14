@@ -3,14 +3,9 @@
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { motion } from "framer-motion";
 
-export default function SpaceLoading() {
+export default function Loading() {
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-white">
-      {/* Modern grid background */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="h-full w-full bg-[linear-gradient(#000_1px,transparent_1px),linear-gradient(90deg,#000_1px,transparent_1px)] bg-[size:40px_40px]"></div>
-      </div>
-
+    <div className="fixed inset-0 flex items-center justify-center bg-black">
       {/* Lottie Animation */}
       <div className="absolute left-1/2 top-1/2 w-full max-w-xl -translate-x-1/2 -translate-y-1/2 transform">
         <DotLottieReact src="/animations/spaceship.json" loop autoplay />

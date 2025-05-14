@@ -1,8 +1,7 @@
 "use client";
 
-import { DotLottieReact } from "@lottiefiles/dotlottie-react";
-import { motion } from "framer-motion";
 import animationData from "@/public/animations/not-found.json";
+import { motion } from "framer-motion";
 import Lottie from "lottie-react";
 
 export default function SpaceLoading() {

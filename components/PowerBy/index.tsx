@@ -479,7 +479,7 @@ export default function PowerBy() {
             <Link
               href="https://react.dev/"
               target="_blank"
-              className="font-semibold text-xl flex gap-2 items-center"
+              className="font-semibold text-xl flex gap-2 items-center text-white"
               rel="noopener noreferrer"
             >
               React
@@ -502,7 +502,7 @@ export default function PowerBy() {
             <Link
               href="https://supabase.com/"
               target="_blank"
-              className="font-semibold text-xl flex gap-2 items-center"
+              className="font-semibold text-xl flex gap-2 items-center text-white"
               rel="noopener noreferrer"
             >
               Supabase
@@ -519,7 +519,7 @@ export default function PowerBy() {
             <Link
               href="https://wordpress.com/"
               target="_blank"
-              className="font-semibold text-xl flex gap-2 items-center"
+              className="font-semibold text-xl flex gap-2 items-center text-white"
               rel="noopener noreferrer"
             >
               Wordpress

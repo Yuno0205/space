@@ -1,17 +1,16 @@
-"use client";
 import { useVoice } from "@humeai/voice-react";
-
 import { Mic, MicOff, Phone } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-
-import MicFFT from "./MicFFT";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Toggle } from "../ui/toggle";
-import { useCallback } from "react";
+import { useCallback, useState, useRef } from "react"; // Added useState and useRef
+import MicFFT from "./MicFFT";
 
 export default function Controls() {
   const { disconnect, status, isMuted, unmute, mute, micFft } = useVoice();
+  const [isDisconnecting, setIsDisconnecting] = useState(false); // New state
+  const timeout = useRef<number | null>(null);
 
   const handlePressedChange = useCallback(() => {
     if (isMuted) {
@@ -22,12 +21,26 @@ export default function Controls() {
   }, [isMuted, mute, unmute]);
 
   const handleDisconnect = useCallback(() => {
-    if (status.value !== "connected") {
-      disconnect();
+    if (timeout.current) {
+      window.clearTimeout(timeout.current);
+      timeout.current = null;
+    }
+    if (status.value === "connected") {
+      setIsDisconnecting(true); // Set disconnecting state
+      try {
+        disconnect();
+        setIsDisconnecting(false);
+        // Optionally, add UI feedback here ("Call Ended")
+      } catch (error) {
+        setIsDisconnecting(false);
+        console.error("Error disconnecting:", error);
+        // Display error to the user
+      }
     } else {
       console.warn("WebSocket is already closed.");
+      // Optionally, add UI feedback here ("Call already ended")
     }
-  }, [disconnect, status.value]);
+  }, [disconnect, status.value, timeout]);
 
   return (
     <div
@@ -67,11 +80,12 @@ export default function Controls() {
               className={"flex items-center gap-1"}
               onClick={handleDisconnect}
               variant={"destructive"}
+              disabled={isDisconnecting} // Disable during disconnect
             >
               <span>
                 <Phone className={"size-4 opacity-50"} strokeWidth={2} stroke={"currentColor"} />
               </span>
-              <span>End Call</span>
+              {isDisconnecting ? "Ending Call..." : "End Call"} {/* Show "Ending Call..." */}
             </Button>
           </motion.div>
         ) : null}

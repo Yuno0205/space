@@ -19,6 +19,7 @@ import {
 import { Progress } from "@/components/ui/progress"; // Assuming this path is correct
 import { usePronunciationStore } from "@/utils/Speech/pronunciation-store"; // Assuming this path is correct
 import { dictionary } from "cmu-pronouncing-dictionary"; // Make sure this is installed and accessible
+import { updateProficiency } from "@/utils/Supabase/action";
 
 // --- Types from SpeakingPractice ---
 export type VocabularyCard = {
@@ -693,13 +694,22 @@ export default function SpeakingPractice({ cards = exampleCards }: SpeakingPract
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => {
-                              // Logic này chỉ chạy nếu nút không bị disable (tức là điểm >= 85 và chưa được đánh dấu)
+                            onClick={async () => {
                               if (
                                 overallScore !== null &&
                                 overallScore >= 85 &&
                                 !isMarkedMastered
                               ) {
+                                await updateProficiency(
+                                  "dde0955f-8806-452d-8941-68b673f86f5a",
+                                  "speaking",
+                                  false
+                                ); // Cập nhật trạng thái thành thạo
+                                console.log(
+                                  "Đã cập nhật trạng thái thành thạo cho từ:",
+                                  currentCard.word
+                                );
+
                                 setIsMarkedMastered(true); // Thay đổi trạng thái để cập nhật UI nút
                               }
                             }}

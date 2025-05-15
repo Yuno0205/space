@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils"; // Assuming this path is correct
 import { motion } from "framer-motion";
-import { AlertTriangle, ArrowRight, Mic, RefreshCw, Volume2 } from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle, Mic, RefreshCw, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert"; // Assuming this path is correct
@@ -123,6 +123,7 @@ export default function SpeakingPractice({ cards = exampleCards }: SpeakingPract
   const [detailScores, setDetailScores] = useState<DetailScores | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
+  const [isMarkedMastered, setIsMarkedMastered] = useState(false);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
@@ -147,6 +148,7 @@ export default function SpeakingPractice({ cards = exampleCards }: SpeakingPract
     setOverallScore(null);
     setDetailScores(null);
     setShowDefinition(false);
+    setIsMarkedMastered(false);
 
     setError(null);
     // Initialize words for display based on the new targetText (currentCard.word)
@@ -426,6 +428,7 @@ export default function SpeakingPractice({ cards = exampleCards }: SpeakingPract
     setTranscript("");
     setOverallScore(null);
     setDetailScores(null);
+    setIsMarkedMastered(false);
     const initialWords = currentCard.word
       .split(/\s+/)
       .filter(Boolean)
@@ -510,7 +513,7 @@ export default function SpeakingPractice({ cards = exampleCards }: SpeakingPract
           </CardHeader>
 
           <CardContent className="pt-6">
-            <div className="flex flex-col items-center justify-center space-y-6">
+            <div className="relative flex flex-col items-center justify-center space-y-6">
               {/* Word display area */}
               <div className="text-center">
                 {/* Displaying targetText (currentCard.word) with colors */}
@@ -686,6 +689,42 @@ export default function SpeakingPractice({ cards = exampleCards }: SpeakingPract
                             className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors duration-150 ease-in-out"
                           >
                             {showDefinition ? "Ẩn định nghĩa" : "Xem định nghĩa"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              // Logic này chỉ chạy nếu nút không bị disable (tức là điểm >= 85 và chưa được đánh dấu)
+                              if (
+                                overallScore !== null &&
+                                overallScore >= 85 &&
+                                !isMarkedMastered
+                              ) {
+                                setIsMarkedMastered(true); // Thay đổi trạng thái để cập nhật UI nút
+                              }
+                            }}
+                            className={cn(
+                              "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors duration-150 ease-in-out",
+                              isMarkedMastered
+                                ? "bg-green-50 text-green-700 border-green-500 dark:bg-green-800/30 dark:text-green-400 dark:border-green-600 cursor-default" // Kiểu khi đã đánh dấu
+                                : overallScore !== null && overallScore >= 85
+                                  ? "text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 border-blue-500 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/50" // Kiểu khi đủ điểm, có thể nhấp
+                                  : "text-gray-400 dark:text-gray-500 border-gray-300 dark:border-gray-600 cursor-not-allowed" // Kiểu khi chưa đủ điểm (và chưa được đánh dấu)
+                            )}
+                            title={
+                              isMarkedMastered
+                                ? "Đã đánh dấu thành thạo cho lần thử này"
+                                : overallScore !== null && overallScore >= 85
+                                  ? "Đánh dấu từ này là đã phát âm thành thạo"
+                                  : "Cần đạt điểm từ 85 trở lên để đánh dấu"
+                            }
+                            disabled={
+                              // Điều kiện disable nút
+                              overallScore === null || overallScore < 85 || isMarkedMastered
+                            }
+                          >
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                            {isMarkedMastered ? "Đã đánh dấu" : "Đã thành thạo"}
                           </Button>
                         </div>
                       </div>

@@ -599,7 +599,7 @@ export default function SpeakingPractice({ cards = exampleCards }: SpeakingPract
                   <div className="text-center mb-4">
                     <p className="text-lg font-medium dark:text-gray-300 text-black">Bạn đã nói:</p>
                     <p className="text-xl italic dark:text-gray-300 text-black">
-                      `&quot;`{transcript}`&quot;
+                      &quot;{transcript}&quot;
                     </p>
                   </div>
 
@@ -723,7 +723,7 @@ export default function SpeakingPractice({ cards = exampleCards }: SpeakingPract
             </div>
           </CardContent>
 
-          <CardFooter className="flex justify-center pt-6 border-t border-gray-300 w-full">
+          <CardFooter className="flex justify-center pt-6 border-t border-gray-700 w-full">
             <div className="flex-1">
               <Button
                 variant="outline" // Changed from outline for more prominence

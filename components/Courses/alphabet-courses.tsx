@@ -1,4 +1,3 @@
-// Giả sử file này là: c:/Projects/space/components/courses/alphabet-courses.tsx
 import { supabaseBrowser } from "@/lib/supabase/client";
 import Link from "next/link";
 import { LetterCard } from "./letter-card";
@@ -12,7 +11,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-
 const ITEMS_PER_PAGE = 6;
 
 interface AlphabetCoursesProps {
@@ -123,8 +121,6 @@ export async function AlphabetCourses({ searchParams }: AlphabetCoursesProps) {
   }
 
   const paginationItems = generatePaginationItems(currentPage, totalPages);
-
-  console.log(courses);
 
   return (
     <div className="container mx-auto px-4 py-8">

@@ -17,21 +17,12 @@ import {
   CardTitle,
 } from "@/components/ui/card"; // Assuming this path is correct
 import { Progress } from "@/components/ui/progress"; // Assuming this path is correct
+import { VocabularyCard } from "@/types/vocabulary";
 import { usePronunciationStore } from "@/utils/Speech/pronunciation-store"; // Assuming this path is correct
+import { updateCompletedWords, updateProficiency } from "@/utils/Supabase/action";
 import { dictionary } from "cmu-pronouncing-dictionary"; // Make sure this is installed and accessible
-import { updateProficiency } from "@/utils/Supabase/action";
 
 // --- Types from SpeakingPractice ---
-export type VocabularyCard = {
-  id: number;
-  word: string;
-  phonetic?: string;
-  audio_url?: string;
-  word_type?: string;
-  definition: string;
-  translation?: string;
-  example: string;
-};
 
 export type PronunciationScore = {
   id: string;
@@ -58,55 +49,12 @@ interface DetailScores {
   speed: number; // Represents completeness/coverage
 }
 
-// Example data from SpeakingPractice
-const exampleCards: VocabularyCard[] = [
-  {
-    id: 4,
-    word: "amazing",
-    phonetic: "/əˈmæzɪŋ/",
-    audio_url: "https://example.com/audio/amazing.mp3",
-    word_type: "adjective",
-    definition: "Very impressive or outstanding.",
-    translation: "Thích hành, tốt bài",
-    example: "The view from the top of the mountain was amazing.",
-  },
-  {
-    id: 1,
-    word: "abandon",
-    phonetic: "/əˈbændən/",
-    audio_url: "https://example.com/audio/abandon.mp3",
-    word_type: "verb",
-    definition: "To give up or abandon something.",
-    translation: "Ngắn ngủi, thoáng qua",
-    example: "She abandoned her job and moved to another city.",
-  },
-  {
-    id: 2,
-    word: "good bye", // Corrected word from 'abandon' to match definition
-    phonetic: "/ɡʊd baɪ/",
-    audio_url: "https://example.com/audio/goodbye.mp3",
-    word_type: "interjection",
-    definition: "Goodbye! See you later.",
-    translation: "Xin chào, tốt bài",
-    example: "Good bye! See you later.",
-  },
-  {
-    id: 3,
-    word: "hello",
-    phonetic: "/həˈloʊ/",
-    audio_url: "https://example.com/audio/hello.mp3",
-    word_type: "interjection",
-    definition: "A greeting.",
-    translation: "Xin chào",
-    example: "Hello! How are you?",
-  },
-];
-
 interface SpeakingPracticeProps {
   cards?: VocabularyCard[];
+  slug: string;
 }
 
-export default function SpeakingPractice({ cards = exampleCards }: SpeakingPracticeProps) {
+export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeProps) {
   // --- State from usePronunciationStore (SpeakingPractice) ---
   const { addScore, isLoading } = usePronunciationStore();
 
@@ -357,7 +305,7 @@ export default function SpeakingPractice({ cards = exampleCards }: SpeakingPract
       // Ensure transcript is not empty
       addScore({
         id: crypto.randomUUID(),
-        wordId: currentCard.id,
+        wordId: Number(currentCard.id),
         word: currentCard.word,
         score: finalScore,
         transcript: spokenText,
@@ -700,16 +648,8 @@ export default function SpeakingPractice({ cards = exampleCards }: SpeakingPract
                                 overallScore >= 85 &&
                                 !isMarkedMastered
                               ) {
-                                await updateProficiency(
-                                  "dde0955f-8806-452d-8941-68b673f86f5a",
-                                  "speaking",
-                                  false
-                                ); // Cập nhật trạng thái thành thạo
-                                console.log(
-                                  "Đã cập nhật trạng thái thành thạo cho từ:",
-                                  currentCard.word
-                                );
-
+                                await updateProficiency(currentCard.id, "speaking", true); // Cập nhật trạng thái thành thạo
+                                await updateCompletedWords(slug); // Cập nhật trạng thái đã hoàn thành
                                 setIsMarkedMastered(true); // Thay đổi trạng thái để cập nhật UI nút
                               }
                             }}

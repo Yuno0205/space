@@ -8,6 +8,7 @@ export default async function Home({ params }: { params: Promise<{ slug: string 
     .from("vocabularies")
     .select("*")
     .ilike("word", `${slug}%`)
+    .eq("proficiently->>speaking", "false")
     .limit(10);
 
   if (error) {
@@ -15,11 +16,9 @@ export default async function Home({ params }: { params: Promise<{ slug: string 
     return <div>Error fetching data</div>;
   }
 
-  console.log(data);
-
   return (
     <main className="container max-w-3xl mx-auto py-10 px-4">
-      <SpeakingPractice />
+      <SpeakingPractice cards={data || []} slug={slug} />
     </main>
   );
 }

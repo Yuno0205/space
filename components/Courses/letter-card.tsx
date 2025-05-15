@@ -4,28 +4,54 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { Course } from "@/types/course";
 import { motion } from "framer-motion";
-import { Pause, Play } from "lucide-react";
-import { useRef, useState } from "react";
+import { Volume2 } from "lucide-react"; // Chỉ cần import Volume2
+import Link from "next/link";
+import React, { useEffect, useRef } from "react"; // Bỏ useState
 
 interface LetterCardProps {
   course: Course;
 }
 
 export function LetterCard({ course }: LetterCardProps) {
-  const [isPlaying, setIsPlaying] = useState(false);
+  // Bỏ useState isPlaying
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressPercentage = Math.round((course.completed_words / course.total_words) * 100) || 0;
 
-  const toggleAudio = () => {
-    if (!audioRef.current) return;
-
-    if (isPlaying) {
-      audioRef.current.pause();
+  useEffect(() => {
+    if (course.audio_url) {
+      const audio = new Audio(course.audio_url);
+      // Không cần xử lý onended để thay đổi state icon nữa
+      // audio.onended = () => { /* Có thể log hoặc làm gì đó nếu cần khi kết thúc */ };
+      audio.onerror = () => {
+        console.error(`Failed to load audio: ${course.audio_url}`);
+      };
+      audioRef.current = audio;
     } else {
-      audioRef.current.play();
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
     }
 
-    setIsPlaying(!isPlaying);
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
+  }, [course.audio_url]);
+
+  const handlePlayAudio = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!audioRef.current) {
+      console.warn("Audio reference is not available.");
+      return;
+    }
+
+    audioRef.current.pause();
+    audioRef.current.currentTime = 0;
+    audioRef.current.play().catch((error) => {
+      console.error(`Error playing audio: ${course.audio_url}`, error);
+    });
   };
 
   return (
@@ -34,18 +60,23 @@ export function LetterCard({ course }: LetterCardProps) {
         <div className="flex justify-between items-start mb-6">
           <div>
             <h3 className="text-xl font-medium mb-1 text-white">{course.name}</h3>
-            <p className="text-zinc-400 text-sm">/{course.phonetic}/</p>
+            <div className="flex items-center gap-2">
+              <p className="text-zinc-400 text-sm">{course.phonetic}</p>
+              {/* Icon Volume2 tĩnh ở đây đã được bỏ đi */}
+            </div>
           </div>
 
-          <Button
-            variant="outline"
-            size="icon"
-            className="rounded-full border-zinc-700 bg-transparent hover:bg-zinc-800 text-white"
-            onClick={toggleAudio}
-            aria-label={isPlaying ? "Pause pronunciation" : "Play pronunciation"}
-          >
-            {isPlaying ? <Pause size={18} /> : <Play size={18} />}
-          </Button>
+          {course.audio_url && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full border-zinc-700 bg-transparent hover:bg-zinc-800 text-white"
+              onClick={handlePlayAudio}
+              aria-label="Phát âm" // aria-label cố định
+            >
+              <Volume2 size={18} /> {/* Luôn là icon Volume2 */}
+            </Button>
+          )}
         </div>
 
         <motion.div
@@ -95,9 +126,10 @@ export function LetterCard({ course }: LetterCardProps) {
       <div className="border-t border-zinc-800 p-4">
         <Button
           variant="outline"
-          className="w-full bg-transparent border border-zinc-700 hover:bg-zinc-800 text-white"
+          className="w-full bg-transparent border border-zinc-700 text-white hover:bg-white hover:text-zinc-900 transition-colors duration-200" // Cập nhật hover effect
+          asChild
         >
-          Continue Learning
+          <Link href={`/english/speaking/${course.letter}`}>Continue Learning</Link>
         </Button>
       </div>
     </Card>

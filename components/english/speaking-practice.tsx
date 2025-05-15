@@ -60,54 +60,44 @@ interface DetailScores {
 // Example data from SpeakingPractice
 const exampleCards: VocabularyCard[] = [
   {
-    id: 1,
-    word: "ephemeral",
-    phonetic: "/ɪˈfɛm(ə)rəl/",
-    audio_url: "https://example.com/audio/ephemeral.mp3",
+    id: 4,
+    word: "amazing",
+    phonetic: "/əˈmæzɪŋ/",
+    audio_url: "https://example.com/audio/amazing.mp3",
     word_type: "adjective",
-    definition: "Lasting for a very short time.",
+    definition: "Very impressive or outstanding.",
+    translation: "Thích hành, tốt bài",
+    example: "The view from the top of the mountain was amazing.",
+  },
+  {
+    id: 1,
+    word: "abandon",
+    phonetic: "/əˈbændən/",
+    audio_url: "https://example.com/audio/abandon.mp3",
+    word_type: "verb",
+    definition: "To give up or abandon something.",
     translation: "Ngắn ngủi, thoáng qua",
-    example: "The ephemeral nature of fashion trends makes it hard to keep up.",
+    example: "She abandoned her job and moved to another city.",
   },
   {
     id: 2,
-    word: "serendipity", // Corrected word from 'abandon' to match definition
-    phonetic: "/ˌsɛr.ənˈdɪp.ɪ.ti/",
-    audio_url: "https://example.com/audio/serendipity.mp3",
-    word_type: "noun",
-    definition: "The occurrence and development of events by chance in a happy or beneficial way.",
-    translation: "Tình cờ may mắn",
-    example: "The discovery of penicillin was a serendipity.",
+    word: "good bye", // Corrected word from 'abandon' to match definition
+    phonetic: "/ɡʊd baɪ/",
+    audio_url: "https://example.com/audio/goodbye.mp3",
+    word_type: "interjection",
+    definition: "Goodbye! See you later.",
+    translation: "Xin chào, tốt bài",
+    example: "Good bye! See you later.",
   },
   {
     id: 3,
-    word: "ubiquitous",
-    phonetic: "/juːˈbɪk.wɪ.təs/",
-    audio_url: "https://example.com/audio/ubiquitous.mp3",
-    word_type: "adjective",
-    definition: "Present, appearing, or found everywhere.",
-    translation: "Phổ biến, có mặt khắp nơi",
-    example: "Mobile phones are now ubiquitous in modern society.",
-  },
-  {
-    id: 4,
-    word: "eloquent",
-    phonetic: "/ˈɛləkwənt/",
-    audio_url: "https://example.com/audio/eloquent.mp3",
-    word_type: "adjective",
-    definition: "Fluent or persuasive in speaking or writing.",
-    translation: "Hùng biện, lưu loát",
-    example: "She gave an eloquent speech that moved the audience.",
-  },
-  {
-    id: 5,
-    word: "resilience",
-    phonetic: "/rɪˈzɪliəns/",
-    audio_url: "https://example.com/audio/resilience.mp3",
-    word_type: "noun",
-    definition: "The capacity to recover quickly from difficulties; toughness.",
-    translation: "Khả năng phục hồi, sức bền",
-    example: "The resilience of the human spirit is remarkable.",
+    word: "hello",
+    phonetic: "/həˈloʊ/",
+    audio_url: "https://example.com/audio/hello.mp3",
+    word_type: "interjection",
+    definition: "A greeting.",
+    translation: "Xin chào",
+    example: "Hello! How are you?",
   },
 ];
 
@@ -609,7 +599,7 @@ export default function SpeakingPractice({ cards = exampleCards }: SpeakingPract
                   <div className="text-center mb-4">
                     <p className="text-lg font-medium dark:text-gray-300 text-black">Bạn đã nói:</p>
                     <p className="text-xl italic dark:text-gray-300 text-black">
-                      `&quot;`{transcript}`&quot;
+                      &quot;{transcript}&quot;
                     </p>
                   </div>
 
@@ -733,7 +723,7 @@ export default function SpeakingPractice({ cards = exampleCards }: SpeakingPract
             </div>
           </CardContent>
 
-          <CardFooter className="flex justify-center pt-6 border-t border-gray-300 w-full">
+          <CardFooter className="flex justify-center pt-6 border-t border-gray-700 w-full">
             <div className="flex-1">
               <Button
                 variant="outline" // Changed from outline for more prominence

@@ -17,6 +17,7 @@ export default function Home() {
         description={
           <>Where I learn, code, and grow — each star a new concept, each orbit a breakthrough.</>
         }
+        primaryButtonHref="/english/dialogue"
         primaryButtonText="Visit the English planet"
         secondaryButtonText="Explore the Next.js universe"
       />

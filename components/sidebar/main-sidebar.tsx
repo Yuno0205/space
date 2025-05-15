@@ -52,8 +52,8 @@ const navigationItems = [
       { title: "Tổng quan", href: "/english" },
       { title: "Từ vựng", href: "/english/vocabulary" },
       { title: "Trò chuyện với EVI", href: "/english/dialogue" },
-      { title: "Luyện nghe", href: "/english/listening" },
       { title: "Luyện nói", href: "/english/speaking" },
+      { title: "Luyện nghe", href: "/english/listening" },
       { title: "Luyện đọc", href: "/english/reading" },
       { title: "Luyện viết", href: "/english/writing" },
       { title: "Ôn tập", href: "/english/revise" },
@@ -144,7 +144,7 @@ export function MainSidebar() {
                                   "transition-colors",
                                   pathname === item.href
                                     ? "font-medium text-white"
-                                    : "text-muted-foreground hover:text-white"
+                                    : "text-muted-foreground dark:hover:text-white hover:text-gray-900 "
                                 )}
                               >
                                 <Link href={item.href}>{item.title}</Link>
@@ -175,7 +175,7 @@ export function MainSidebar() {
                           "transition-colors",
                           pathname === section.href
                             ? "font-medium text-white"
-                            : "text-muted-foreground hover:text-white"
+                            : "text-muted-foreground dark:hover:text-white hover:text-gray-900"
                         )}
                       >
                         <Link href={section.href}>{section.title}</Link>

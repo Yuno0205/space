@@ -26,7 +26,7 @@ import { dictionary } from "cmu-pronouncing-dictionary"; // Make sure this is in
 
 export type PronunciationScore = {
   id: string;
-  wordId: number;
+  wordId: number; // Consider if this should be string to match VocabularyCard.id if it's a UUID
   word: string;
   score: number; // Overall score
   transcript: string;
@@ -68,7 +68,7 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
   const [, setTargetText] = useState(""); // Will be currentCard.word
   const [wordsForDisplay, setWordsForDisplay] = useState<WordDisplay[]>([]); // For coloring words in the target sentence
   const [transcript, setTranscript] = useState("");
-  const [overallScore, setOverallScore] = useState<number | null>(null); // Renamed from 'score' for clarity
+  const [overallScore, setOverallScore] = useState<number | null>(null);
   const [detailScores, setDetailScores] = useState<DetailScores | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
@@ -79,10 +79,10 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
   // --- Derived state ---
   const progress = cards.length > 0 ? ((currentCardIndex + 1) / cards.length) * 100 : 0;
   const currentCard = cards[currentCardIndex] || {
-    id: 0,
-    word: "Không có từ nào",
+    id: "0", // Default to string if VocabularyCard.id is string
+    word: "No words available",
     phonetic: "",
-    definition: "Không có từ nào trong danh sách này.",
+    definition: "There are no words in this list.",
     example: "",
     translation: "",
     word_type: "",
@@ -92,35 +92,32 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
   // --- Initialize/Reset when currentCard changes ---
   useEffect(() => {
     setTargetText(currentCard.word);
-    // Reset states for the new card
     setTranscript("");
     setOverallScore(null);
     setDetailScores(null);
     setShowDefinition(false);
     setIsMarkedMastered(false);
-
     setError(null);
-    // Initialize words for display based on the new targetText (currentCard.word)
     const initialWords = currentCard.word
       .split(/\s+/)
       .filter(Boolean)
-      .map((w) => ({ text: w, color: "text-gray-300" })); // Default color
+      .map((w) => ({ text: w, color: "text-gray-300" }));
     setWordsForDisplay(initialWords);
   }, [currentCard.word, currentCard.id]);
 
-  // --- Speech Recognition Setup (from SpeakingTest logic) ---
+  // --- Speech Recognition Setup ---
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognitionAPI) {
-      setError("Trình duyệt không hỗ trợ Web Speech API. Vui lòng thử Chrome hoặc Edge.");
+      setError("Your browser does not support the Web Speech API. Please try Chrome or Edge.");
       return;
     }
     const srInstance = new SpeechRecognitionAPI();
     srInstance.continuous = false;
     srInstance.interimResults = false;
-    srInstance.lang = "en-GB"; // Using en-GB as per original SpeakingPractice
+    srInstance.lang = "en-GB"; // Using British English as in the original
 
     srInstance.onstart = () => {
       setIsListening(true);
@@ -131,7 +128,6 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
       const bestAlternative = event.results[0][0];
       const spokenText = bestAlternative.transcript.trim();
       const confidence = bestAlternative.confidence;
-
       setTranscript(spokenText);
       analyzePronunciation(currentCard.word, spokenText, confidence);
     };
@@ -139,35 +135,32 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
     srInstance.onerror = (event: SpeechRecognitionErrorEvent) => {
       setIsListening(false);
       if (event.error === "no-speech") {
-        setError("Không nghe thấy giọng nói. Vui lòng thử lại.");
+        setError("No speech detected. Please try again.");
       } else if (event.error === "audio-capture") {
-        setError("Không tìm thấy microphone. Vui lòng kiểm tra thiết bị của bạn.");
+        setError("Microphone not found. Please check your device.");
       } else if (event.error === "not-allowed") {
-        setError("Trình duyệt không cho phép truy cập microphone. Vui lòng cấp quyền và thử lại.");
+        setError("Microphone access denied by the browser. Please grant permission and try again.");
       } else {
-        setError(`Lỗi nhận diện giọng nói: ${event.error}`);
+        setError(`Speech recognition error: ${event.error}`);
       }
-      setTimeout(() => setError(null), 5000); // Auto-clear error after 5s
+      setTimeout(() => setError(null), 5000);
     };
 
     srInstance.onend = () => {
       setIsListening(false);
     };
-
     recognitionRef.current = srInstance;
-
     return () => {
       recognitionRef.current?.abort();
     };
-  }, [currentCard.word]); // Re-initialize if lang needs to change per card, though here it's fixed.
+  }, [currentCard.word]); // Re-run if currentCard.word changes (e.g., if lang was dynamic)
 
-  // --- Pronunciation Analysis Logic (from SpeakingTest) ---
   const getPhonemes = (word: string): string => {
     if (!word || typeof word !== "string") return "";
     const lowerWord = word
       .toLowerCase()
       .trim()
-      .replace(/[.,!?]/g, ""); // Remove punctuation
+      .replace(/[.,!?]/g, "");
     if (!lowerWord) return "";
     if (
       typeof dictionary !== "object" ||
@@ -187,13 +180,11 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
     const b = strB.toLowerCase();
     if (!a.length && !b.length) return 1;
     if (!a.length || !b.length) return 0;
-
     const dp = Array(a.length + 1)
       .fill(null)
       .map(() => Array(b.length + 1).fill(null));
     for (let i = 0; i <= a.length; i += 1) dp[i][0] = i;
     for (let j = 0; j <= b.length; j += 1) dp[0][j] = j;
-
     for (let i = 1; i <= a.length; i += 1) {
       for (let j = 1; j <= b.length; j += 1) {
         const cost = a[i - 1] === b[j - 1] ? 0 : 1;
@@ -209,7 +200,7 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
     spokenText: string,
     sttConfidence: number
   ) => {
-    const tgtWordsOriginal = currentTargetText.split(/\s+/).filter(Boolean); // Keep original casing for display
+    const tgtWordsOriginal = currentTargetText.split(/\s+/).filter(Boolean);
     const tgtWordsLower = currentTargetText.toLowerCase().split(/\s+/).filter(Boolean);
     const spkWordsLower = spokenText.toLowerCase().split(/\s+/).filter(Boolean);
 
@@ -217,7 +208,6 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
     const newWordDisplays: WordDisplay[] = tgtWordsOriginal.map((originalTargetWord, i) => {
       const targetWordLower = tgtWordsLower[i];
       const spokenWordLower = spkWordsLower[i] || "";
-
       if (spokenWordLower === targetWordLower) {
         correctWordCount++;
         return { text: originalTargetWord, color: "text-green-500" };
@@ -235,14 +225,12 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
 
     const wordScore =
       tgtWordsLower.length > 0 ? Math.round((correctWordCount / tgtWordsLower.length) * 100) : 0;
-
     let phonemeMatchContributionSum = 0;
     let wordsWithPhonemesCount = 0;
 
     tgtWordsLower.forEach((targetWord, i) => {
       const currentSpokenWord = spkWordsLower[i] || "";
       const targetPhonemes = getPhonemes(targetWord);
-
       if (targetPhonemes) {
         wordsWithPhonemesCount++;
         const spokenWordCanonicalPhonemes = getPhonemes(currentSpokenWord);
@@ -253,7 +241,6 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
             spokenWordCanonicalPhonemes
           );
         }
-
         if (targetWord === currentSpokenWord && currentSpokenWord !== "") {
           phonemeMatchContributionSum +=
             wordPhonemeSimilarity * (sttConfidence > 0 ? sttConfidence : 0.1);
@@ -268,14 +255,12 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
         ? Math.round((phonemeMatchContributionSum / wordsWithPhonemesCount) * 100)
         : tgtWordsLower.length > 0 && spkWordsLower.length === 0
           ? 0
-          : 50; // Default if no phonemes found but words exist
-
+          : 50;
     const accentProxyVal = Math.min(
       100,
       Math.max(0, phonemeScoreVal + Math.round(15 * (sttConfidence > 0 ? sttConfidence : 0.5) - 5))
     );
     const rhythmProxyVal = Math.max(0, wordScore - 10);
-
     let speedScoreVal = 100;
     if (tgtWordsLower.length > 0) {
       const rate = spkWordsLower.length / tgtWordsLower.length;
@@ -285,40 +270,33 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
       speedScoreVal = 0;
     }
     speedScoreVal = Math.max(0, Math.min(100, speedScoreVal));
-
     const finalScore = Math.round(
       phonemeScoreVal * 0.5 + accentProxyVal * 0.2 + rhythmProxyVal * 0.1 + speedScoreVal * 0.2
     );
-
     const calculatedDetailScores = {
       phoneme: phonemeScoreVal,
       accentProxy: accentProxyVal,
       rhythmProxy: rhythmProxyVal,
       speed: speedScoreVal,
     };
-
     setOverallScore(finalScore);
     setDetailScores(calculatedDetailScores);
 
-    // Add to pronunciation store (from SpeakingPractice)
     if (currentCard.id && spokenText) {
-      // Ensure transcript is not empty
       addScore({
         id: crypto.randomUUID(),
-        wordId: Number(currentCard.id),
+        wordId: typeof currentCard.id === "string" ? parseInt(currentCard.id, 10) : currentCard.id, // Convert if id is string
         word: currentCard.word,
         score: finalScore,
         transcript: spokenText,
         date: new Date().toISOString(),
-        detailScores: calculatedDetailScores, // Optionally store detailed scores
+        detailScores: calculatedDetailScores,
       });
     }
   };
 
-  // --- Event Handlers ---
   const startListening = () => {
     if (recognitionRef.current && !isListening) {
-      // Reset previous attempt's display before starting new one
       setTranscript("");
       setOverallScore(null);
       setDetailScores(null);
@@ -328,15 +306,14 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
         .map((w) => ({ text: w, color: "text-gray-300" }));
       setWordsForDisplay(initialWords);
       setError(null);
-
       try {
         recognitionRef.current.start();
       } catch (e: unknown) {
         console.error("Error starting recognition:", e);
         if (e instanceof Error && e.name === "InvalidStateError") {
-          setError("Lỗi trạng thái nhận diện, vui lòng thử lại sau giây lát.");
+          setError("Recognition state error, please try again shortly.");
         } else {
-          setError("Không thể bắt đầu nhận diện giọng nói.");
+          setError("Could not start speech recognition.");
         }
         setIsListening(false);
       }
@@ -346,7 +323,6 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
   const stopListening = () => {
     if (recognitionRef.current && isListening) {
       recognitionRef.current.stop();
-      // onend will set isListening to false
     }
   };
 
@@ -357,10 +333,10 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
     } else if ("speechSynthesis" in window && currentCard.word) {
       if (speechSynthesis.speaking) speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(currentCard.word);
-      utterance.lang = "en-GB"; // Match recognition language
+      utterance.lang = "en-GB";
       speechSynthesis.speak(utterance);
     } else {
-      setError("Không có file âm thanh hoặc trình duyệt không hỗ trợ phát âm.");
+      setError("No audio file available or your browser does not support speech synthesis.");
       setTimeout(() => setError(null), 3000);
     }
   };
@@ -368,12 +344,10 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
   const nextCard = () => {
     if (currentCardIndex < cards.length - 1) {
       setCurrentCardIndex(currentCardIndex + 1);
-      // States will be reset by useEffect on currentCard.word change
     }
   };
 
   const resetCard = () => {
-    // For "Thử lại" button
     setTranscript("");
     setOverallScore(null);
     setDetailScores(null);
@@ -388,40 +362,39 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
 
   const toggleDefinition = () => setShowDefinition(!showDefinition);
 
-  // --- UI Helper Functions (from SpeakingPractice) ---
   const getFeedbackMessage = (score: number | null): string => {
-    if (score === null) return "Nhấn micro để bắt đầu.";
-    if (score >= 90) return "Tuyệt vời! Phát âm của bạn rất chuẩn xác.";
-    if (score >= 80) return "Rất tốt! Phát âm của bạn khá chính xác.";
-    if (score >= 70) return "Tốt! Phát âm của bạn đúng phần lớn.";
-    if (score >= 60) return "Khá tốt. Tiếp tục luyện tập nhé!";
-    if (score >= 50) return "Cần cải thiện. Hãy nghe và thử lại.";
-    return "Hãy nghe phát âm chuẩn và thử lại.";
+    if (score === null) return "Press the microphone to start.";
+    if (score >= 90) return "Excellent! Your pronunciation is very accurate.";
+    if (score >= 80) return "Very good! Your pronunciation is quite accurate.";
+    if (score >= 70) return "Good! Your pronunciation is mostly correct.";
+    if (score >= 60) return "Pretty good. Keep practicing!";
+    if (score >= 50) return "Needs improvement. Listen and try again.";
+    return "Listen to the correct pronunciation and try again.";
   };
 
   const getScoreColor = (score: number | null): string => {
     if (score === null) return "text-gray-400";
     if (score >= 90) return "text-green-500";
-    if (score >= 70) return "text-emerald-500"; // Changed from green-500 for variety
+    if (score >= 70) return "text-emerald-500";
     if (score >= 50) return "text-amber-500";
     return "text-red-500";
   };
 
-  // --- Render Logic ---
   if (isLoading) {
     return (
       <Card className="text-center p-6 bg-gray-800 text-white">
-        <CardTitle className="mb-4">Đang tải dữ liệu...</CardTitle>
-        <CardDescription>Vui lòng đợi trong giây lát.</CardDescription>
+        <CardTitle className="mb-4">Loading data...</CardTitle>
+        <CardDescription>Please wait a moment.</CardDescription>
       </Card>
     );
   }
 
-  if (cards.length === 0) {
+  if (cards.length === 0 && !isLoading) {
+    // Check !isLoading to avoid showing "No words" during initial load
     return (
       <Card className="text-center p-6 bg-gray-800 text-white">
-        <CardTitle className="mb-4">Không có từ nào</CardTitle>
-        <CardDescription>Không có từ nào trong danh sách để luyện tập.</CardDescription>
+        <CardTitle className="mb-4">No Words Available</CardTitle>
+        <CardDescription>There are no words in this list to practice.</CardDescription>
       </Card>
     );
   }
@@ -433,13 +406,14 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
           variant="destructive"
           className="bg-red-100 border-red-300 text-red-800 dark:bg-red-800 dark:border-red-600 dark:text-red-300"
         >
-          <AlertTriangle className="h-5 w-5 mr-2 text-yellow-500" />
+          <AlertTriangle className="h-5 w-5 mr-2 text-yellow-500" />{" "}
+          {/* Consider matching icon color to text for destructive */}
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
       <motion.div
-        key={currentCard.id} // Add key for re-animation on card change
+        key={currentCard.id}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -450,22 +424,20 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center">
                 <Mic className="mr-2 h-5 w-5" />
-                Luyện nói
+                Speaking Practice
               </div>
               <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
                 {currentCardIndex + 1}/{cards.length}
               </div>
             </CardTitle>
             <CardDescription className="text-gray-500 dark:text-gray-400">
-              Nhấn nút microphone và đọc từ vựng bên dưới.
+              Press the microphone button and read the vocabulary below.
             </CardDescription>
           </CardHeader>
 
           <CardContent className="pt-6">
             <div className="relative flex flex-col items-center justify-center space-y-6">
-              {/* Word display area */}
               <div className="text-center">
-                {/* Displaying targetText (currentCard.word) with colors */}
                 <div className="flex flex-wrap justify-center items-center gap-x-2 gap-y-1 min-h-[3em]">
                   {wordsForDisplay.map((wordData, index) => (
                     <span
@@ -479,7 +451,6 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
                     </span>
                   ))}
                 </div>
-
                 <div className="flex items-center justify-center gap-2 mt-2">
                   {currentCard.phonetic && (
                     <p className="dark:text-gray-400 text-gray-500 text-lg">
@@ -491,23 +462,23 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
                     size="icon"
                     className="h-9 w-9 rounded-full dark:hover:bg-gray-700 hover:bg-gray-200"
                     onClick={playAudio}
-                    title="Nghe phát âm"
+                    title="Listen to pronunciation"
+                    aria-label="Listen to pronunciation"
                   >
                     <Volume2 className="h-5 w-5" />
-                    <span className="sr-only">Phát âm thanh</span>
+                    <span className="sr-only">Play audio</span>
                   </Button>
                 </div>
                 {currentCard.word_type && (
                   <Badge
-                    variant="outline"
-                    className="mt-3 bg-gray-700 border-gray-600 bg-white text-gray-800"
+                    variant="outline" // Consider if other variants are more appropriate
+                    className="mt-3 bg-gray-100 border-gray-300 text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
                   >
                     {currentCard.word_type}
                   </Badge>
                 )}
               </div>
 
-              {/* Microphone button */}
               <div className="flex justify-center">
                 <motion.div
                   whileHover={{ scale: 1.05 }}
@@ -516,11 +487,7 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
                     isListening
                       ? {
                           scale: [1, 1.15, 1],
-                          transition: {
-                            repeat: Number.POSITIVE_INFINITY,
-                            duration: 1.2,
-                            ease: "easeInOut",
-                          },
+                          transition: { repeat: Infinity, duration: 1.2, ease: "easeInOut" },
                         }
                       : {}
                   }
@@ -531,26 +498,28 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
                       "rounded-full h-20 w-20 flex items-center justify-center shadow-lg",
                       isListening
                         ? "bg-red-600 hover:bg-red-700 animate-pulse"
-                        : "dark:bg-white bg-gray-600 "
+                        : "dark:bg-white bg-gray-800 text-white dark:text-black hover:bg-gray-700 dark:hover:bg-gray-200" // Adjusted button color for light mode
                     )}
                     onClick={isListening ? stopListening : startListening}
-                    title={isListening ? "Dừng ghi âm" : "Bắt đầu ghi âm"}
+                    title={isListening ? "Stop recording" : "Start recording"}
+                    aria-label={isListening ? "Stop recording" : "Start recording"}
                   >
                     <Mic className="h-8 w-8" />
                   </Button>
                 </motion.div>
               </div>
 
-              {/* Transcript and feedback */}
               {transcript && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="w-full max-w-md p-4 bg-gray-750 rounded-lg shadow border border-gray-300 dark:border-gray-700"
+                  className="w-full max-w-md p-4 bg-gray-100 dark:bg-gray-700/30 rounded-lg shadow border border-gray-300 dark:border-gray-700"
                 >
                   <div className="text-center mb-4">
-                    <p className="text-lg font-medium dark:text-gray-300 text-black">Bạn đã nói:</p>
-                    <p className="text-xl italic dark:text-gray-300 text-black">
+                    <p className="text-lg font-medium text-gray-800 dark:text-gray-300">
+                      You said:
+                    </p>
+                    <p className="text-xl italic text-gray-700 dark:text-gray-200">
                       &quot;{transcript}&quot;
                     </p>
                   </div>
@@ -559,8 +528,8 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
                     <div className="flex flex-col items-center space-y-4">
                       <div className="w-full">
                         <div className="flex justify-between items-center mb-2">
-                          <h4 className="font-medium dark:text-gray-300 text-black">
-                            Điểm phát âm tổng thể:
+                          <h4 className="font-medium text-gray-800 dark:text-gray-300">
+                            Overall Pronunciation Score:
                           </h4>
                           <span className={cn("text-3xl font-bold", getScoreColor(overallScore))}>
                             {overallScore}
@@ -570,54 +539,53 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
                           {getFeedbackMessage(overallScore)}
                         </p>
 
-                        {/* Detailed scores from SpeakingTest logic */}
                         <div className="space-y-3 mb-4">
                           <div>
-                            <div className="flex justify-between text-sm mb-1 dark:text-gray-300 text-black">
-                              <span>Âm vị (Phoneme):</span>
+                            <div className="flex justify-between text-sm mb-1 text-gray-700 dark:text-gray-300">
+                              <span>Phoneme:</span>
                               <span className={getScoreColor(detailScores.phoneme)}>
                                 {detailScores.phoneme}%
                               </span>
                             </div>
                             <Progress
                               value={detailScores.phoneme}
-                              className="h-2 bg-gray-600 [&>div]:bg-sky-500"
+                              className="h-2 bg-gray-300 dark:bg-gray-600 [&>div]:bg-sky-500"
                             />
                           </div>
                           <div>
-                            <div className="flex justify-between text-sm mb-1 dark:text-gray-300 text-black">
-                              <span>Giọng điệu (Accent):</span>
+                            <div className="flex justify-between text-sm mb-1 text-gray-700 dark:text-gray-300">
+                              <span>Accent:</span>
                               <span className={getScoreColor(detailScores.accentProxy)}>
                                 {detailScores.accentProxy}%
                               </span>
                             </div>
                             <Progress
                               value={detailScores.accentProxy}
-                              className="h-2 bg-gray-600 [&>div]:bg-teal-500"
+                              className="h-2 bg-gray-300 dark:bg-gray-600 [&>div]:bg-teal-500"
                             />
                           </div>
                           <div>
-                            <div className="flex justify-between text-sm mb-1 dark:text-gray-300 text-black">
-                              <span>Nhịp điệu (Rhythm):</span>
+                            <div className="flex justify-between text-sm mb-1 text-gray-700 dark:text-gray-300">
+                              <span>Rhythm:</span>
                               <span className={getScoreColor(detailScores.rhythmProxy)}>
                                 {detailScores.rhythmProxy}%
                               </span>
                             </div>
                             <Progress
                               value={detailScores.rhythmProxy}
-                              className="h-2 bg-gray-600 [&>div]:bg-indigo-500"
+                              className="h-2 bg-gray-300 dark:bg-gray-600 [&>div]:bg-indigo-500"
                             />
                           </div>
                           <div>
-                            <div className="flex justify-between text-sm mb-1 dark:text-gray-300 text-black">
-                              <span>Tốc độ/Đầy đủ (Speed):</span>
+                            <div className="flex justify-between text-sm mb-1 text-gray-700 dark:text-gray-300">
+                              <span>Speed/Coverage:</span>
                               <span className={getScoreColor(detailScores.speed)}>
                                 {detailScores.speed}%
                               </span>
                             </div>
                             <Progress
                               value={detailScores.speed}
-                              className="h-2 bg-gray-600 [&>div]:bg-purple-500"
+                              className="h-2 bg-gray-300 dark:bg-gray-600 [&>div]:bg-purple-500"
                             />
                           </div>
                         </div>
@@ -627,17 +595,17 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
                             variant="outline"
                             size="sm"
                             onClick={resetCard}
-                            className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors duration-150 ease-in-out"
+                            className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
                           >
-                            <RefreshCw className="mr-2 h-4 w-4" /> Thử lại
+                            <RefreshCw className="mr-2 h-4 w-4" /> Try Again
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={toggleDefinition}
-                            className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors duration-150 ease-in-out"
+                            className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
                           >
-                            {showDefinition ? "Ẩn định nghĩa" : "Xem định nghĩa"}
+                            {showDefinition ? "Hide Definition" : "Show Definition"}
                           </Button>
                           <Button
                             variant="outline"
@@ -648,33 +616,32 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
                                 overallScore >= 85 &&
                                 !isMarkedMastered
                               ) {
-                                await updateProficiency(currentCard.id, "speaking", true); // Cập nhật trạng thái thành thạo
-                                await updateCompletedWords(slug); // Cập nhật trạng thái đã hoàn thành
-                                setIsMarkedMastered(true); // Thay đổi trạng thái để cập nhật UI nút
+                                await updateProficiency(currentCard.id, "speaking", true);
+                                await updateCompletedWords(slug);
+                                setIsMarkedMastered(true);
                               }
                             }}
                             className={cn(
                               "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors duration-150 ease-in-out",
                               isMarkedMastered
-                                ? "bg-green-50 text-green-700 border-green-500 dark:bg-green-800/30 dark:text-green-400 dark:border-green-600 cursor-default" // Kiểu khi đã đánh dấu
+                                ? "bg-green-100 text-green-700 border-green-500 dark:bg-green-800/30 dark:text-green-400 dark:border-green-600 cursor-default"
                                 : overallScore !== null && overallScore >= 85
-                                  ? "text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 border-blue-500 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/50" // Kiểu khi đủ điểm, có thể nhấp
-                                  : "text-gray-400 dark:text-gray-500 border-gray-300 dark:border-gray-600 cursor-not-allowed" // Kiểu khi chưa đủ điểm (và chưa được đánh dấu)
+                                  ? "text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 border-blue-500 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/50"
+                                  : "text-gray-400 dark:text-gray-500 border-gray-300 dark:border-gray-600 cursor-not-allowed"
                             )}
                             title={
                               isMarkedMastered
-                                ? "Đã đánh dấu thành thạo cho lần thử này"
+                                ? "Marked as mastered for this attempt"
                                 : overallScore !== null && overallScore >= 85
-                                  ? "Đánh dấu từ này là đã phát âm thành thạo"
-                                  : "Cần đạt điểm từ 85 trở lên để đánh dấu"
+                                  ? "Mark this word as proficiently pronounced"
+                                  : "Score 85 or above to mark as mastered"
                             }
                             disabled={
-                              // Điều kiện disable nút
                               overallScore === null || overallScore < 85 || isMarkedMastered
                             }
                           >
                             <CheckCircle className="mr-2 h-4 w-4" />
-                            {isMarkedMastered ? "Đã đánh dấu" : "Đã thành thạo"}
+                            {isMarkedMastered ? "Marked as Mastered" : "Mark as Mastered"}
                           </Button>
                         </div>
                       </div>
@@ -683,44 +650,49 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
                 </motion.div>
               )}
 
-              {/* Definition (from SpeakingPractice) */}
               {showDefinition && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
-                  className="w-full max-w-md border border-gray-700 rounded-lg p-4 mt-2 bg-gray-750 shadow"
+                  className="w-full max-w-md border border-gray-300 dark:border-gray-700 rounded-lg p-4 mt-2 bg-gray-50 dark:bg-gray-700/30 shadow"
                 >
                   <div className="space-y-3">
                     <div>
-                      <h4 className="font-medium mb-1 dark:text-gray-200 text-gray-800">
-                        Định nghĩa:
+                      <h4 className="font-medium mb-1 text-gray-800 dark:text-gray-200">
+                        Definition:
                       </h4>
-                      <p className="dark:text-gray-300 text-gray-600">{currentCard.definition}</p>
+                      <p className="text-gray-600 dark:text-gray-300">{currentCard.definition}</p>
                       {currentCard.translation && (
-                        <p className="text-gray-400 italic mt-1">({currentCard.translation})</p>
+                        <p className="text-gray-500 dark:text-gray-400 italic mt-1">
+                          ({currentCard.translation})
+                        </p>
                       )}
                     </div>
-                    <div>
-                      <h4 className="font-medium mb-1 dark:text-gray-200 text-gray-800">Ví dụ:</h4>
-                      <p className="dark:text-gray-300 text-gray-600 italic">
-                        &quot;{currentCard.example}&quot;
-                      </p>
-                    </div>
+                    {currentCard.example && (
+                      <div>
+                        <h4 className="font-medium mb-1 text-gray-800 dark:text-gray-200">
+                          Example:
+                        </h4>
+                        <p className="text-gray-600 dark:text-gray-300 italic">
+                          &quot;{currentCard.example}&quot;
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               )}
             </div>
           </CardContent>
 
-          <CardFooter className="flex justify-center pt-6 border-t border-gray-700 w-full">
+          <CardFooter className="flex justify-center pt-6 border-t border-gray-300 dark:border-gray-700 w-full">
             <div className="flex-1">
               <Button
-                variant="outline" // Changed from outline for more prominence
-                className="w-full px-8 py-4 border-input"
+                variant="outline"
+                className="w-full px-8 py-4 border-input text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                 onClick={nextCard}
                 disabled={currentCardIndex >= cards.length - 1 || isListening}
               >
-                Từ tiếp theo
+                Next Word
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
@@ -728,7 +700,6 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
         </Card>
       </motion.div>
 
-      {/* Progress Card (from SpeakingPractice) */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -738,19 +709,19 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
         <Card className="border-gray-200 dark:border-gray-700 bg-transparent transition-colors duration-150 ease-in-out">
           <CardHeader className="pb-3">
             <CardTitle className="text-gray-800 dark:text-white transition-colors duration-150 ease-in-out">
-              Tiến độ học
+              Learning Progress
             </CardTitle>
           </CardHeader>
           <CardContent>
             <Progress
-              value={progress} // progress value của bạn
+              value={progress}
               className="h-2 bg-gray-200 dark:bg-gray-700 [&>div]:bg-gray-800 dark:[&>div]:bg-gray-200 transition-colors duration-150 ease-in-out"
             />
             <div className="flex justify-between mt-2 text-sm text-gray-600 dark:text-gray-400 transition-colors duration-150 ease-in-out">
               <div>
-                Từ hiện tại: {cards.length > 0 ? currentCardIndex + 1 : 0}/{cards.length}
+                Current Word: {cards.length > 0 ? currentCardIndex + 1 : 0}/{cards.length}
               </div>
-              <div>Hoàn thành: {Math.round(progress)}%</div>
+              <div>Completed: {Math.round(progress)}%</div>
             </div>
           </CardContent>
         </Card>

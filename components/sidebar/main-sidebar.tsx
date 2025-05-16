@@ -109,7 +109,7 @@ export function MainSidebar() {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Tìm kiếm..."
+              placeholder="Search..."
               className="w-full bg-background pl-8 text-sm"
             />
           </div>

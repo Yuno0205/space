@@ -60,7 +60,7 @@ export function BlogList({ initialPosts, category }: BlogListProps) {
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Tìm kiếm bài viết..."
+                placeholder="Search for articles..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 bg-white/5 border-white/10"
@@ -133,7 +133,7 @@ export function BlogList({ initialPosts, category }: BlogListProps) {
           ) : (
             <Card>
               <CardContent className="pt-6 text-center">
-                <p>Không tìm thấy bài viết nào phù hợp.</p>
+                <p>No matching articles found.</p>
               </CardContent>
             </Card>
           )}
@@ -147,7 +147,7 @@ export function BlogList({ initialPosts, category }: BlogListProps) {
           >
             <Card>
               <CardHeader>
-                <CardTitle>Chủ đề</CardTitle>
+                <CardTitle>Categories</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
@@ -174,7 +174,7 @@ export function BlogList({ initialPosts, category }: BlogListProps) {
           >
             <Card>
               <CardHeader>
-                <CardTitle>Bài viết gần đây</CardTitle>
+                <CardTitle>Recent Posts</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -194,7 +194,7 @@ export function BlogList({ initialPosts, category }: BlogListProps) {
               </CardContent>
               <CardFooter>
                 <Button variant="outline" asChild className="w-full">
-                  <Link href="/blog">Xem tất cả bài viết</Link>
+                  <Link href="/blog">View all posts</Link>
                 </Button>
               </CardFooter>
             </Card>

@@ -703,7 +703,7 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
                     <div>
                       <h4 className="font-medium mb-1 dark:text-gray-200 text-gray-800">Ví dụ:</h4>
                       <p className="dark:text-gray-300 text-gray-600 italic">
-                        `&quot;`{currentCard.example}`&quot;`
+                        &quot;{currentCard.example}&quot;
                       </p>
                     </div>
                   </div>

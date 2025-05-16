@@ -55,14 +55,13 @@ export function LetterCard({ course }: LetterCardProps) {
   };
 
   return (
-    <Card className="overflow-hidden border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 transition-all duration-300 cursor-pointer">
+    <Card className="overflow-hidden border border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800 hover:bg-gray-100 transition-all duration-300 cursor-pointer">
       <div className="p-8 relative overflow-hidden">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h3 className="text-xl font-medium mb-1 text-white">{course.name}</h3>
+            <h3 className="text-xl font-medium mb-1 dark:text-white">{course.name}</h3>
             <div className="flex items-center gap-2">
               <p className="text-zinc-400 text-sm">{course.phonetic}</p>
-              {/* Icon Volume2 tĩnh ở đây đã được bỏ đi */}
             </div>
           </div>
 
@@ -70,7 +69,7 @@ export function LetterCard({ course }: LetterCardProps) {
             <Button
               variant="outline"
               size="icon"
-              className="rounded-full border-zinc-700 bg-transparent hover:bg-zinc-800 text-white"
+              className="rounded-full border-zinc-700 bg-transparent dark:hover:bg-zinc-800  dark:text-white"
               onClick={handlePlayAudio}
               aria-label="Phát âm" // aria-label cố định
             >
@@ -97,7 +96,7 @@ export function LetterCard({ course }: LetterCardProps) {
         <div className="mt-8 space-y-4">
           <div className="flex justify-between items-center">
             <span className="text-sm text-zinc-400">Progress</span>
-            <span className="text-sm font-medium text-white">{progressPercentage}%</span>
+            <span className="text-sm font-medium dark:text-white">{progressPercentage}%</span>
           </div>
 
           <div
@@ -126,7 +125,7 @@ export function LetterCard({ course }: LetterCardProps) {
       <div className="border-t border-zinc-800 p-4">
         <Button
           variant="outline"
-          className="w-full bg-transparent border border-zinc-700 text-white hover:bg-white hover:text-zinc-900 transition-colors duration-200" // Cập nhật hover effect
+          className="w-full bg-transparent border border-zinc-700 dark:text-white  hover:text-zinc-900 transition-colors duration-200" // Cập nhật hover effect
           asChild
         >
           <Link href={`/english/speaking/${course.letter}`}>Continue Learning</Link>

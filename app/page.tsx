@@ -7,7 +7,6 @@ import { DashedHero } from "@/components/Hero/dashed-hero";
 import { MissionCard } from "@/components/mission-card";
 import { Newsletter } from "@/components/newsletter";
 import PowerBy from "@/components/PowerBy";
-import { Link } from "lucide-react";
 
 export default function Home() {
   return (
@@ -95,12 +94,14 @@ export default function Home() {
               description="Conquer vocabulary effectively with smart Flashcards: learn quickly, remember long, improve every day!"
               image="/assets/images/flashcards-showcase.png?height=400&width=600"
               delay={0.4}
+              href="/english/vocabulary"
             />
             <ExploreCard
               title="Speaking Practice"
               description="Speak, get detailed feedback, and perfect your pronunciation with our Speaking Practice feature!"
               image="/assets/images/speaking_showcase.png?height=400&width=600"
               delay={0.6}
+              href="/english/speaking"
             />
           </div>
         </div>

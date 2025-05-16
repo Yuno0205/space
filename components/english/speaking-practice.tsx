@@ -120,7 +120,7 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
     const srInstance = new SpeechRecognitionAPI();
     srInstance.continuous = false;
     srInstance.interimResults = false;
-    srInstance.lang = "en-UK"; // Using en-US as per original SpeakingPractice
+    srInstance.lang = "en-GB"; // Using en-GB as per original SpeakingPractice
 
     srInstance.onstart = () => {
       setIsListening(true);
@@ -357,7 +357,7 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
     } else if ("speechSynthesis" in window && currentCard.word) {
       if (speechSynthesis.speaking) speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(currentCard.word);
-      utterance.lang = "en-UK"; // Match recognition language
+      utterance.lang = "en-GB"; // Match recognition language
       speechSynthesis.speak(utterance);
     } else {
       setError("Không có file âm thanh hoặc trình duyệt không hỗ trợ phát âm.");

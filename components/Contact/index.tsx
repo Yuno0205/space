@@ -5,24 +5,20 @@ import { motion } from "framer-motion";
 import { Send } from "lucide-react";
 
 export function SimplifiedContact() {
-  const myEmail = "mainhathao195@gmail.com";
+  const myEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
   const emailSubject = "Inquiry from Space Visitor";
-  const emailBody =
-    "Hello Yuno,\n\nI'm reaching out from your awesome space website regarding...\n\n";
+  const emailBody = "Hello Yuno,\n\nI'm ...\n\n";
 
   const handleEmailButtonClick = () => {
-    // Tạo mailto link
-    let mailtoLink = `mailto:${myEmail}`;
-    if (emailSubject) {
-      mailtoLink += `?subject=${encodeURIComponent(emailSubject)}`;
-      if (emailBody) {
-        mailtoLink += `&body=${encodeURIComponent(emailBody)}`;
-      }
-    } else if (emailBody) {
-      mailtoLink += `?body=${encodeURIComponent(emailBody)}`;
-    }
+    // Create mailto link with subject and body if provided
+    const params = new URLSearchParams();
+    if (emailSubject) params.append("subject", emailSubject);
+    if (emailBody) params.append("body", emailBody);
 
-    window.location.href = mailtoLink;
+    const mailtoLink = `mailto:${myEmail}?${params.toString()}`;
+
+    // Open in a new tab/window to prevent navigation away from current page
+    window.open(mailtoLink, "_blank");
   };
 
   return (
@@ -41,7 +37,7 @@ export function SimplifiedContact() {
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          Launch a Com-Signal {/* Hoặc "Send a Message Through the Cosmos" */}
+          Space Comms Relay {/* Hoặc "Send a Message Through the Cosmos" */}
         </motion.h2>
         <motion.p
           className="text-gray-400 mb-8" // Tăng margin bottom
@@ -50,8 +46,7 @@ export function SimplifiedContact() {
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          Got a cosmic query or a supernova idea? Open your comms channel and send me a direct
-          message via email!
+          Have something to share? Open your comms channel and email me directly!
         </motion.p>
 
         <motion.div

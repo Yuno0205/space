@@ -167,16 +167,18 @@ export default async function Home() {
               description="Mission accomplished! All linguistic artifacts from Planet Z have been successfully collected and archived in the central data core. "
               delay={0.4}
             />
-            <MissionCard
-              title={`Uncharted Nebula ${unstartedCourse.letter}: Awaiting Your First Scan`}
-              status="Preparing"
-              completedTasks={unstartedCourse.completed_words}
-              totalTasks={unstartedCourse.total_words}
-              description={`This dense nebula, ${unstartedCourse.name}, contains approximately ${unstartedCourse.total_words} 
+            {unstartedCourse && (
+              <MissionCard
+                title={`Uncharted Nebula ${unstartedCourse.letter}: Awaiting Your First Scan`}
+                status="Preparing"
+                completedTasks={unstartedCourse.completed_words}
+                totalTasks={unstartedCourse.total_words}
+                description={`This dense nebula, ${unstartedCourse.name}, contains approximately ${unstartedCourse.total_words} 
               undiscovered linguistic phenomena. Your mission, should you choose to accept it, 
               is to be the first to map its wonders. Are your sensors calibrated?`}
-              delay={0.4}
-            />
+                delay={0.4}
+              />
+            )}
           </div>
         </div>
       </section>

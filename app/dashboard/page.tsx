@@ -6,7 +6,7 @@ import { TaskManager } from "@/components/Dashboard/task-manager";
 export default function DashboardPage() {
   return (
     <div className="container mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold mb-8">Workspace của tôi</h1>
+      <h1 className="text-3xl font-bold mb-8">My Workspace</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">

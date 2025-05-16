@@ -81,7 +81,7 @@ const LoadingAnimation: React.FC = () => {
           initial="initial" // Sẽ lấy từ textVariants.initial
           animate="animate" // Sẽ lấy từ textVariants.animate
         >
-          Đang du hành đến không gian mới...
+          Traveling to new space...
         </motion.p>
       </motion.div>
     </AnimatePresence>

@@ -7,8 +7,27 @@ import { DashedHero } from "@/components/Hero/dashed-hero";
 import { MissionCard } from "@/components/mission-card";
 import { Newsletter } from "@/components/newsletter";
 import PowerBy from "@/components/PowerBy";
+import { supabaseBrowser } from "@/lib/supabase/client";
 
-export default function Home() {
+export default async function Home() {
+  const { count } = await supabaseBrowser
+    .from("vocabularies")
+    .select("*", { count: "exact", head: true }) // Thêm head: true để chỉ lấy count
+    .eq("is_learned", true);
+
+  const { data: progress } = await supabaseBrowser
+    .from("courses")
+    .select("completed_words, total_words")
+    .eq("letter", "a")
+    .single();
+
+  const { data: unstartedCourse } = await supabaseBrowser
+    .from("courses")
+    .select("*")
+    .eq("completed_words", 0)
+    .limit(1)
+    .maybeSingle();
+
   return (
     <div className="relative min-h-screen bg-center dark:bg-[url('/assets/images/stars_bg.jpg')] bg-none">
       {/* Hero Section */}
@@ -121,25 +140,42 @@ export default function Home() {
 
           <div className="space-y-6">
             <MissionCard
-              title="Proxima Centauri Exploration"
+              title="Word Voyager: Your Expedition Log"
               status="Active"
-              progress={75}
-              description="Studying our nearest stellar neighbor and its potentially habitable exoplanets."
+              completedTasks={count || 0}
+              totalTasks={3874}
+              description="Your vocabulary universe is expanding! See how many 
+              linguistic stars you've collected and how many new galaxies of words await.
+               Keep charting, astronaut!"
               delay={0.2}
             />
             <MissionCard
-              title="Quantum Gravity Probe"
-              status="Preparing"
-              progress={35}
-              description="Testing the boundaries between quantum mechanics and general relativity."
+              title="Asteroid A: Lexical Excavation Zone"
+              status="Active"
+              completedTasks={progress?.completed_words || 0}
+              totalTasks={progress?.total_words || 0}
+              description="Long-range sensors are picking up intriguing lexical signals from Asteroid A.
+               Some terms are familiar, others... well, they're definitely 'alien.' 
+               Proceed with curiosity and an open mind!"
               delay={0.4}
             />
             <MissionCard
-              title="Interstellar Medium Survey"
-              status="Active"
-              progress={60}
-              description="Mapping the composition of matter between star systems in our galaxy."
-              delay={0.6}
+              title="Planet Z Archives: All Glyphs Deciphered"
+              status="Completed"
+              completedTasks={2}
+              totalTasks={2}
+              description="Mission accomplished! All linguistic artifacts from Planet Z have been successfully collected and archived in the central data core. "
+              delay={0.4}
+            />
+            <MissionCard
+              title={`Uncharted Nebula ${unstartedCourse.letter}: Awaiting Your First Scan`}
+              status="Preparing"
+              completedTasks={unstartedCourse.completed_words}
+              totalTasks={unstartedCourse.total_words}
+              description={`This dense nebula, ${unstartedCourse.name}, contains approximately ${unstartedCourse.total_words} 
+              undiscovered linguistic phenomena. Your mission, should you choose to accept it, 
+              is to be the first to map its wonders. Are your sensors calibrated?`}
+              delay={0.4}
             />
           </div>
         </div>

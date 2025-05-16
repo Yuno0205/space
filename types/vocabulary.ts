@@ -17,5 +17,5 @@ export type VocabularyCard = {
   example: string;
   synonyms?: string;
   antonyms?: string;
-  proficiently: Proficiently;
+  proficiently?: Proficiently;
 };

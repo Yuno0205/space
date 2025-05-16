@@ -10,6 +10,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
+import Breadcrumb from "@/components/BreadCrumb";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -38,7 +39,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <ThemeToggle />
                 <UserDropdown />
               </header>
-              <main>{children}</main>
+              <main className="flex-grow container mx-auto px-4 py-8">
+                <Breadcrumb className="mb-4" />
+                {children}
+              </main>
             </SidebarInset>
           </SidebarProvider>
         </ThemeProvider>

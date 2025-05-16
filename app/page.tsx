@@ -7,6 +7,7 @@ import { DashedHero } from "@/components/Hero/dashed-hero";
 import { MissionCard } from "@/components/mission-card";
 import { Newsletter } from "@/components/newsletter";
 import PowerBy from "@/components/PowerBy";
+import { Link } from "lucide-react";
 
 export default function Home() {
   return (
@@ -82,21 +83,23 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <ExploreCard
-              title="Black Holes"
-              description="The mysterious cosmic entities where gravity pulls so much that even light cannot escape."
-              image="/assets/images/placeholder.svg?height=400&width=600"
+              title="Empathic Voice Interface (EVI)"
+              description="EVI 2: New voice-to-voice AI for rapid, natural conversations that understands and matches your tone."
+              image="/assets/images/hume_showcase.png?height=400&width=600"
               delay={0.2}
+              href="/english/dialogue"
             />
+
             <ExploreCard
-              title="Nebulae"
-              description="Interstellar clouds of dust, hydrogen, helium and other ionized gases where stars are born."
-              image="/assets/images/placeholder.svg?height=400&width=600"
+              title="Learn English with Flashcards"
+              description="Conquer vocabulary effectively with smart Flashcards: learn quickly, remember long, improve every day!"
+              image="/assets/images/flashcards-showcase.png?height=400&width=600"
               delay={0.4}
             />
             <ExploreCard
-              title="Exoplanets"
-              description="Planets that orbit stars outside of our solar system, some potentially harboring life."
-              image="/assets/images/placeholder.svg?height=400&width=600"
+              title="Speaking Practice"
+              description="Speak, get detailed feedback, and perfect your pronunciation with our Speaking Practice feature!"
+              image="/assets/images/speaking_showcase.png?height=400&width=600"
               delay={0.6}
             />
           </div>

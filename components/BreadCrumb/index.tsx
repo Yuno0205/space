@@ -10,9 +10,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-interface BreadcrumbProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-const Breadcrumb: React.FC<BreadcrumbProps> = ({ className, ...props }) => {
+const Breadcrumb = ({ className, ...props }: React.ComponentProps<typeof ShadcnBreadcrumb>) => {
   const pathname = usePathname();
   const segments = pathname.split("/").filter((segment) => segment !== "");
 

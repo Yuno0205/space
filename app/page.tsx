@@ -1,11 +1,11 @@
 import { AnimatedText } from "@/components/animations/animated-text";
 import { CountUp } from "@/components/animations/count-up";
 import { FadeIn } from "@/components/animations/fade-in";
+import { SimplifiedContact } from "@/components/Contact";
 import { ExploreCard } from "@/components/explore-card";
 import { Footer } from "@/components/Footer/footer";
 import { DashedHero } from "@/components/Hero/dashed-hero";
 import { MissionCard } from "@/components/mission-card";
-import { Newsletter } from "@/components/newsletter";
 import PowerBy from "@/components/PowerBy";
 import { supabaseBrowser } from "@/lib/supabase/client";
 
@@ -185,7 +185,7 @@ export default async function Home() {
       <section className="relative py-16 px-4 border-t border-border">
         <div className="container mx-auto max-w-5xl">
           <FadeIn delay={0.2}>
-            <Newsletter />
+            <SimplifiedContact />
           </FadeIn>
         </div>
       </section>

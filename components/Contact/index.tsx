@@ -60,7 +60,7 @@ export function SimplifiedContact() {
             className="bg-white text-black hover:bg-gray-200 px-8 py-4 text-lg" // Tăng padding và font size cho nút
           >
             <Send className="h-5 w-5 mr-3" /> {/* Tăng margin right cho icon */}
-            Send Me an Email
+            Send me an Email
           </Button>
         </motion.div>
       </div>

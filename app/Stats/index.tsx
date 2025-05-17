@@ -27,7 +27,7 @@ export default function Stats() {
           <FadeIn delay={0.3}>
             <div className="flex flex-col items-center">
               <p className="text-3xl md:text-4xl font-bold">
-                <CountUp end={20} suffix="+" />
+                <CountUp end={24} suffix="+" />
               </p>
               <p className="text-sm text-muted-foreground">Courses and Lessons</p>
             </div>

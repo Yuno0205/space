@@ -15,7 +15,7 @@ import Breadcrumb from "@/components/BreadCrumb";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Space | Nhật Hào Personal Workspace",
+  title: "Space | Personal Workspace of Yuno",
   description:
     "Discover the mysteries of space through immersive experiences, cutting-edge research, and breathtaking imagery.",
   generator: "v0.dev",

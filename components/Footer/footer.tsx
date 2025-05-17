@@ -48,7 +48,7 @@ export function Footer() {
               <ul className="space-y-2">
                 <li>
                   <Link
-                    href="https://github.com/yuno0205" // Replace # with your actual GitHub link
+                    href="https://github.com/yuno0205"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted-foreground hover:text-foreground transition-colors"
@@ -56,19 +56,10 @@ export function Footer() {
                     GitHub
                   </Link>
                 </li>
+
                 <li>
                   <Link
-                    href="#" // Replace # with your actual Twitter link if you have one
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    Twitter
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#" // Replace # with your actual LinkedIn link if you have one
+                    href="https://www.linkedin.com/in/nhathao25/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted-foreground hover:text-foreground transition-colors"
@@ -134,19 +125,19 @@ export function Footer() {
           </FadeIn>
         </div>
 
-        <FadeIn delay={0.5}>
+        <div>
           <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center">
             <p className="text-muted-foreground text-sm mb-4 md:mb-0">
-              © {new Date().getFullYear()} Workspace. All rights reserved.
+              © {new Date().getFullYear()} Yuno&#39;s Space. All rights reserved.
             </p>
             <div className="flex space-x-6">
               <Link
-                href="#" // Replace # with your actual Twitter link
+                href="https://www.linkedin.com/in/nhathao25"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
-                Twitter
+                Linked
               </Link>
               <Link
                 href="https://github.com/yuno0205" // Replace # with your actual GitHub link
@@ -158,7 +149,7 @@ export function Footer() {
               </Link>
             </div>
           </div>
-        </FadeIn>
+        </div>
       </div>
     </footer>
   );

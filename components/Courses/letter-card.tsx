@@ -125,7 +125,7 @@ export function LetterCard({ course }: LetterCardProps) {
       <div className="border-t border-zinc-800 p-4">
         <Button
           variant="outline"
-          className="w-full bg-transparent border border-zinc-700 dark:text-white  hover:text-zinc-900 transition-colors duration-200" // Cập nhật hover effect
+          className="w-full bg-transparent border border-zinc-700 dark:text-white  hover:text-zinc-900 transition-colors duration-200"
           asChild
         >
           <Link href={`/english/speaking/${course.letter}`}>Continue Learning</Link>

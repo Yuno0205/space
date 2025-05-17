@@ -1,4 +1,4 @@
-import LoadingAnimation from "@/components/LoadingAnimation"; // Import Client Component UI ở trên
+import LoadingAnimation from "@/components/Fallback/loading-animation";
 
 export default async function Loading() {
   // Sau khi chờ, render Client Component chứa UI loading

@@ -1,4 +1,4 @@
-import { VocabularyPractice } from "@/components/english/vocabulary-practice";
+import { VocabularyPractice } from "@/components/English/vocabulary-practice";
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 

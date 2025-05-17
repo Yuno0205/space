@@ -5,17 +5,17 @@ import "./globals.css";
 
 import { UserDropdown } from "@/components/Header/user-dropdown";
 import { MainSidebar } from "@/components/Sidebar/main-sidebar";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/Theme/theme-provider";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
-import { ThemeToggle } from "@/components/theme-toggle";
+import { ThemeToggle } from "@/components/Theme/theme-toggle";
 import { cn } from "@/lib/utils";
 import Breadcrumb from "@/components/BreadCrumb";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Space | Nhật Hào Personal Workspace",
+  title: "Space | Personal Workspace of Yuno",
   description:
     "Discover the mysteries of space through immersive experiences, cutting-edge research, and breathtaking imagery.",
   generator: "v0.dev",

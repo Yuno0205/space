@@ -54,7 +54,7 @@ export function LearningProgress() {
         >
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>This Week`&apos;`s Goal</CardDescription>
+              <CardDescription>This Week&apos;s Goal</CardDescription>
               <CardTitle className="text-2xl flex items-center">
                 <Target className="mr-2 h-5 w-5 text-gray-400" />
                 {weeklyGoal} hours

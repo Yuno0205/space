@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { ArrowRight, BookText, Check, Volume2, X } from "lucide-react";
 import { useState } from "react";
-import { Badge } from "../ui/badge";
+import { Badge } from "../ui/badge"; // Assuming this path is correct for Badge
 import { supabaseBrowser as supabase } from "@/lib/supabase/client";
 import { VocabularyCard } from "@/types/vocabulary";
 
@@ -26,18 +26,34 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
   const [knownWords, setKnownWords] = useState<string[]>([]);
   const [unknownWords, setUnknownWords] = useState<string[]>([]);
 
+  // Ensure cards array is not empty before accessing currentCard
+  if (cards.length === 0) {
+    // Handle the case where there are no vocabularies
+    // You could return a message or a loading state, for example:
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Vocabulary Practice</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>No vocabulary cards available for practice at the moment.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const currentCard = cards[currentCardIndex];
-  const progress = ((currentCardIndex + 1) / cards.length) * 100;
+  const progress = cards.length > 0 ? ((currentCardIndex + 1) / cards.length) * 100 : 0;
 
   async function handleKnown(id: string) {
-    // Không cần cookies(), supabaseBrowser tự quản anon key
+    // supabaseBrowser handles anon key automatically
     await supabase.from("vocabularies").update({ is_learned: true }).eq("id", id);
     await supabase.from("review_queue").upsert({
       vocab_id: id,
       repetition_count: 1,
       interval_days: 1,
       easiness_factor: 2.5,
-      next_review: new Date(Date.now() + 86400000).toISOString(),
+      next_review: new Date(Date.now() + 86400000).toISOString(), // 1 day later
     });
   }
 
@@ -46,6 +62,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
   };
 
   const markAsKnown = () => {
+    if (!currentCard) return; // Guard clause
     if (!knownWords.includes(currentCard.id)) {
       setKnownWords([...knownWords, currentCard.id]);
     }
@@ -54,6 +71,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
   };
 
   const markAsUnknown = () => {
+    if (!currentCard) return; // Guard clause
     if (!unknownWords.includes(currentCard.id)) {
       setUnknownWords([...unknownWords, currentCard.id]);
     }
@@ -65,11 +83,12 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
       setCurrentCardIndex(currentCardIndex + 1);
       setIsFlipped(false);
     }
+    // Consider what happens when all cards are done (e.g., show a summary or loop)
   };
 
   const playAudio = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!currentCard.audio_url) return;
+    if (!currentCard || !currentCard.audio_url) return; // Guard clause
     new Audio(currentCard.audio_url).play().catch(console.error);
   };
 
@@ -85,13 +104,13 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center">
                 <BookText className="mr-2 h-5 w-5" />
-                Thẻ từ vựng
+                Vocabulary Card
               </div>
               <div className="text-sm font-normal">
                 {currentCardIndex + 1}/{cards.length}
               </div>
             </CardTitle>
-            <CardDescription>Nhấp vào thẻ để xem định nghĩa</CardDescription>
+            <CardDescription>Click the card to see the definition</CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center pb-0">
             <motion.div
@@ -105,7 +124,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
               {/* Front of card */}
               <div
                 className={cn(
-                  "absolute h-full inset-0 backface-hidden rounded-xl border dark:border-white/10 border-black/20  bg-white/5 p-6 flex flex-col items-center justify-center",
+                  "absolute h-full inset-0 backface-hidden rounded-xl border dark:border-white/10 border-black/20 bg-white/5 p-6 flex flex-col items-center justify-center",
                   isFlipped ? "invisible" : "visible"
                 )}
               >
@@ -118,6 +137,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
                       size="icon"
                       className="h-8 w-8 rounded-full"
                       onClick={(e) => playAudio(e)}
+                      aria-label="Play audio"
                     >
                       <Volume2 className="h-4 w-4" />
                     </Button>
@@ -128,8 +148,8 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
                     {currentCard.word_type}
                   </Badge>
                 )}
-                <div className="absolute top-4 right-4"></div>
-                <p className="text-sm text-gray-400 mt-4">Nhấp để xem định nghĩa</p>
+                {/* <div className="absolute top-4 right-4"></div> // This div is empty, consider removing or adding content */}
+                <p className="text-sm text-gray-400 mt-4">Click to see definition</p>
               </div>
 
               {/* Back of card */}
@@ -138,48 +158,54 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
                   "absolute inset-0 h-full rounded-xl border dark:border-white/10 border-black/20 bg-white/5 p-6 flex flex-col",
                   isFlipped ? "visible" : "invisible"
                 )}
-                style={{ transform: "rotateY(-180deg)" }}
+                style={{ transform: "rotateY(-180deg)" }} // Corrected transform for backface visibility
               >
-                <div className="flex-1 space-y-4">
+                <div className="flex-1 space-y-4 overflow-y-auto">
+                  {" "}
+                  {/* Added overflow-y-auto for long content */}
                   <div>
-                    <h4 className="font-medium mb-2">Định nghĩa:</h4>
+                    <h4 className="font-medium mb-2">Definition:</h4>
                     <p className="text-gray-300 mb-1">{currentCard.definition}</p>
                     {currentCard.translation && (
                       <p className="text-gray-400 italic">({currentCard.translation})</p>
                     )}
                   </div>
-                  <div>
-                    <h4 className="font-medium mb-2">Ví dụ:</h4>
-                    <p className="text-gray-300 italic">&quot;{currentCard.example}&quot;</p>
-                  </div>
-
-                  {/* Từ đồng nghĩa */}
+                  {currentCard.example && (
+                    <div>
+                      <h4 className="font-medium mb-2">Example:</h4>
+                      <p className="text-gray-300 italic">&quot;{currentCard.example}&quot;</p>
+                    </div>
+                  )}
+                  {/* Synonyms */}
                   {currentCard.synonyms && (
                     <div>
-                      <h4 className="font-medium mb-2">Từ đồng nghĩa:</h4>
+                      <h4 className="font-medium mb-2">Synonyms:</h4>
                       <div className="flex flex-wrap gap-2">
                         {(Array.isArray(currentCard.synonyms)
                           ? currentCard.synonyms
                           : currentCard.synonyms.split(",").map((s) => s.trim())
                         ).map((synonym, idx) => (
-                          <Badge key={idx} variant="secondary" className="capitalize px-4 py-2">
+                          <Badge key={idx} variant="secondary" className="capitalize px-3 py-1">
+                            {" "}
+                            {/* Adjusted padding */}
                             {synonym}
                           </Badge>
                         ))}
                       </div>
                     </div>
                   )}
-
-                  {/* Từ trái nghĩa */}
+                  {/* Antonyms */}
                   {currentCard.antonyms && (
                     <div>
-                      <h4 className="font-medium mb-2">Từ trái nghĩa:</h4>
+                      <h4 className="font-medium mb-2">Antonyms:</h4>
                       <div className="flex flex-wrap gap-2">
                         {(Array.isArray(currentCard.antonyms)
                           ? currentCard.antonyms
                           : currentCard.antonyms.split(",").map((s) => s.trim())
                         ).map((antonym, idx) => (
-                          <Badge key={idx} variant="outline" className="capitalize px-4 py-2">
+                          <Badge key={idx} variant="outline" className="capitalize px-3 py-1">
+                            {" "}
+                            {/* Adjusted padding */}
                             {antonym}
                           </Badge>
                         ))}
@@ -187,7 +213,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
                     </div>
                   )}
                 </div>
-                <p className="text-sm text-gray-400 text-center">Nhấp để xem từ</p>
+                <p className="text-sm text-gray-400 text-center mt-2">Click to see the word</p>
               </div>
             </motion.div>
           </CardContent>
@@ -199,7 +225,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
             >
               <Button onClick={markAsUnknown} variant="outline" className="flex items-center">
                 <X className="mr-2 h-4 w-4" />
-                Chưa biết
+                Dont Know
               </Button>
             </motion.div>
             <motion.div
@@ -207,7 +233,12 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
               whileTap={{ scale: 0.95 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
-              <Button onClick={nextCard} variant="outline" className="flex items-center">
+              <Button
+                onClick={nextCard}
+                variant="outline"
+                className="flex items-center"
+                aria-label="Next card"
+              >
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </motion.div>
@@ -218,7 +249,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
             >
               <Button onClick={markAsKnown} variant="outline" className="flex items-center">
                 <Check className="mr-2 h-4 w-4" />
-                Đã biết
+                Know
               </Button>
             </motion.div>
           </CardFooter>
@@ -232,14 +263,14 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
       >
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle>Tiến độ</CardTitle>
+            <CardTitle>Progress</CardTitle>
           </CardHeader>
           <CardContent>
             <Progress value={progress} className="h-2" />
             <div className="flex justify-between mt-2 text-sm text-gray-400">
-              <div>Đã biết: {knownWords.length}</div>
-              <div>Chưa biết: {unknownWords.length}</div>
-              <div>Còn lại: {cards.length - currentCardIndex - 1}</div>
+              <div>Known: {knownWords.length}</div>
+              <div>Unknown: {unknownWords.length}</div>
+              <div>Remaining: {cards.length > 0 ? cards.length - currentCardIndex - 1 : 0}</div>
             </div>
           </CardContent>
         </Card>

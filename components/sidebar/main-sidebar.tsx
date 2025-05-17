@@ -33,7 +33,7 @@ import { cn } from "@/lib/utils";
 // Navigation data
 const navigationItems = [
   {
-    title: "Trang chủ",
+    title: "Home",
     icon: Home,
     href: "/",
     items: [],
@@ -45,18 +45,18 @@ const navigationItems = [
     items: [],
   },
   {
-    title: "Tiếng Anh",
+    title: "English",
     icon: BookOpen,
     href: "/english",
     items: [
-      { title: "Tổng quan", href: "/english" },
-      { title: "Từ vựng", href: "/english/vocabulary" },
-      { title: "Trò chuyện với EVI", href: "/english/dialogue" },
-      { title: "Luyện nói", href: "/english/speaking" },
-      { title: "Luyện nghe", href: "/english/listening" },
-      { title: "Luyện đọc", href: "/english/reading" },
-      { title: "Luyện viết", href: "/english/writing" },
-      { title: "Ôn tập", href: "/english/revise" },
+      { title: "Overview", href: "/english" },
+      { title: "Vocabulary", href: "/english/vocabulary" },
+      { title: "Talk with EVI", href: "/english/dialogue" },
+      { title: "Speaking Practice", href: "/english/speaking" },
+      { title: "Listening Practice", href: "/english/listening" },
+      { title: "Reading Practice", href: "/english/reading" },
+      { title: "Writing Practice", href: "/english/writing" },
+      { title: "Review", href: "/english/revise" },
     ],
   },
   {
@@ -66,23 +66,23 @@ const navigationItems = [
     items: [],
   },
   {
-    title: "Khóa học",
+    title: "Courses",
     icon: BookText,
     href: "/courses",
     items: [
-      { title: "Đang học", href: "/courses/current" },
-      { title: "Đã hoàn thành", href: "/courses/completed" },
-      { title: "Khám phá", href: "/courses/explore" },
+      { title: "In Progress", href: "/courses/current" },
+      { title: "Completed", href: "/courses/completed" },
+      { title: "Explore", href: "/courses/explore" },
     ],
   },
   {
-    title: "Dự án",
+    title: "Projects",
     icon: Rocket,
     href: "/projects",
     items: [
-      { title: "Đang thực hiện", href: "/projects/current" },
-      { title: "Ý tưởng", href: "/projects/ideas" },
-      { title: "Đã hoàn thành", href: "/projects/completed" },
+      { title: "In Progress", href: "/projects/current" },
+      { title: "Ideas", href: "/projects/ideas" },
+      { title: "Completed", href: "/projects/completed" },
     ],
   },
   // {
@@ -109,7 +109,7 @@ export function MainSidebar() {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Tìm kiếm..."
+              placeholder="Search..."
               className="w-full bg-background pl-8 text-sm"
             />
           </div>

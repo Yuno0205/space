@@ -1,30 +1,58 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { CheckCircle2, Circle, Clock, Plus, Trash2 } from "lucide-react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { CheckCircle2, Circle, Clock, Plus, Trash2 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 type Task = {
-  id: number
-  title: string
-  completed: boolean
-  priority: "low" | "medium" | "high"
-  dueDate?: string
-}
+  id: number;
+  title: string;
+  completed: boolean;
+  priority: "low" | "medium" | "high";
+  dueDate?: string;
+};
+
+// Sample tasks in English for demonstration
+const initialTasks: Task[] = [
+  {
+    id: 1,
+    title: "Complete React Hooks exercises",
+    completed: true,
+    priority: "high",
+    dueDate: "2025-04-15",
+  },
+  {
+    id: 2,
+    title: "Read Next.js App Router documentation",
+    completed: false,
+    priority: "medium",
+    dueDate: "2025-04-20",
+  },
+  {
+    id: 3,
+    title: "Work on the final course project",
+    completed: false,
+    priority: "high",
+    dueDate: "2025-05-10",
+  },
+  { id: 4, title: "Research Framer Motion animations", completed: false, priority: "low" },
+];
 
 export function TaskManager() {
-  const [tasks, setTasks] = useState<Task[]>([
-    { id: 1, title: "Hoàn thành bài tập React Hooks", completed: true, priority: "high", dueDate: "2025-04-15" },
-    { id: 2, title: "Đọc tài liệu về Next.js App Router", completed: false, priority: "medium", dueDate: "2025-04-20" },
-    { id: 3, title: "Làm project cuối khóa", completed: false, priority: "high", dueDate: "2025-05-10" },
-    { id: 4, title: "Nghiên cứu về Framer Motion", completed: false, priority: "low" },
-  ])
-  const [newTask, setNewTask] = useState("")
+  const [tasks, setTasks] = useState<Task[]>(initialTasks); // Use English initial tasks
+  const [newTask, setNewTask] = useState("");
 
   const addTask = () => {
     if (newTask.trim()) {
@@ -34,33 +62,47 @@ export function TaskManager() {
           id: Date.now(),
           title: newTask,
           completed: false,
-          priority: "medium",
+          priority: "medium", // Default priority for new tasks
         },
-      ])
-      setNewTask("")
+      ]);
+      setNewTask("");
     }
-  }
+  };
 
   const toggleTask = (id: number) => {
-    setTasks(tasks.map((task) => (task.id === id ? { ...task, completed: !task.completed } : task)))
-  }
+    setTasks(
+      tasks.map((task) => (task.id === id ? { ...task, completed: !task.completed } : task))
+    );
+  };
 
   const deleteTask = (id: number) => {
-    setTasks(tasks.filter((task) => task.id !== id))
-  }
+    setTasks(tasks.filter((task) => task.id !== id));
+  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high":
-        return "bg-red-500 hover:bg-red-600"
+        return "bg-red-500 hover:bg-red-600";
       case "medium":
-        return "bg-yellow-500 hover:bg-yellow-600"
+        return "bg-yellow-500 hover:bg-yellow-600";
       case "low":
-        return "bg-green-500 hover:bg-green-600"
+        return "bg-green-500 hover:bg-green-600";
       default:
-        return "bg-blue-500 hover:bg-blue-600"
+        return "bg-blue-500 hover:bg-blue-600"; // A default color
     }
-  }
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "";
+    // Basic date formatting, you might want to use a library like date-fns for more robust formatting
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      // Using en-US locale for date
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
   return (
     <motion.div
@@ -70,13 +112,13 @@ export function TaskManager() {
     >
       <Card>
         <CardHeader>
-          <CardTitle>Quản lý nhiệm vụ</CardTitle>
-          <CardDescription>Theo dõi và quản lý các nhiệm vụ học tập</CardDescription>
+          <CardTitle>Task Manager</CardTitle>
+          <CardDescription>Track and manage your learning tasks</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex space-x-2 mb-6">
             <Input
-              placeholder="Thêm nhiệm vụ mới..."
+              placeholder="Add new task..."
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addTask()}
@@ -99,7 +141,7 @@ export function TaskManager() {
                 key={task.id}
                 className={cn(
                   "flex items-center justify-between p-3 rounded-md border",
-                  task.completed ? "bg-muted/50 border-muted" : "bg-background border-border",
+                  task.completed ? "bg-muted/50 border-muted" : "bg-background border-border"
                 )}
               >
                 <div className="flex items-center space-x-3 flex-1">
@@ -111,18 +153,22 @@ export function TaskManager() {
                     )}
                   </button>
                   <div className="flex-1">
-                    <p className={cn("font-medium", task.completed && "line-through text-gray-400")}>{task.title}</p>
+                    <p
+                      className={cn("font-medium", task.completed && "line-through text-gray-400")}
+                    >
+                      {task.title}
+                    </p>
                     {task.dueDate && (
                       <div className="flex items-center text-xs text-gray-400 mt-1">
                         <Clock className="h-3 w-3 mr-1" />
-                        <span>Hạn: {new Date(task.dueDate).toLocaleDateString("vi-VN")}</span>
+                        <span>Due: {formatDate(task.dueDate)}</span>
                       </div>
                     )}
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Badge className={cn("text-xs", getPriorityColor(task.priority))}>
-                    {task.priority === "high" ? "Cao" : task.priority === "medium" ? "Trung bình" : "Thấp"}
+                  <Badge className={cn("text-xs capitalize", getPriorityColor(task.priority))}>
+                    {task.priority} {/* Display priority directly */}
                   </Badge>
                   <Button
                     variant="ghost"
@@ -138,9 +184,9 @@ export function TaskManager() {
           </div>
         </CardContent>
         <CardFooter className="text-sm text-gray-400">
-          {tasks.filter((t) => t.completed).length} / {tasks.length} nhiệm vụ hoàn thành
+          {tasks.filter((t) => t.completed).length} / {tasks.length} tasks completed
         </CardFooter>
       </Card>
     </motion.div>
-  )
+  );
 }

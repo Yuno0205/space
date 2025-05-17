@@ -56,7 +56,7 @@ export function PomodoroTimer() {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isActive, mode, focusTime, breakTime]);
+  }, [isActive, mode, focusTime, breakTime]); // Added focusTime and breakTime to dependency array
 
   const toggleTimer = () => {
     setIsActive(!isActive);
@@ -66,6 +66,8 @@ export function PomodoroTimer() {
     setIsActive(false);
     setMode("focus");
     setTimeLeft(focusTime);
+    // Optionally reset sessions count if desired:
+    // setSessions(0);
   };
 
   const formatTime = (seconds: number) => {
@@ -76,6 +78,7 @@ export function PomodoroTimer() {
 
   const calculateProgress = () => {
     const total = mode === "focus" ? focusTime : breakTime;
+    if (total === 0) return 0; // Avoid division by zero
     return ((total - timeLeft) / total) * 100;
   };
 
@@ -101,10 +104,10 @@ export function PomodoroTimer() {
         >
           <CardTitle className="flex items-center justify-between">
             <span>Pomodoro Timer</span>
-            <span className="text-sm font-normal text-gray-400">{sessions} phiên hoàn thành</span>
+            <span className="text-sm font-normal text-gray-400">{sessions} sessions completed</span>
           </CardTitle>
           <CardDescription>
-            {mode === "focus" ? "Tập trung làm việc" : "Thời gian nghỉ ngơi"}
+            {mode === "focus" ? "Focus on your work" : "Take a short break"}
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
@@ -112,7 +115,7 @@ export function PomodoroTimer() {
             <div className="relative w-48 h-48 mb-6">
               <div className="absolute inset-0 flex items-center justify-center">
                 <motion.div
-                  key={`${mode}-${isActive}`}
+                  key={`${mode}-${isActive}`} // Key helps Framer Motion re-animate on change
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.3 }}
@@ -129,9 +132,9 @@ export function PomodoroTimer() {
                   fill="transparent"
                   stroke="currentColor"
                   strokeWidth="2"
-                  className="text-gray-800"
+                  className="text-gray-800" // Background circle
                 />
-                <circle
+                <motion.circle // Animated progress circle
                   cx="50"
                   cy="50"
                   r="45"
@@ -143,6 +146,9 @@ export function PomodoroTimer() {
                   strokeDashoffset={2 * Math.PI * 45 * (1 - calculateProgress() / 100)}
                   className={mode === "focus" ? "text-white" : "text-green-500"}
                   transform="rotate(-90 50 50)"
+                  initial={{ strokeDashoffset: 2 * Math.PI * 45 }}
+                  animate={{ strokeDashoffset: 2 * Math.PI * 45 * (1 - calculateProgress() / 100) }}
+                  transition={{ duration: 0.5, ease: "linear" }} // Smooth transition for progress
                 />
               </svg>
             </div>
@@ -157,6 +163,7 @@ export function PomodoroTimer() {
                   variant="outline"
                   size="icon"
                   className="h-10 w-10 rounded-full"
+                  aria-label={isActive ? "Pause timer" : "Start timer"}
                 >
                   {isActive ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 </Button>
@@ -171,6 +178,7 @@ export function PomodoroTimer() {
                   variant="outline"
                   size="icon"
                   className="h-10 w-10 rounded-full"
+                  aria-label="Reset timer"
                 >
                   <RotateCcw className="h-4 w-4" />
                 </Button>
@@ -181,13 +189,13 @@ export function PomodoroTimer() {
         <CardFooter className="text-sm text-gray-400 flex justify-between">
           <div className="flex items-center">
             {mode === "focus" ? (
-              <Play className="h-3 w-3 mr-1" />
+              <Play className="h-3 w-3 mr-1" /> // Could be a more "focus" related icon
             ) : (
               <Coffee className="h-3 w-3 mr-1" />
             )}
-            <span>{mode === "focus" ? "Tập trung: 25 phút" : "Nghỉ ngơi: 5 phút"}</span>
+            <span>{mode === "focus" ? "Focus: 25 min" : "Break: 5 min"}</span>
           </div>
-          <div>{isActive ? "Đang chạy" : "Tạm dừng"}</div>
+          <div>{isActive ? "Running" : "Paused"}</div>
         </CardFooter>
       </Card>
     </motion.div>

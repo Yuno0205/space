@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { BookMarked, Code, ExternalLink, FileText, Link2, Video } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { motion } from "framer-motion";
+import { BookMarked, Code, ExternalLink, FileText, Link2, Video } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 type Resource = {
-  id: number
-  title: string
-  url: string
-  type: "article" | "video" | "code" | "document" | "link"
-  tags: string[]
-}
+  id: number;
+  title: string;
+  url: string;
+  type: "article" | "video" | "code" | "document" | "link";
+  tags: string[];
+};
 
 export function ResourceCollection() {
   const resources: Resource[] = [
@@ -51,24 +51,24 @@ export function ResourceCollection() {
       type: "link",
       tags: ["typescript", "javascript", "documentation"],
     },
-  ]
+  ];
 
   const getResourceIcon = (type: string) => {
     switch (type) {
       case "article":
-        return <FileText className="h-4 w-4" />
+        return <FileText className="h-4 w-4" />;
       case "video":
-        return <Video className="h-4 w-4" />
+        return <Video className="h-4 w-4" />;
       case "code":
-        return <Code className="h-4 w-4" />
+        return <Code className="h-4 w-4" />;
       case "document":
-        return <BookMarked className="h-4 w-4" />
+        return <BookMarked className="h-4 w-4" />;
       case "link":
-        return <Link2 className="h-4 w-4" />
+        return <Link2 className="h-4 w-4" />;
       default:
-        return <Link2 className="h-4 w-4" />
+        return <Link2 className="h-4 w-4" />;
     }
-  }
+  };
 
   return (
     <motion.div
@@ -78,15 +78,15 @@ export function ResourceCollection() {
     >
       <Card>
         <CardHeader>
-          <CardTitle>Bộ sưu tập tài liệu</CardTitle>
-          <CardDescription>Tài liệu và nguồn học tập đã lưu trữ</CardDescription>
+          <CardTitle>Resource Collection</CardTitle>
+          <CardDescription>Saved documents and learning resources</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {resources.map((resource) => (
               <motion.div
                 key={resource.id}
-                whileHover={{ x: 5 }}
+                whileHover={{ x: 5 }} // Subtle hover effect
                 className="p-4 rounded-md border border-white/10 bg-white/5 flex justify-between items-start"
               >
                 <div className="flex-1">
@@ -103,7 +103,12 @@ export function ResourceCollection() {
                   </div>
                 </div>
                 <Button variant="ghost" size="icon" asChild className="ml-2 flex-shrink-0">
-                  <a href={resource.url} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={resource.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Open ${resource.title}`}
+                  >
                     <ExternalLink className="h-4 w-4" />
                   </a>
                 </Button>
@@ -113,5 +118,5 @@ export function ResourceCollection() {
         </CardContent>
       </Card>
     </motion.div>
-  )
+  );
 }

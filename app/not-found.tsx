@@ -58,7 +58,7 @@ const NotFoundPage: React.FC = () => {
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center h-full w-full bg-black text-white font-sans p-6 text-center",
+        "flex flex-col items-center justify-center gap-2 h-full w-full bg-black text-white font-sans p-6 text-center min",
         orbitron.className
       )}
     >
@@ -82,7 +82,7 @@ const NotFoundPage: React.FC = () => {
       </motion.h1>
 
       <motion.p
-        className="text-base md:text-lg text-gray-400 mb-8 max-w-xs md:max-w-sm"
+        className="text-base md:text-lg text-gray-400 mb-4 max-w-sm md:max-w-md"
         variants={contentVariants}
         initial="initial"
         animate="animate"
@@ -90,6 +90,9 @@ const NotFoundPage: React.FC = () => {
       >
         This planet doesn&apos;t seem to be initialized yet...
       </motion.p>
+      <motion.div variants={contentVariants} initial="initial" animate="animate" className="mb-4">
+        But you always have a place to return to 🤖
+      </motion.div>
 
       <motion.div
         variants={contentVariants}
@@ -99,10 +102,7 @@ const NotFoundPage: React.FC = () => {
       >
         <Link
           href="/"
-          className="px-5 py-2.5 bg-white text-black font-medium rounded-md shadow-sm
-                     hover:bg-gray-200 
-                     focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75
-                     transition-colors duration-200 ease-in-out transform hover:scale-105"
+          className="px-5 py-2.5 bg-white text-black font-medium rounded-md shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75 transition-colors duration-200 ease-in-out transform hover:scale-105"
         >
           Go home?
         </Link>

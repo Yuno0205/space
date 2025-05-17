@@ -1,19 +1,25 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import { ArrowUpRight } from "lucide-react"
-import { motion } from "framer-motion"
+import Image from "next/image";
+import { ArrowUpRight } from "lucide-react";
+import { motion } from "framer-motion";
 
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
 
 interface ExploreCardProps {
-  title: string
-  description: string
-  image: string
-  delay?: number
+  title: string;
+  description: string;
+  image: string;
+  delay?: number;
+  href?: string;
 }
 
-export function ExploreCard({ title, description, image, delay = 0 }: ExploreCardProps) {
+export function ExploreCard({ title, description, image, delay = 0, href }: ExploreCardProps) {
+  const navigate = useRouter();
+  const navigateTo = () => {
+    navigate.push(href || "/");
+  };
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -21,8 +27,14 @@ export function ExploreCard({ title, description, image, delay = 0 }: ExploreCar
       viewport={{ once: true, margin: "-100px" }}
       transition={{ duration: 0.6, delay: delay }}
     >
-      <motion.div whileHover={{ y: -10 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
-        <Card className="bg-black border border-white/10 overflow-hidden group">
+      <motion.div
+        whileHover={{ y: -10 }}
+        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+      >
+        <Card
+          className="border border-white/10 overflow-hidden group cursor-pointer min-h-[400px]"
+          onClick={navigateTo}
+        >
           <div className="relative h-48 overflow-hidden">
             <Image
               src={image || "/placeholder.svg"}
@@ -52,5 +64,5 @@ export function ExploreCard({ title, description, image, delay = 0 }: ExploreCar
         </Card>
       </motion.div>
     </motion.div>
-  )
+  );
 }

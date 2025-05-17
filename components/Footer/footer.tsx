@@ -1,7 +1,9 @@
 "use client";
 
-import { FadeIn } from "@/components/animations/fade-in";
+import { FadeIn } from "@/components/animations/fade-in"; // Assuming correct path
 import Link from "next/link";
+// Assuming ThemeToggle is for dark/light mode and you might want it here
+// import { ThemeToggle } from "@/components/theme-toggle"; // Assuming correct path
 
 export function Footer() {
   return (
@@ -10,14 +12,14 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           <FadeIn direction="up" delay={0.1}>
             <div>
-              <h3 className="font-bold mb-4">Khám phá</h3>
+              <h3 className="font-bold mb-4">Explore</h3>
               <ul className="space-y-2">
                 <li>
                   <Link
                     href="/english"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Tiếng Anh
+                    English
                   </Link>
                 </li>
                 <li>
@@ -42,11 +44,13 @@ export function Footer() {
 
           <FadeIn direction="up" delay={0.2}>
             <div>
-              <h3 className="font-bold mb-4">Liên kết</h3>
+              <h3 className="font-bold mb-4">Connect</h3>
               <ul className="space-y-2">
                 <li>
                   <Link
-                    href="#"
+                    href="https://github.com/yuno0205" // Replace # with your actual GitHub link
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     GitHub
@@ -54,7 +58,9 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="#" // Replace # with your actual Twitter link if you have one
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Twitter
@@ -62,7 +68,9 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="#" // Replace # with your actual LinkedIn link if you have one
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     LinkedIn
@@ -74,17 +82,19 @@ export function Footer() {
 
           <FadeIn direction="up" delay={0.3}>
             <div>
-              <h3 className="font-bold mb-4">Cài đặt</h3>
+              <h3 className="font-bold mb-4">Settings</h3>
               <ul className="space-y-2">
                 <li className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Chế độ tối/sáng</span>
+                  {/* You would typically place the ThemeToggle component here if desired */}
+                  {/* <ThemeToggle /> */}
+                  <span className="text-muted-foreground">Theme (Dark/Light)</span>
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="#" // Replace # if you have a language settings page
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Ngôn ngữ
+                    Language
                   </Link>
                 </li>
               </ul>
@@ -93,30 +103,30 @@ export function Footer() {
 
           <FadeIn direction="up" delay={0.4}>
             <div>
-              <h3 className="font-bold mb-4">Pháp lý</h3>
+              <h3 className="font-bold mb-4">Legal</h3>
               <ul className="space-y-2">
                 <li>
                   <Link
-                    href="#"
+                    href="/terms" // Example link, replace #
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Điều khoản
+                    Terms
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/privacy" // Example link, replace #
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Bảo mật
+                    Privacy
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/cookies" // Example link, replace #
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Cookie
+                    Cookies
                   </Link>
                 </li>
               </ul>
@@ -127,17 +137,21 @@ export function Footer() {
         <FadeIn delay={0.5}>
           <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center">
             <p className="text-muted-foreground text-sm mb-4 md:mb-0">
-              © 2024 Workspace. All rights reserved.
+              © {new Date().getFullYear()} Workspace. All rights reserved.
             </p>
             <div className="flex space-x-6">
               <Link
-                href="#"
+                href="#" // Replace # with your actual Twitter link
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 Twitter
               </Link>
               <Link
-                href="#"
+                href="https://github.com/yuno0205" // Replace # with your actual GitHub link
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 GitHub

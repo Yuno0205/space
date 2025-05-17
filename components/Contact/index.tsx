@@ -46,7 +46,8 @@ export function SimplifiedContact() {
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          Have something to share? Open your comms channel and email me directly!
+          Got a brilliant idea, a fascinating thought, or some feedback to share? My inbox is always
+          open for cosmic inspiration!
         </motion.p>
 
         <motion.div

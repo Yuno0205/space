@@ -1,5 +1,5 @@
 import { FadeIn } from "@/components/animations/fade-in";
-import { EnglishDashboard } from "@/components/english/english-dashboard";
+import { EnglishDashboard } from "@/components/English/english-dashboard";
 
 export default function EnglishPage() {
   return (

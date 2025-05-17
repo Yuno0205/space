@@ -1,10 +1,10 @@
 import { AnimatedText } from "@/components/animations/animated-text";
 import { FadeIn } from "@/components/animations/fade-in";
 import { SimplifiedContact } from "@/components/Contact";
-import { ExploreCard } from "@/components/explore-card";
+import { ExploreCard } from "@/components/Card/explore-card";
 import { Footer } from "@/components/Footer/footer";
 import { DashedHero } from "@/components/Hero/dashed-hero";
-import { MissionCard } from "@/components/mission-card";
+import { MissionCard } from "@/components/Card/mission-card";
 import PowerBy from "@/components/PowerBy";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import Stats from "./Stats";
@@ -40,13 +40,10 @@ export default async function Home() {
         primaryButtonText="Visit the English planet"
         secondaryButtonText="Explore the Next.js universe"
       />
-
       {/* Stats Section */}
       <Stats />
-
       {/* Power by section */}
       <PowerBy />
-
       {/* Explore Section */}
       <section className="relative py-16 px-4">
         <div className="container mx-auto max-w-5xl">
@@ -85,7 +82,6 @@ export default async function Home() {
           </div>
         </div>
       </section>
-
       {/* Missions Section */}
       <section className="relative py-16 px-4 border-t border-border">
         <div className="container mx-auto max-w-5xl">
@@ -142,7 +138,6 @@ export default async function Home() {
           </div>
         </div>
       </section>
-
       {/* Contact Section */}
       <section className="relative py-16 px-4 border-t border-border">
         <div className="container mx-auto max-w-5xl">
@@ -151,8 +146,6 @@ export default async function Home() {
           </FadeIn>
         </div>
       </section>
-
-      {/* Footer */}
       <Footer />
     </div>
   );

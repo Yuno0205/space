@@ -1,6 +1,6 @@
 "use client";
 
-import { PronunciationScore } from "@/components/english/speaking-practice";
+import { PronunciationScore } from "@/components/English/speaking-practice";
 import { useState, useEffect } from "react";
 
 // Define the key for localStorage

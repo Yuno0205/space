@@ -7,8 +7,14 @@ export type Post = IBlogPost & {
   readTime: string;
 };
 
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  const { slug } = await params;
+interface BlogPostPageProps {
+  params: {
+    slug: string;
+  };
+}
+
+export default async function BlogPostPage({ params }: BlogPostPageProps) {
+  const { slug } = params;
 
   const data = await fetchPostBySlug(slug); // Get the first post (slug is unique)
 

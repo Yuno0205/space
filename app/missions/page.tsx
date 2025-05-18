@@ -20,19 +20,22 @@ export default function MissionsPage() {
             <MissionCard
               title="Proxima Centauri Exploration"
               status="Active"
-              progress={75}
+              completedTasks={100}
+              totalTasks={10}
               description="Studying our nearest stellar neighbor and its potentially habitable exoplanets."
             />
             <MissionCard
               title="Interstellar Medium Survey"
               status="Active"
-              progress={60}
+              completedTasks={100}
+              totalTasks={10}
               description="Mapping the composition of matter between star systems in our galaxy."
             />
             <MissionCard
               title="Lunar Gateway Construction"
               status="Active"
-              progress={45}
+              completedTasks={100}
+              totalTasks={10}
               description="Building the orbital outpost that will serve as a staging point for lunar and Mars missions."
             />
           </div>
@@ -44,13 +47,15 @@ export default function MissionsPage() {
             <MissionCard
               title="Quantum Gravity Probe"
               status="Preparing"
-              progress={35}
+              completedTasks={100}
+              totalTasks={10}
               description="Testing the boundaries between quantum mechanics and general relativity."
             />
             <MissionCard
               title="Mars Sample Return"
               status="Preparing"
-              progress={28}
+              completedTasks={100}
+              totalTasks={10}
               description="Mission to collect and return samples from the Martian surface to Earth for detailed analysis."
             />
           </div>
@@ -62,13 +67,15 @@ export default function MissionsPage() {
             <MissionCard
               title="Asteroid Redirect Test"
               status="Completed"
-              progress={100}
+              completedTasks={100}
+              totalTasks={10}
               description="Successfully demonstrated technology to change the trajectory of an asteroid."
             />
             <MissionCard
               title="Solar Probe Plus"
               status="Completed"
-              progress={100}
+              completedTasks={100}
+              totalTasks={10}
               description="Studied the outer corona of the Sun to improve our understanding of solar physics."
             />
           </div>

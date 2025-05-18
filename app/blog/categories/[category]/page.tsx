@@ -1,5 +1,5 @@
-import { FadeIn } from "@/components/animations/fade-in"
-import { BlogList } from "@/components/blog/blog-list"
+import { FadeIn } from "@/components/animations/fade-in";
+import { BlogList } from "@/components/blog/blog-list";
 
 export default function CategoryPage({ params }: { params: { category: string } }) {
   return (
@@ -9,7 +9,7 @@ export default function CategoryPage({ params }: { params: { category: string } 
         <p className="text-gray-400 mb-8">Các bài viết về {decodeURIComponent(params.category)}</p>
       </FadeIn>
 
-      <BlogList category={params.category} />
+      <BlogList initialPosts={[]} category={params.category} />
     </div>
-  )
+  );
 }

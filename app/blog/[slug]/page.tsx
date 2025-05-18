@@ -1,4 +1,4 @@
-import { BlogPost } from "@/components/blog/blog-post";
+import { BlogPost } from "@/components/Blog/blog-post";
 import { IBlogPost } from "../page";
 import { fetchPostBySlug } from "@/lib/wp";
 

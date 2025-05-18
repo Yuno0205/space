@@ -16,11 +16,8 @@ import DOMPurify from "dompurify";
 import { motion } from "framer-motion";
 import { ArrowLeft, Bookmark, Calendar, Clock, Share2, Tag } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
 
 export function BlogPost({ post }: { post: Post }) {
-  const { slug } = useParams();
-
   return (
     <div className="max-w-4xl mx-auto">
       <FadeIn>

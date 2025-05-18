@@ -1,5 +1,5 @@
 // Giả sử file này là: c:/Projects/space/app/english/speaking/page.tsx
-import { AlphabetCourses } from "@/components/courses/alphabet-courses";
+import { AlphabetCourses } from "@/components/Courses/alphabet-courses";
 import { Suspense } from "react";
 
 export default async function SpeakingPage({

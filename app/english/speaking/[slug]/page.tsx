@@ -1,4 +1,4 @@
-import SpeakingPractice from "@/components/english/speaking-practice";
+import SpeakingPractice from "@/components/English/speaking-practice";
 import { supabaseBrowser as supabase } from "@/lib/supabase/client";
 
 export default async function Home({ params }: { params: Promise<{ slug: string }> }) {
@@ -9,7 +9,7 @@ export default async function Home({ params }: { params: Promise<{ slug: string 
     .select("*")
     .ilike("word", `${slug}%`)
     .eq("proficiently->>speaking", "false")
-    .limit(10);
+    .limit(50);
 
   if (error) {
     console.error("Error fetching data:", error);

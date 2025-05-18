@@ -1,13 +1,13 @@
 import { AnimatedText } from "@/components/animations/animated-text";
-import { CountUp } from "@/components/animations/count-up";
 import { FadeIn } from "@/components/animations/fade-in";
 import { SimplifiedContact } from "@/components/Contact";
-import { ExploreCard } from "@/components/explore-card";
+import { ExploreCard } from "@/components/Card/explore-card";
 import { Footer } from "@/components/Footer/footer";
 import { DashedHero } from "@/components/Hero/dashed-hero";
-import { MissionCard } from "@/components/mission-card";
+import { MissionCard } from "@/components/Card/mission-card";
 import PowerBy from "@/components/PowerBy";
 import { supabaseBrowser } from "@/lib/supabase/client";
+import Stats from "./Stats";
 
 export default async function Home() {
   const { count } = await supabaseBrowser
@@ -40,53 +40,10 @@ export default async function Home() {
         primaryButtonText="Visit the English planet"
         secondaryButtonText="Explore the Next.js universe"
       />
-
       {/* Stats Section */}
-      <section className="relative py-16 px-4 border-t border-border">
-        <div className="container mx-auto max-w-5xl">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <FadeIn delay={0.1}>
-              <div className="flex flex-col items-center">
-                <p className="text-3xl md:text-4xl font-bold">
-                  <CountUp end={3} suffix="K+" />
-                </p>
-                <p className="text-sm text-muted-foreground">Vocabulary across topics</p>
-              </div>
-            </FadeIn>
-
-            <FadeIn delay={0.2}>
-              <div className="flex flex-col items-center">
-                <p className="text-3xl md:text-4xl font-bold">
-                  <CountUp end={50} suffix="K+" />
-                </p>
-                <p className="text-sm text-muted-foreground">Stellar Photos</p>
-              </div>
-            </FadeIn>
-
-            <FadeIn delay={0.3}>
-              <div className="flex flex-col items-center">
-                <p className="text-3xl md:text-4xl font-bold">
-                  <CountUp end={120} suffix="+" />
-                </p>
-                <p className="text-sm text-muted-foreground">Research Papers</p>
-              </div>
-            </FadeIn>
-
-            <FadeIn delay={0.4}>
-              <div className="flex flex-col items-center">
-                <p className="text-3xl md:text-4xl font-bold">
-                  <CountUp end={15} suffix="M+" />
-                </p>
-                <p className="text-sm text-muted-foreground">Space Enthusiasts</p>
-              </div>
-            </FadeIn>
-          </div>
-        </div>
-      </section>
-
+      <Stats />
       {/* Power by section */}
       <PowerBy />
-
       {/* Explore Section */}
       <section className="relative py-16 px-4">
         <div className="container mx-auto max-w-5xl">
@@ -125,7 +82,6 @@ export default async function Home() {
           </div>
         </div>
       </section>
-
       {/* Missions Section */}
       <section className="relative py-16 px-4 border-t border-border">
         <div className="container mx-auto max-w-5xl">
@@ -182,8 +138,7 @@ export default async function Home() {
           </div>
         </div>
       </section>
-
-      {/* Newsletter Section */}
+      {/* Contact Section */}
       <section className="relative py-16 px-4 border-t border-border">
         <div className="container mx-auto max-w-5xl">
           <FadeIn delay={0.2}>
@@ -191,8 +146,6 @@ export default async function Home() {
           </FadeIn>
         </div>
       </section>
-
-      {/* Footer */}
       <Footer />
     </div>
   );

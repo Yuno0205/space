@@ -46,7 +46,8 @@ export function SimplifiedContact() {
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          Have something to share? Open your comms channel and email me directly!
+          Got a brilliant idea, a fascinating thought, or some feedback to share? My inbox is always
+          open for cosmic inspiration!
         </motion.p>
 
         <motion.div
@@ -60,7 +61,7 @@ export function SimplifiedContact() {
             className="bg-white text-black hover:bg-gray-200 px-8 py-4 text-lg" // Tăng padding và font size cho nút
           >
             <Send className="h-5 w-5 mr-3" /> {/* Tăng margin right cho icon */}
-            Send Me an Email
+            Send me an Email
           </Button>
         </motion.div>
       </div>

@@ -1,4 +1,4 @@
-import { AlphabetCourses } from "@/components/courses/alphabet-courses";
+import { AlphabetCourses } from "@/components/Courses/alphabet-courses";
 
 export default function CoursesPage() {
   return (

@@ -58,7 +58,7 @@ const NotFoundPage: React.FC = () => {
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-2 h-full w-full bg-black text-white font-sans p-6 text-center min",
+        "flex flex-col items-center justify-center gap-2 h-full w-full dark:bg-black text-white font-sans p-6 text-center min",
         orbitron.className
       )}
     >
@@ -73,7 +73,7 @@ const NotFoundPage: React.FC = () => {
       </motion.div>
 
       <motion.h1
-        className="text-3xl md:text-4xl font-semibold text-gray-100 mb-3"
+        className="text-3xl md:text-4xl font-semibold dark:text-gray-100 text-gray-900 mb-3"
         variants={contentVariants}
         initial="initial"
         animate="animate"
@@ -90,9 +90,14 @@ const NotFoundPage: React.FC = () => {
       >
         This planet doesn&apos;t seem to be initialized yet...
       </motion.p>
-      <motion.div variants={contentVariants} initial="initial" animate="animate" className="mb-4">
+      <motion.p
+        variants={contentVariants}
+        initial="initial"
+        animate="animate"
+        className="mb-4 text-gray-400"
+      >
         But you always have a place to return to 🤖
-      </motion.div>
+      </motion.p>
 
       <motion.div
         variants={contentVariants}

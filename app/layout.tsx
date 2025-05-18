@@ -18,7 +18,6 @@ export const metadata: Metadata = {
   title: "Space | Personal Workspace of Yuno",
   description:
     "Discover the mysteries of space through immersive experiences, cutting-edge research, and breathtaking imagery.",
-  generator: "v0.dev",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -18,8 +18,6 @@ import { ArrowLeft, Bookmark, Calendar, Clock, Share2, Tag } from "lucide-react"
 import Link from "next/link";
 
 export function BlogPost({ post }: { post: Post }) {
-  console.log("Post data:", post); // Log the post data to check its structure
-
   return (
     <div className="max-w-4xl mx-auto">
       <FadeIn>

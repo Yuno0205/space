@@ -58,7 +58,7 @@ const LoadingAnimation: React.FC = () => {
     // nhưng để lại cũng không sao.
     <AnimatePresence>
       <motion.div
-        className="flex flex-col items-center justify-center h-full w-full bg-black bg-cover bg-center text-gray-200 font-inter p-5 relative overflow-hidden"
+        className="flex flex-col items-center justify-center h-full w-full dark:bg-black bg-cover bg-center text-gray-200 font-inter p-5 relative overflow-hidden"
         role="status"
         aria-live="polite"
         initial={{ opacity: 0 }}
@@ -76,7 +76,7 @@ const LoadingAnimation: React.FC = () => {
         </motion.div>
 
         <motion.p
-          className="text-lg md:text-xl tracking-wider"
+          className="text-lg md:text-xl tracking-wider text-gray-700 dark:text-gray-400"
           variants={textVariants}
           initial="initial" // Sẽ lấy từ textVariants.initial
           animate="animate" // Sẽ lấy từ textVariants.animate

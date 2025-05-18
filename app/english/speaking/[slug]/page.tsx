@@ -9,7 +9,7 @@ export default async function Home({ params }: { params: Promise<{ slug: string 
     .select("*")
     .ilike("word", `${slug}%`)
     .eq("proficiently->>speaking", "false")
-    .limit(10);
+    .limit(50);
 
   if (error) {
     console.error("Error fetching data:", error);

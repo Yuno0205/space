@@ -11,6 +11,7 @@ import { MainSidebar } from "@/components/Sidebar/main-sidebar";
 import { ThemeToggle } from "@/components/Theme/theme-toggle";
 import { UserDropdown } from "@/components/Header/user-dropdown";
 import Breadcrumb from "@/components/BreadCrumb";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </SidebarInset>
           </SidebarProvider>
         </ThemeProvider>
+        <SpeedInsights />
       </body>
     </html>
   );

@@ -1,16 +1,16 @@
 "use client";
 
-import spaceshipAnimationData from "@/public/animations/spaceship.json"; // Đường dẫn tới file JSON
+// import spaceshipAnimationData from "@/public/animations/spaceship.json"; // Đường dẫn tới file JSON
+// import { LottieComponentProps } from "lottie-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { LottieComponentProps } from "lottie-react";
 import React from "react";
 
 const LoadingAnimation: React.FC = () => {
-  const lottieOptions: LottieComponentProps = {
-    animationData: spaceshipAnimationData,
-    loop: true,
-    autoplay: true,
-  };
+  // const lottieOptions: LottieComponentProps = {
+  //   animationData: spaceshipAnimationData,
+  //   loop: true,
+  //   autoplay: true,
+  // };
 
   const spaceshipVariants = {
     initial: { y: 10, opacity: 0 }, // Bắt đầu với opacity 0 và hơi dịch xuống

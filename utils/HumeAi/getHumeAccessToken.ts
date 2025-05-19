@@ -3,9 +3,6 @@ import "server-only";
 import { fetchAccessToken } from "hume";
 
 export const getHumeAccessToken = async () => {
-  if (!process.env.HUME_API_KEY || !process.env.HUME_SECRET_KEY) {
-    return null;
-  }
   try {
     const accessToken = await fetchAccessToken({
       apiKey: String(process.env.HUME_API_KEY),

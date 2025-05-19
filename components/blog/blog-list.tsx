@@ -1,6 +1,6 @@
 "use client";
 
-import { IBlogPost } from "@/app/blog/page";
+import { IBlogPost } from "@/app/blog/page"; // Giả sử đường dẫn này đúng
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,7 @@ import { motion } from "framer-motion";
 import { Calendar, Search, Tag } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+// Import DOMPurify bình thường
 import DOMPurify from "dompurify";
 
 type BlogListProps = {
@@ -23,12 +24,39 @@ type BlogListProps = {
   category?: string;
 };
 
+// Tạo một component con để xử lý việc sanitize và dangerouslySetInnerHTML
+const SanitizedHtml = ({ htmlContent }: { htmlContent: string }) => {
+  const [sanitizedHtml, setSanitizedHtml] = useState("");
+
+  useEffect(() => {
+    // DOMPurify chỉ chạy ở client-side
+    if (typeof window !== "undefined") {
+      setSanitizedHtml(DOMPurify.sanitize(htmlContent));
+    }
+  }, [htmlContent]);
+
+  // Quan trọng: Chỉ render khi sanitizedHtml đã có giá trị
+  // để tránh hydration mismatch nếu server render ra chuỗi rỗng
+  // và client render ra HTML đã sanitize.
+  if (!sanitizedHtml && typeof window === "undefined") {
+    // Hoặc return một placeholder an toàn cho SSR
+    // Hoặc nếu bạn muốn giữ nguyên HTML gốc (không an toàn) cho SSR,
+    // thì cần cân nhắc kỹ lưỡng về XSS.
+    // Tốt nhất là không render gì hoặc placeholder cho SSR nếu nội dung cần sanitize.
+    return null;
+  }
+
+  // Hoặc nếu muốn nội dung gốc hiển thị trên server (không khuyến khích nếu chưa tin tưởng nguồn dữ liệu)
+  // const displayHtml = typeof window === 'undefined' ? htmlContent : sanitizedHtml;
+
+  return <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
+};
+
 export function BlogList({ initialPosts, category }: BlogListProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [blogPosts, setBlogPosts] = useState<IBlogPost[]>(initialPosts);
 
   useEffect(() => {
-    // Lọc bài viết theo từ khóa tìm kiếm
     const filteredPosts = initialPosts.filter(
       (post) =>
         post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -38,18 +66,17 @@ export function BlogList({ initialPosts, category }: BlogListProps) {
     setBlogPosts(filteredPosts);
   }, [searchQuery, initialPosts]);
 
-  // Filter posts by category if provided
   const filteredByCategory = category
     ? blogPosts.filter((post) => post.categories.map(String).includes(category))
     : blogPosts;
 
-  // Get all unique categories
   const allCategories = Array.from(
     new Set(initialPosts.flatMap((post) => post.categories.map(String)))
   ).sort();
 
   return (
     <div className="space-y-6">
+      {/* ... phần search và categories ... */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -93,26 +120,22 @@ export function BlogList({ initialPosts, category }: BlogListProps) {
                       )}
                       <div className={post.image ? "md:w-2/3" : "w-full"}>
                         <CardHeader>
-                          <CardTitle
-                            className="text-xl"
-                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.title) }}
-                          />
+                          {/* Sử dụng component SanitizedHtml */}
+                          <CardTitle className="text-xl">
+                            <SanitizedHtml htmlContent={post.title} />
+                          </CardTitle>
                           <CardDescription className="flex items-center text-sm space-x-4">
                             <span className="flex items-center">
                               <Calendar className="mr-1 h-3 w-3" />
                               {new Date(post.date).toLocaleDateString("vi-VN")}
                             </span>
-                            {/* <span className="flex items-center">
-                              <Clock className="mr-1 h-3 w-3" />
-                              {Math.ceil(post.excerpt.length / 200)} phút đọc
-                            </span> */}
                           </CardDescription>
                         </CardHeader>
                         <CardContent>
-                          <p
-                            className="text-gray-400"
-                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.excerpt) }}
-                          />
+                          {/* Sử dụng component SanitizedHtml */}
+                          <div className="text-gray-400">
+                            <SanitizedHtml htmlContent={post.excerpt} />
+                          </div>
                         </CardContent>
                         <CardFooter>
                           <div className="flex flex-wrap gap-2">
@@ -138,7 +161,7 @@ export function BlogList({ initialPosts, category }: BlogListProps) {
             </Card>
           )}
         </div>
-
+        {/* Sidebar categories và recent posts */}
         <div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -181,6 +204,7 @@ export function BlogList({ initialPosts, category }: BlogListProps) {
                   {initialPosts.slice(0, 3).map((post) => (
                     <Link key={post.id} href={`/blog/${post.slug}`} className="block">
                       <div className="group">
+                        {/* Không cần sanitize title ở đây nếu nó chỉ là text */}
                         <h3 className="font-medium group-hover:text-white transition-colors">
                           {post.title}
                         </h3>

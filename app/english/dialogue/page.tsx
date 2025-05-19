@@ -1,11 +1,12 @@
 import ChatWrapper from "@/components/Hume/ChatWrapper";
 import { getHumeAccessToken } from "@/utils/HumeAi/getHumeAccessToken";
+import { notFound } from "next/navigation";
 
 export default async function Page() {
   const accessToken = await getHumeAccessToken();
 
   if (!accessToken) {
-    throw new Error("Failed to obtain Hume access token. Check API credentials.");
+    return notFound();
   }
 
   return (

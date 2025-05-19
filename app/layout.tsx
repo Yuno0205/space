@@ -6,6 +6,11 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/Theme/theme-provider";
 
 import { cn } from "@/lib/utils";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { MainSidebar } from "@/components/Sidebar/main-sidebar";
+import { ThemeToggle } from "@/components/Theme/theme-toggle";
+import { UserDropdown } from "@/components/Header/user-dropdown";
+import Breadcrumb from "@/components/BreadCrumb";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body className={cn(inter.className, "min-h-screen bg-background text-foreground")}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          {/* <SidebarProvider defaultOpen={true}>
+          <SidebarProvider defaultOpen={true}>
             <MainSidebar />
             <SidebarInset className="relative">
               <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b border-border bg-background/80 px-4 backdrop-blur-md">
@@ -37,8 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 {children}
               </main>
             </SidebarInset>
-          </SidebarProvider> */}
-          <main>{children}</main>
+          </SidebarProvider>
         </ThemeProvider>
       </body>
     </html>

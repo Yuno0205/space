@@ -1,4 +1,3 @@
-// hooks/use-mobile.ts (Hoặc đổi tên thành use-mobile.tsx nếu bạn thích, nhưng giữ lại code này)
 "use client";
 
 import { useState, useEffect } from "react";

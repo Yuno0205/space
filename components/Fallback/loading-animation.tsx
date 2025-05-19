@@ -2,7 +2,7 @@
 
 import spaceshipAnimationData from "@/public/animations/spaceship.json"; // Đường dẫn tới file JSON
 import { AnimatePresence, motion } from "framer-motion";
-import Lottie, { LottieComponentProps } from "lottie-react";
+import { LottieComponentProps } from "lottie-react";
 import React from "react";
 
 const LoadingAnimation: React.FC = () => {
@@ -72,7 +72,8 @@ const LoadingAnimation: React.FC = () => {
           initial="initial" // Sẽ lấy từ spaceshipVariants.initial
           animate="animate" // Sẽ lấy từ spaceshipVariants.animate
         >
-          <Lottie {...lottieOptions} style={{ width: "100%", height: "100%" }} />
+          {/* <Lottie {...lottieOptions} style={{ width: "100%", height: "100%" }} /> */}
+          Loading
         </motion.div>
 
         <motion.p

@@ -25,13 +25,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body className={cn(inter.className, "min-h-screen bg-background text-foreground")}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          <SidebarProvider defaultOpen={true}>
+          {/* <SidebarProvider defaultOpen={true}>
             <MainSidebar />
             <SidebarInset className="relative">
               <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b border-border bg-background/80 px-4 backdrop-blur-md">
                 <div className="flex items-center gap-4">
                   <SidebarTrigger />
-                  {/* <Logo /> */}
                 </div>
                 <div className="flex-1" />
 
@@ -43,7 +42,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 {children}
               </main>
             </SidebarInset>
-          </SidebarProvider>
+          </SidebarProvider> */}
+          <main>{children}</main>
         </ThemeProvider>
       </body>
     </html>

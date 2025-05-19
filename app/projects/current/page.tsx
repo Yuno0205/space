@@ -1,23 +1,25 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion"; // Import Framer Motion
-import Lottie, { LottieComponentProps } from "lottie-react";
+import { AnimatePresence, motion } from "framer-motion";
+import dynamic from "next/dynamic"; // Import dynamic
+import type { LottieComponentProps } from "lottie-react"; // Import kiểu nếu cần
 // Đảm bảo bạn đã xóa nền của file spaceship.json này thủ công
-import spaceshipAnimationData from "@/public/animations/spaceship.json"; // Đường dẫn tới file JSON
+import spaceshipAnimationData from "@/public/animations/spaceship.json";
+
+// Dynamic import component Lottie, tắt SSR cho nó
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 const LoadingSpinner = () => {
-  // Lottie options, sử dụng trực tiếp animation data
   const lottieOptions: LottieComponentProps = {
-    animationData: spaceshipAnimationData, // Sử dụng trực tiếp, giả sử nền đã được xóa
+    animationData: spaceshipAnimationData,
     loop: true,
     autoplay: true,
   };
 
-  // Framer Motion variants cho Lottie (tàu vũ trụ)
   const spaceshipVariants = {
     initial: { y: 0, opacity: 0.8 },
     animate: {
-      y: [-5, 5, -5], // Di chuyển nhẹ lên xuống
+      y: [-5, 5, -5],
       opacity: [0.8, 1, 0.8],
       transition: {
         y: {
@@ -34,7 +36,6 @@ const LoadingSpinner = () => {
     },
   };
 
-  // Framer Motion variants cho text
   const textVariants = {
     initial: { opacity: 0.5 },
     animate: {
@@ -57,17 +58,19 @@ const LoadingSpinner = () => {
         transition={{ duration: 0.5 }}
       >
         <motion.div
-          // Tailwind classes cho container của Lottie
-          className="w-48 h-48 md:w-52 md:h-52 mb-8" // Kích thước có thể điều chỉnh, ví dụ w-48 h-48
+          className="w-48 h-48 md:w-52 md:h-52 mb-8"
           variants={spaceshipVariants}
           initial="initial"
           animate="animate"
         >
-          <Lottie {...lottieOptions} style={{ width: "100%", height: "100%" }} />
+          {/* Kiểm tra typeof window trước khi render Lottie nếu cần cẩn thận hơn,
+              nhưng ssr: false thường là đủ */}
+          {typeof window !== "undefined" && (
+            <Lottie {...lottieOptions} style={{ width: "100%", height: "100%" }} />
+          )}
         </motion.div>
 
         <motion.p
-          // Tailwind classes cho text
           className="text-lg md:text-xl tracking-wider"
           variants={textVariants}
           initial="initial"

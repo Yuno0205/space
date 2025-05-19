@@ -1,21 +1,26 @@
 "use client";
 
-import spaceshipAnimationData from "@/public/animations/spaceship.json"; // Đường dẫn tới file JSON
-import Lottie, { LottieComponentProps } from "lottie-react";
+import spaceshipAnimationData from "@/public/animations/spaceship.json";
 import { AnimatePresence, motion } from "framer-motion";
-import React from "react";
+import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import type { LottieComponentProps } from "lottie-react";
 
-const LoadingAnimation: React.FC = () => {
+// Dynamic import component Lottie
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
+
+const LoadingAnimation = () => {
   const lottieOptions: LottieComponentProps = {
     animationData: spaceshipAnimationData,
     loop: true,
     autoplay: true,
   };
 
+  // (Phần variants giữ nguyên)
   const spaceshipVariants = {
-    initial: { y: 10, opacity: 0 }, // Bắt đầu với opacity 0 và hơi dịch xuống
+    initial: { y: 10, opacity: 0 },
     animate: {
-      y: [-5, 5, -5], // Di chuyển nhẹ lên xuống
+      y: [-5, 5, -5],
       opacity: 1,
       transition: {
         y: {
@@ -24,7 +29,6 @@ const LoadingAnimation: React.FC = () => {
           ease: "easeInOut",
         },
         opacity: {
-          // Animation cho opacity khi xuất hiện
           duration: 0.5,
           ease: "easeOut",
         },
@@ -33,9 +37,9 @@ const LoadingAnimation: React.FC = () => {
   };
 
   const textVariants = {
-    initial: { opacity: 0, y: 5 }, // Bắt đầu với opacity 0 và hơi dịch xuống
+    initial: { opacity: 0, y: 5 },
     animate: {
-      opacity: [0.6, 1, 0.6], // Thay đổi opacity để tạo hiệu ứng "thở"
+      opacity: [0.6, 1, 0.6],
       y: 0,
       transition: {
         opacity: {
@@ -44,18 +48,21 @@ const LoadingAnimation: React.FC = () => {
           ease: "easeInOut",
         },
         y: {
-          // Animation cho y khi xuất hiện
           duration: 0.5,
           ease: "easeOut",
-          delay: 0.1, // Delay nhẹ so với Lottie
+          delay: 0.1,
         },
       },
     },
   };
 
+  // (Optional) Dùng state để đảm bảo chỉ render Lottie ở client
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   return (
-    // AnimatePresence không thực sự cần thiết ở đây vì loading.tsx sẽ bị unmount bởi Next.js
-    // nhưng để lại cũng không sao.
     <AnimatePresence>
       <motion.div
         className="flex flex-col items-center justify-center h-full w-full dark:bg-black bg-cover bg-center text-gray-200 font-inter p-5 relative overflow-hidden"
@@ -64,22 +71,23 @@ const LoadingAnimation: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }} // Thời gian fade in/out ngắn
+        transition={{ duration: 0.3 }}
       >
         <motion.div
           className="w-48 h-48 md:w-52 md:h-52 mb-8"
           variants={spaceshipVariants}
-          initial="initial" // Sẽ lấy từ spaceshipVariants.initial
-          animate="animate" // Sẽ lấy từ spaceshipVariants.animate
+          initial="initial"
+          animate="animate"
         >
-          <Lottie {...lottieOptions} style={{ width: "100%", height: "100%" }} />
+          {/* Chỉ render Lottie khi isClient là true */}
+          {isClient && <Lottie {...lottieOptions} style={{ width: "100%", height: "100%" }} />}
         </motion.div>
 
         <motion.p
           className="text-lg md:text-xl tracking-wider text-gray-700 dark:text-gray-400"
           variants={textVariants}
-          initial="initial" // Sẽ lấy từ textVariants.initial
-          animate="animate" // Sẽ lấy từ textVariants.animate
+          initial="initial"
+          animate="animate"
         >
           Traveling to new space...
         </motion.p>

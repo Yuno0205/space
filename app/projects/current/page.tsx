@@ -1,12 +1,11 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import dynamic from "next/dynamic"; // Import dynamic
-import type { LottieComponentProps } from "lottie-react"; // Import kiểu nếu cần
-// Đảm bảo bạn đã xóa nền của file spaceship.json này thủ công
+import dynamic from "next/dynamic";
+import type { LottieComponentProps } from "lottie-react";
 import spaceshipAnimationData from "@/public/animations/spaceship.json";
 
-// Dynamic import component Lottie, tắt SSR cho nó
+// Dynamic import component Lottie
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 const LoadingSpinner = () => {

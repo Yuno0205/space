@@ -472,8 +472,8 @@ export default function PowerBy() {
           <span className="data-text text-white text-2xl font-bold">Powered By</span>
         </div>
       </div>
-      <div className="flex gap-8 max-w-[1200px] mx-auto">
-        <Card className="w-1/3 min-h-[240px]  rounded-lg p-6 item relative flex flex-col justify-between ">
+      <div className="flex flex-col md:flex-row gap-8 max-w-[1200px] mx-auto">
+        <Card className="w-full md:w-1/3 min-h-[240px] rounded-lg p-6 item relative flex flex-col justify-between ">
           <Image src="/assets/images/react-logo.png" alt="react-logo" width={40} height={40} />
           <div className="flex flex-col gap-2">
             <Link
@@ -491,10 +491,11 @@ export default function PowerBy() {
             </span>
           </div>
         </Card>
-        <Card className="w-1/3 min-h-[240px]  rounded-lg p-6 item relative flex flex-col justify-between ">
+
+        <Card className="w-full md:w-1/3 min-h-[240px] rounded-lg p-6 item relative flex flex-col justify-between ">
           <Image
             src="/assets/images/supabase-logo-icon.png"
-            alt="react-logo"
+            alt="supabase-logo-icon"
             width={40}
             height={40}
           />
@@ -513,8 +514,9 @@ export default function PowerBy() {
             </span>
           </div>
         </Card>
-        <Card className="w-1/3 min-h-[240px]  rounded-lg p-6 item relative flex flex-col justify-between ">
-          <Image src="/assets/images/wordpress.png" alt="react-logo" width={40} height={40} />
+
+        <Card className="w-full md:w-1/3 min-h-[240px] rounded-lg p-6 item relative flex flex-col justify-between ">
+          <Image src="/assets/images/wordpress.png" alt="wordpress-logo" width={40} height={40} />
           <div className="flex flex-col gap-2">
             <Link
               href="https://wordpress.com/"

@@ -375,7 +375,7 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
   }
 
   return (
-    <div className="space-y-6 p-4 bg-white text-black min-h-screen dark:bg-transparent dark:text-white">
+    <div className="space-y-6 sm:p-4 p-2  bg-white text-black min-h-screen dark:bg-transparent dark:text-white">
       {pronunciationResult.error && (
         <Alert
           variant="destructive"
@@ -400,7 +400,7 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
                 <Mic className="mr-2 h-5 w-5" />
                 Speaking Practice
               </div>
-              <div className="text-sm font-normal text-gray-500 dark:text-gray-400">
+              <div className="text-sm font-normal text-gray-500 dark:text-gray-400 hidden sm:block">
                 {currentCardIndex + 1}/{cards.length}
               </div>
             </CardTitle>

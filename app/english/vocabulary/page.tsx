@@ -19,7 +19,7 @@ export default async function VocabularyPage() {
   if (error) throw new Error(error.message);
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto py-8 px-2 sm:px-4">
       <VocabularyPractice vocabularies={vocabularies} />
     </div>
   );

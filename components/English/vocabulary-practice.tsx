@@ -225,7 +225,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
             >
               <Button onClick={markAsUnknown} variant="outline" className="flex items-center">
                 <X className="mr-2 h-4 w-4" />
-                Dont Know
+                <span className="hidden sm:inline"> Dont Know</span>
               </Button>
             </motion.div>
             <motion.div
@@ -249,7 +249,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
             >
               <Button onClick={markAsKnown} variant="outline" className="flex items-center">
                 <Check className="mr-2 h-4 w-4" />
-                Know
+                <span className="hidden sm:inline">Know</span>
               </Button>
             </motion.div>
           </CardFooter>
@@ -267,7 +267,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
           </CardHeader>
           <CardContent>
             <Progress value={progress} className="h-2" />
-            <div className="flex justify-between mt-2 text-sm text-gray-400">
+            <div className="flex flex-col sm:flex-row justify-between mt-2 text-sm text-gray-400">
               <div>Known: {knownWords.length}</div>
               <div>Unknown: {unknownWords.length}</div>
               <div>Remaining: {cards.length > 0 ? cards.length - currentCardIndex - 1 : 0}</div>

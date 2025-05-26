@@ -54,14 +54,14 @@ export function SimplifiedContact() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.98 }}
           transition={{ type: "spring", stiffness: 400, damping: 12 }}
-          className="inline-block"
+          className="inline-block mx-auto" // Center the button
         >
           <Button
             onClick={handleEmailButtonClick}
-            className="bg-white text-black hover:bg-gray-200 px-8 py-4 text-lg" // Tăng padding và font size cho nút
+            className="bg-white text-black hover:bg-gray-200 sm:px-8 px-4 py-4 text-lg " // Tăng padding và font size cho nút
           >
-            <Send className="h-5 w-5 mr-3" /> {/* Tăng margin right cho icon */}
-            Send me an Email
+            <Send className="h-5 w-5 mr-3" />
+            <span> Send me an Email</span>
           </Button>
         </motion.div>
       </div>

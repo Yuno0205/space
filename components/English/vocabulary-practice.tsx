@@ -267,7 +267,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
           </CardHeader>
           <CardContent>
             <Progress value={progress} className="h-2" />
-            <div className="sm:flex flex-col justify-between mt-2 text-sm text-gray-400">
+            <div className="flex flex-col sm:flex-row justify-between mt-2 text-sm text-gray-400">
               <div>Known: {knownWords.length}</div>
               <div>Unknown: {unknownWords.length}</div>
               <div>Remaining: {cards.length > 0 ? cards.length - currentCardIndex - 1 : 0}</div>

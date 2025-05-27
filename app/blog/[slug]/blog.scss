@@ -1,0 +1,88 @@
+.prose {
+  .wp-content-container {
+    max-width: 800px;
+    margin: auto;
+    background-color: #2d3748; /* Nền cho nội dung */
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .wp-block-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.375rem; /* bo góc nhẹ */
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .wp-block-separator {
+    border: 0;
+    height: 1px;
+    background-color: #4a5568; /* Màu đường kẻ */
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+  .wp-block-heading {
+    font-weight: 600; /* Chữ đậm */
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: #cbd5e0; /* Màu tiêu đề sáng hơn */
+  }
+  .wp-block-heading.has-medium-font-size {
+    font-size: 1.5rem; /* 24px */
+    line-height: 2rem;
+  }
+  /* Kích thước mặc định cho h3 nếu không có class specific */
+  .wp-block-heading:not(.has-medium-font-size) {
+    font-size: 1.25rem; /* 20px */
+    line-height: 1.75rem;
+  }
+  h2.wp-block-heading {
+    font-size: 1.875rem; /* 30px */
+    line-height: 2.25rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1.25rem;
+  }
+  h4.wp-block-heading {
+    font-size: 1.125rem; /* 18px */
+    line-height: 1.75rem;
+    font-weight: 500;
+  }
+  .wp-block-list {
+    list-style-position: inside;
+    list-style: circle;
+    margin-left: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .wp-block-list li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+  }
+  .wp-block-list strong {
+    font-weight: 600;
+    color: #a0aec0;
+  }
+  p {
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+    color: #a0aec0;
+  }
+  p:empty {
+    margin-bottom: 0; /* Loại bỏ margin cho thẻ p rỗng */
+  }
+  code {
+    background-color: #4a5568;
+    color: #e2e8f0;
+    padding: 0.2em 0.4em;
+    margin: 0;
+    font-size: 85%;
+    border-radius: 3px;
+  }
+  a {
+    color: #63b3ed; /* Màu link */
+    text-decoration: underline;
+  }
+  a:hover {
+    color: #90cdf4;
+  }
+}

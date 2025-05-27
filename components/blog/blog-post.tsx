@@ -44,7 +44,9 @@ export function BlogPost({ post }: { post: Post }) {
           <CardHeader>
             <CardTitle
               className="text-3xl"
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.title) }}
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(post.title),
+              }}
             />
             <CardDescription className="flex flex-wrap items-center gap-4 mt-2">
               {/* Author */}
@@ -80,7 +82,9 @@ export function BlogPost({ post }: { post: Post }) {
           <CardContent>
             <div
               className="prose prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(post.content),
+              }}
             ></div>
           </CardContent>
 

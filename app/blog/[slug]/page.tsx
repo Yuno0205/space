@@ -1,6 +1,7 @@
 import { BlogPost } from "@/components/blog/blog-post";
 import { IBlogPost } from "../page";
 import { fetchPostBySlug } from "@/lib/wp";
+import "./blog.scss";
 
 export type Post = IBlogPost & {
   content: string;
@@ -42,8 +43,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     content: content?.rendered || "", // Use content.rendered if available, fallback to an empty string
     readTime: `${Math.ceil((content?.rendered || "").length / 1000)} min read`, // Calculate read time
   };
-
-  console.log("Post data:", post);
 
   return (
     <div className="container mx-auto py-8 px-4">

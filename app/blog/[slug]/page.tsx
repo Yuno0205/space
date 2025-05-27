@@ -1,6 +1,7 @@
 import { BlogPost } from "@/components/blog/blog-post";
 import { IBlogPost } from "../page";
 import { fetchPostBySlug } from "@/lib/wp";
+import "./blog.scss";
 
 export type Post = IBlogPost & {
   content: string;

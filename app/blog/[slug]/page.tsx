@@ -43,6 +43,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     readTime: `${Math.ceil((content?.rendered || "").length / 1000)} min read`, // Calculate read time
   };
 
+  console.log("Post data:", post);
+
   return (
     <div className="container mx-auto py-8 px-4">
       <BlogPost post={post} />

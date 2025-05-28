@@ -13,7 +13,7 @@ export default async function VocabularyPage() {
       "id, word, phonetic,audio_url, word_type, definition, translation ,example ,synonyms , antonyms"
     )
     .eq("is_learned", false)
-    .order("created_at", { ascending: true })
+    .order("word", { ascending: true })
     .limit(100);
 
   if (error) throw new Error(error.message);

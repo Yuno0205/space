@@ -9,6 +9,7 @@ export default async function Home({ params }: { params: Promise<{ slug: string 
     .select("*")
     .ilike("word", `${slug}%`)
     .eq("proficiently->>speaking", "false")
+    .order("word", { ascending: true })
     .limit(50);
 
   if (error) {

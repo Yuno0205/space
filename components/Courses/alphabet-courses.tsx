@@ -11,6 +11,9 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { Course } from "@/types/course";
+import { PostgrestError } from "@supabase/supabase-js";
+
 const ITEMS_PER_PAGE = 6;
 
 interface AlphabetCoursesProps {
@@ -87,6 +90,10 @@ export async function AlphabetCourses({ searchParams }: AlphabetCoursesProps) {
     data: courses,
     error,
     count,
+  }: {
+    data: Course[] | null;
+    error: PostgrestError | null;
+    count: number | null;
   } = await supabaseBrowser
     .from("courses")
     .select("*", { count: "exact" })
@@ -125,7 +132,7 @@ export async function AlphabetCourses({ searchParams }: AlphabetCoursesProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {courses.map((course) => (
+        {courses.map((course: Course) => (
           <LetterCard course={course} key={course.id} />
         ))}
       </div>

@@ -6,4 +6,5 @@ export interface Course {
   audio_url: string;
   total_words: number;
   completed_words: number;
+  created_at?: string;
 }

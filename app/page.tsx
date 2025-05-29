@@ -7,7 +7,7 @@ import { DashedHero } from "@/components/Hero/dashed-hero";
 import { MissionCard } from "@/components/Card/mission-card";
 import PowerBy from "@/components/PowerBy";
 import { supabaseBrowser } from "@/lib/supabase/client";
-import Stats from "./Stats";
+import Stats from "../components/Stats";
 
 export default async function Home() {
   const { count } = await supabaseBrowser

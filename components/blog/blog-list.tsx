@@ -1,6 +1,5 @@
 "use client";
 
-import { IBlogPost } from "@/app/blog/page"; // Giả sử đường dẫn này đúng
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,11 +15,11 @@ import { motion } from "framer-motion";
 import { Calendar, Search, Tag } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-// Import DOMPurify bình thường
 import DOMPurify from "dompurify";
+import { IWordpressPost } from "@/types/post";
 
 type BlogListProps = {
-  initialPosts: IBlogPost[];
+  initialPosts: IWordpressPost[];
   category?: string;
 };
 
@@ -54,24 +53,26 @@ const SanitizedHtml = ({ htmlContent }: { htmlContent: string }) => {
 
 export function BlogList({ initialPosts, category }: BlogListProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [blogPosts, setBlogPosts] = useState<IBlogPost[]>(initialPosts);
+  const [blogPosts, setBlogPosts] = useState<IWordpressPost[]>(initialPosts);
 
   useEffect(() => {
     const filteredPosts = initialPosts.filter(
       (post) =>
-        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.categories.some((cat) => String(cat).toLowerCase().includes(searchQuery.toLowerCase()))
+        post.title.rendered.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.excerpt.rendered.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.categories?.some((cat) =>
+          String(cat).toLowerCase().includes(searchQuery.toLowerCase())
+        )
     );
     setBlogPosts(filteredPosts);
   }, [searchQuery, initialPosts]);
 
   const filteredByCategory = category
-    ? blogPosts.filter((post) => post.categories.map(String).includes(category))
+    ? blogPosts.filter((post) => post.categories?.map(String).includes(category))
     : blogPosts;
 
   const allCategories = Array.from(
-    new Set(initialPosts.flatMap((post) => post.categories.map(String)))
+    new Set(initialPosts.flatMap((post) => post.categories?.map(String)))
   ).sort();
 
   return (
@@ -110,19 +111,19 @@ export function BlogList({ initialPosts, category }: BlogListProps) {
                 <Link href={`/blog/${post.slug}`}>
                   <Card className="overflow-hidden hover:border-white/30 transition-colors">
                     <div className="md:flex">
-                      {post.image && (
+                      {post.jetpack_featured_media_url && (
                         <div className="md:w-1/3 h-48 md:h-auto relative">
                           <div
                             className="w-full h-full bg-cover bg-center"
-                            style={{ backgroundImage: `url(${post.image})` }}
+                            style={{ backgroundImage: `url(${post.jetpack_featured_media_url})` }}
                           ></div>
                         </div>
                       )}
-                      <div className={post.image ? "md:w-2/3" : "w-full"}>
+                      <div className={post.jetpack_featured_media_url ? "md:w-2/3" : "w-full"}>
                         <CardHeader>
                           {/* Sử dụng component SanitizedHtml */}
                           <CardTitle className="text-xl">
-                            <SanitizedHtml htmlContent={post.title} />
+                            <SanitizedHtml htmlContent={post.title.rendered} />
                           </CardTitle>
                           <CardDescription className="flex items-center text-sm space-x-4">
                             <span className="flex items-center">
@@ -134,12 +135,12 @@ export function BlogList({ initialPosts, category }: BlogListProps) {
                         <CardContent>
                           {/* Sử dụng component SanitizedHtml */}
                           <div className="text-gray-400">
-                            <SanitizedHtml htmlContent={post.excerpt} />
+                            <SanitizedHtml htmlContent={post.excerpt.rendered} />
                           </div>
                         </CardContent>
                         <CardFooter>
                           <div className="flex flex-wrap gap-2">
-                            {post.categories.map((cat) => (
+                            {post.categories?.map((cat) => (
                               <Badge key={cat} variant="outline" className="text-xs">
                                 <Tag className="mr-1 h-3 w-3" />
                                 {String(cat).replace(/-/g, " ")}
@@ -180,7 +181,7 @@ export function BlogList({ initialPosts, category }: BlogListProps) {
                         variant={category === cat ? "default" : "outline"}
                         className="text-xs cursor-pointer"
                       >
-                        {cat.replace(/-/g, " ")}
+                        {cat?.replace(/-/g, " ")}
                       </Badge>
                     </Link>
                   ))}
@@ -206,7 +207,7 @@ export function BlogList({ initialPosts, category }: BlogListProps) {
                       <div className="group">
                         {/* Không cần sanitize title ở đây nếu nó chỉ là text */}
                         <h3 className="font-medium group-hover:text-white transition-colors">
-                          {post.title}
+                          {post.title.rendered}
                         </h3>
                         <p className="text-sm text-gray-400">
                           {new Date(post.date).toLocaleDateString("vi-VN")}

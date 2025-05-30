@@ -14,8 +14,9 @@ export type VocabularyCard = {
   word_type?: string;
   definition?: string;
   translation?: string;
-  example: string;
+  example?: string;
   synonyms?: string;
   antonyms?: string;
+  level?: string;
   proficiently?: Proficiently;
 };

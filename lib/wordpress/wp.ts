@@ -32,7 +32,7 @@ export async function fetchPosts({
 
   const endpoint =
     url || "https://public-api.wordpress.com/wp/v2/sites/mainhathao195.wordpress.com/posts";
-  const apiUrl = `${endpoint}${endpoint.includes("?") ? "&" : "?"}${params.toString()}`;
+  const apiUrl = `${endpoint}${endpoint.includes("?") ? "&" : "?"}_embed&${params.toString()}`;
 
   try {
     const response = await fetch(apiUrl, {

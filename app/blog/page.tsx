@@ -1,6 +1,6 @@
 import { FadeIn } from "@/components/animations/fade-in";
 import { BlogList } from "@/components/blog/blog-list";
-import { fetchPosts } from "@/lib/wp"; // Import IWordpressPost và fetchPosts
+import { fetchPosts } from "@/lib/wordpress/wp";
 import { IWordpressPost } from "@/types/post";
 
 export default async function BlogPage() {

@@ -15,7 +15,6 @@ import { motion } from "framer-motion";
 import { Calendar, Search, Tag } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-// Import DOMPurify bình thường
 import DOMPurify from "dompurify";
 import { IWordpressPost } from "@/types/post";
 

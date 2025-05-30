@@ -1,3 +1,5 @@
+import { IWPCategory, IWPTag } from "./category";
+
 export interface IWordpressPost {
   id: number;
   title: { rendered: string };
@@ -8,4 +10,13 @@ export interface IWordpressPost {
   jetpack_featured_media_url?: string;
   tags?: number[];
   content: { rendered: string };
+  _embedded?: {
+    "wp:term"?: (IWPCategory[] | IWPTag[])[]; // Mảng chứa các mảng term object
+  };
+}
+
+interface EmbeddedTerms {
+  "wp:term"?: IWPCategory[][]; // Mảng các mảng, vì có thể có nhiều taxonomy (category, tag)
+  // 'author'?: IWPAuthor[];
+  // 'wp:featuredmedia'?: IWPFeaturedMedia[];
 }

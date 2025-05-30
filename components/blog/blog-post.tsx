@@ -33,11 +33,11 @@ export function BlogPost({ post }: { post: Post }) {
         transition={{ duration: 0.3 }}
       >
         <Card className="overflow-hidden">
-          {post.image && (
+          {post.jetpack_featured_media_url && (
             <div className="w-full h-64 relative">
               <div
                 className="w-full h-full bg-cover bg-center"
-                style={{ backgroundImage: `url(${post.image})` }}
+                style={{ backgroundImage: `url(${post.jetpack_featured_media_url})` }}
               ></div>
             </div>
           )}
@@ -45,7 +45,7 @@ export function BlogPost({ post }: { post: Post }) {
             <CardTitle
               className="text-3xl"
               dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(post.title),
+                __html: DOMPurify.sanitize(post.title.rendered),
               }}
             />
             <CardDescription className="flex flex-wrap items-center gap-4 mt-2">
@@ -60,7 +60,7 @@ export function BlogPost({ post }: { post: Post }) {
                 <span>{post.author.name}</span>
               </div> */}
               <div className="flex flex-wrap gap-2 mt-2">
-                {post.categories.map((cat) => (
+                {post.categories?.map((cat) => (
                   <Link key={cat} href={`/blog/categories/${cat}`}>
                     <Badge variant="outline" className="text-xs cursor-pointer">
                       <Tag className="mr-1 h-3 w-3" />
@@ -83,7 +83,7 @@ export function BlogPost({ post }: { post: Post }) {
             <div
               className="prose prose-invert max-w-none"
               dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(post.content),
+                __html: DOMPurify.sanitize(post.content.rendered),
               }}
             ></div>
           </CardContent>

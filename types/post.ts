@@ -11,12 +11,6 @@ export interface IWordpressPost {
   tags?: number[];
   content: { rendered: string };
   _embedded?: {
-    "wp:term"?: (IWPCategory[] | IWPTag[])[]; // Mảng chứa các mảng term object
+    "wp:term"?: (IWPCategory[] | IWPTag[])[];
   };
-}
-
-interface EmbeddedTerms {
-  "wp:term"?: IWPCategory[][]; // Mảng các mảng, vì có thể có nhiều taxonomy (category, tag)
-  // 'author'?: IWPAuthor[];
-  // 'wp:featuredmedia'?: IWPFeaturedMedia[];
 }

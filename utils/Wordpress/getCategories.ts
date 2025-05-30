@@ -3,12 +3,15 @@ import { IWordpressPost } from "@/types/post";
 
 export function getCategoryDetailsFromPost(post: IWordpressPost): IWPCategory[] {
   const categories: IWPCategory[] = [];
-  if (post._embedded && post._embedded["wp:term"]) {
+  if (post._embedded?.["wp:term"]) {
     for (const termGroup of post._embedded["wp:term"]) {
-      // Lặp qua các nhóm [categories], [tags]
+      // Loop through term groups [categories], [tags]
       if (termGroup && termGroup.length > 0 && termGroup[0].taxonomy === "category") {
-        // Nếu nhóm này là category, thêm tất cả vào mảng categories
-        categories.push(...(termGroup as IWPCategory[]));
+        // If this group contains categories, add all to the categories array
+        const categoryTerms = termGroup.filter(
+          (term): term is IWPCategory => term.taxonomy === "category"
+        );
+        categories.push(...categoryTerms);
       }
     }
   }

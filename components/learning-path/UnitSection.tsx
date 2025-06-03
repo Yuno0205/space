@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
 import { LevelNode } from "./LevelNode";
 
 export function UnitSection() {
@@ -14,8 +12,9 @@ export function UnitSection() {
 
       {/* Levels Path */}
       <div className="relative flex flex-col items-center space-y-2 min-h-[300px] bg-transparent px-4">
-        <LevelNode />
-        <LevelNode />
+        {[...Array(5)].map((_, index) => (
+          <LevelNode key={index} />
+        ))}
       </div>
     </div>
   );

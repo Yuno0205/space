@@ -1,3 +1,4 @@
+// LevelNode.tsx
 "use client";
 import { cn } from "@/lib/utils";
 import "./styles/style.scss";
@@ -10,16 +11,22 @@ const orbitron = Orbitron({
   variable: "--font-orbitron",
 });
 
-export function LevelNode() {
+interface LevelNodeProps {
+  left: number;
+  label?: string;
+}
+
+export function LevelNode({ left, label }: LevelNodeProps) {
   return (
-    <div className="relative flex mt-10 left-0">
+    <div className="relative flex mt-4" style={{ left: `${left}px` }}>
       <div className="inline-flex cursor-pointer">
-        {/* Rounded ring */}
+        {/* Vòng tròn progress */}
         <ProgressRing progress={0.5} />
 
-        <div className="m-4 relative inline-flex backface-hidden">
+        <div className="m-4 relative">
           <button className="node">
-            <span className={cn(orbitron.className, "font-bold text-2xl")}>A</span>
+            {/* Hiển thị nhãn bên trong button nếu có */}
+            <span className={cn(orbitron.className, "font-bold text-2xl")}>{label ?? ""}</span>
           </button>
         </div>
       </div>

@@ -1,5 +1,13 @@
 "use client";
+import { cn } from "@/lib/utils";
 import "./styles/style.scss";
+import { Orbitron } from "next/font/google";
+
+const orbitron = Orbitron({
+  subsets: ["latin"],
+  weight: ["400", "700", "800"],
+  variable: "--font-orbitron",
+});
 
 export function LevelNode() {
   return (
@@ -33,7 +41,7 @@ export function LevelNode() {
 
         <div className="m-4 relative inline-flex backface-hidden">
           <button className="node">
-            <span className="fon">A</span>
+            <span className={cn(orbitron.className, "font-bold text-2xl")}>A</span>
           </button>
         </div>
       </div>

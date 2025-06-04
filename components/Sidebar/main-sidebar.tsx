@@ -30,7 +30,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { title } from "process";
 
 // Navigation data
 const navigationItems = [

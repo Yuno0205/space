@@ -1,31 +1,43 @@
-// UnitSection.tsx
-"use client";
-import { Level } from "@/types/lesson";
+import { LessonWithProgress, Level } from "@/types/lesson";
 import LevelCard from "./LevelCard";
 import { LevelNode } from "./LevelNode";
+import { supabaseBrowser } from "@/lib/supabase/client";
 
-export function UnitSection({ level }: { level: Level }) {
+export async function UnitSection({ level }: { level: Level }) {
+  const { data: lessons } = await supabaseBrowser
+    .from("lessons_with_progress")
+    .select(
+      `
+      id,
+      letter,
+      name,
+      description,
+      learned_words,
+      total_words,
+      progress
+    `
+    )
+    .eq("level_id", level.id)
+    .order("letter", { ascending: true });
+
   // Chuỗi pattern zig-zag (độ dịch sang trái – phải theo px)
   const offsets = [0, -44.884, -70, -44.884, 0, 44.884, 70, 44.884, 0];
 
   return (
     <div className="w-full">
-      <LevelCard />
+      <LevelCard data={level} />
 
       <div className="relative flex flex-col items-center min-h-[300px] bg-transparent px-4">
-        {[...Array(5)].map((_, index) => {
-          // index chạy từ 0 → 19, nhưng node của chúng ta đánh số i = index+1
+        {lessons?.map((lesson: LessonWithProgress, index) => {
           const i = index + 1;
-          // Tính arrayIndex = (i – 1) % 8
           const arrayIndex = (i - 1) % offsets.length;
-          // Lấy giá trị dịch ngang từ mảng offsets
           const leftOffset = offsets[arrayIndex];
-
           return (
             <LevelNode
-              key={index}
+              key={lesson.id}
               left={leftOffset}
-              label={`B`} // ví dụ nếu bạn hiển thị A1, A2, A3,...
+              label={lesson.letter}
+              progress={lesson.progress}
             />
           );
         })}

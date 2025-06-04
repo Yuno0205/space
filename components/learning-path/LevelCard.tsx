@@ -2,8 +2,9 @@
 
 import { Cpu, Layers } from "lucide-react";
 import { Card } from "../ui/card";
+import { Level } from "@/types/lesson";
 
-export default function LevelCard() {
+export default function LevelCard({ data }: { data: Level }) {
   return (
     <Card className="relative overflow-hidden rounded-xl border border-gray-900/20 bg-white p-6 shadow-[0_0_15px_rgba(0,0,0,0.1)] backdrop-blur-sm dark:border-white/10 dark:bg-black dark:shadow-[0_0_15px_rgba(255,255,255,0.1)]">
       {/* Circuit pattern background */}
@@ -24,7 +25,7 @@ export default function LevelCard() {
           <div className="flex items-center gap-2">
             <Cpu className="h-5 w-5 text-gray-900 dark:text-white" />
             <h2 className={`font-mono text-xl tracking-wider text-gray-900 dark:text-white`}>
-              Part 1 - The Oxford 3000
+              Part {data.id} - {data.description || "The Oxford 3000 "}
             </h2>
           </div>
 
@@ -39,7 +40,9 @@ export default function LevelCard() {
               Level
             </span>
             <div className="relative">
-              <p className={`font-mono text-2xl font-bold text-gray-900 dark:text-white `}>A1</p>
+              <p className={`font-mono text-2xl font-bold text-gray-900 dark:text-white `}>
+                {data.name}
+              </p>
               {/* Highlight effect */}
               <div className="absolute -bottom-1 left-0 h-[2px] w-full bg-gradient-to-r from-gray-900/0 via-gray-900 to-gray-900/0 dark:from-white/0 dark:via-white dark:to-white/0"></div>
             </div>

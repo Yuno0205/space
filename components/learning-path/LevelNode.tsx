@@ -17,19 +17,20 @@ const orbitron = Orbitron({
 interface LevelNodeProps {
   left: number;
   label?: string;
+  progress?: number;
 }
 
-export function LevelNode({ left, label }: LevelNodeProps) {
+export function LevelNode({ left, label, progress }: LevelNodeProps) {
   return (
     <div className="relative flex mt-4 item" style={{ left: `${left}px` }}>
       <div className="inline-flex cursor-pointer">
         {/* Vòng tròn progress */}
-        <ProgressRing progress={0.5} />
+        <ProgressRing progress={progress} />
 
         <div className="m-4 relative">
           <Popover>
             <PopoverTrigger asChild>
-              <button className="node">
+              <button className="node" aria-label={`Level ${label}`} type="button">
                 <span className={cn(orbitron.className, "font-bold text-2xl")}>{label ?? ""}</span>
               </button>
             </PopoverTrigger>

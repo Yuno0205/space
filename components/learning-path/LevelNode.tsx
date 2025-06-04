@@ -3,8 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { BookOpen, Bot, Play } from "lucide-react";
+import { BookOpen, Bot, Notebook, Volume2 } from "lucide-react";
 import { Orbitron } from "next/font/google";
+import Link from "next/link";
 import ProgressRing from "./ProgressRing";
 import "./styles/style.scss";
 
@@ -16,11 +17,18 @@ const orbitron = Orbitron({
 
 interface LevelNodeProps {
   left: number;
-  label?: string;
+  lessonData: {
+    id: number;
+    letter: string;
+  };
+  levelData: {
+    id: number;
+    name: string;
+  };
   progress?: number;
 }
 
-export function LevelNode({ left, label, progress }: LevelNodeProps) {
+export function LevelNode({ left, lessonData, levelData, progress }: LevelNodeProps) {
   return (
     <div className="relative flex mt-4 item" style={{ left: `${left}px` }}>
       <div className="inline-flex cursor-pointer">
@@ -30,8 +38,10 @@ export function LevelNode({ left, label, progress }: LevelNodeProps) {
         <div className="m-4 relative">
           <Popover>
             <PopoverTrigger asChild>
-              <button className="node" aria-label={`Level ${label}`} type="button">
-                <span className={cn(orbitron.className, "font-bold text-2xl")}>{label ?? ""}</span>
+              <button className="node" aria-label={`Level ${levelData.name}`} type="button">
+                <span className={cn(orbitron.className, "font-bold text-2xl")}>
+                  {lessonData.letter ?? ""}
+                </span>
               </button>
             </PopoverTrigger>
             <PopoverContent
@@ -59,9 +69,17 @@ export function LevelNode({ left, label, progress }: LevelNodeProps) {
                         <Bot className="h-4 w-4 text-white dark:text-black" />
                       </div>
                       <div>
-                        <h3 className="font-mono text-sm font-bold text-gray-900 dark:text-white">
-                          LEARNING ASSISTANT
+                        <h3 className="font-mono text-sm font-bold text-gray-900 dark:text-white uppercase">
+                          learning progress
                         </h3>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs text-gray-600 dark:text-gray-400">
+                            {progress ? Math.round(progress * 100) : 0}%
+                          </span>
+                          <span className="font-mono text-xs text-gray-600 dark:text-gray-400">
+                            completed
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -78,7 +96,7 @@ export function LevelNode({ left, label, progress }: LevelNodeProps) {
                             "font-bold text-gray-900 dark:text-white"
                           )}
                         >
-                          Lesson A - Level A1
+                          Lesson {lessonData.letter} - Level {levelData.name}
                         </span>
                       </div>
                     </div>
@@ -90,14 +108,16 @@ export function LevelNode({ left, label, progress }: LevelNodeProps) {
                         variant="outline"
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-900/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:via-white/5"></div>
-                        <Play className="mr-2 h-4 w-4" />
-                        <span className="relative z-10">Start</span>
+                        <Notebook className="mr-2 h-4 w-4" />
+                        <Link href={`/test/level/${levelData.id}/lesson/${lessonData.id}`}>
+                          <span className="relative z-10">Flashcard</span>
+                        </Link>
                       </Button>
 
                       <Button className="group relative overflow-hidden border border-gray-900 bg-gray-900 font-mono text-white hover:bg-gray-800 dark:border-white dark:bg-white dark:text-black dark:hover:bg-gray-100">
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:via-black/10"></div>
-                        <BookOpen className="mr-2 h-4 w-4" />
-                        <span className="relative z-10">Preview</span>
+                        <Volume2 className="mr-2 h-4 w-4" />
+                        <span className="relative z-10">Speak</span>
                       </Button>
                     </div>
                   </div>

@@ -36,7 +36,8 @@ export async function UnitSection({ level }: { level: Level }) {
             <LevelNode
               key={lesson.id}
               left={leftOffset}
-              label={lesson.letter}
+              lessonData={{ id: lesson.id, letter: lesson.letter }}
+              levelData={{ id: level.id, name: level.name }}
               progress={lesson.progress}
             />
           );

@@ -30,6 +30,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { title } from "process";
 
 // Navigation data
 const navigationItems = [
@@ -43,6 +44,12 @@ const navigationItems = [
     title: "Dashboard",
     icon: LayoutDashboard,
     href: "/dashboard",
+    items: [],
+  },
+  {
+    title: "Learning Path",
+    icon: BookText,
+    href: "/roadmap",
     items: [],
   },
   {

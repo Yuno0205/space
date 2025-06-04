@@ -11,6 +11,9 @@
 .item:first-child {
   margin-top: 67px;
 }
+.item:last-child {
+  margin-bottom: 67px;
+}
 
 .node {
   --web-ui_button-filter-hover: none;

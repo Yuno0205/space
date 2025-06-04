@@ -1,9 +1,10 @@
 // UnitSection.tsx
 "use client";
+import { Level } from "@/types/lesson";
 import LevelCard from "./LevelCard";
 import { LevelNode } from "./LevelNode";
 
-export function UnitSection() {
+export function UnitSection({ level }: { level: Level }) {
   // Chuỗi pattern zig-zag (độ dịch sang trái – phải theo px)
   const offsets = [0, -44.884, -70, -44.884, 0, 44.884, 70, 44.884, 0];
 

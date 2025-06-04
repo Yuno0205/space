@@ -18,7 +18,7 @@ interface LevelNodeProps {
 
 export function LevelNode({ left, label }: LevelNodeProps) {
   return (
-    <div className="relative flex mt-4" style={{ left: `${left}px` }}>
+    <div className="relative flex mt-4 item" style={{ left: `${left}px` }}>
       <div className="inline-flex cursor-pointer">
         {/* Vòng tròn progress */}
         <ProgressRing progress={0.5} />

@@ -17,7 +17,7 @@
 
 .node {
   --web-ui_button-filter-hover: none;
-  --path-level-color: rgb(28, 176, 246);
+  --path-level-color: #1f2937;
   --color-black: 0, 0, 0;
   height: 65px;
   position: relative;
@@ -83,5 +83,3 @@
 .node:active:after {
   box-shadow: none;
 }
-
-// Css for Unit Header

@@ -38,7 +38,7 @@ export function LevelNode({ left, lessonData, levelData, progress }: LevelNodePr
         <div className="m-4 relative">
           <Popover>
             <PopoverTrigger asChild>
-              <button className="node" aria-label={`Level ${levelData.name}`} type="button">
+              <button className="node" type="button">
                 <span className={cn(orbitron.className, "font-bold text-2xl")}>
                   {lessonData.letter ?? ""}
                 </span>

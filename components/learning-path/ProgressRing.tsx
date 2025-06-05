@@ -1,12 +1,10 @@
-import React from "react";
+import type React from "react";
 import { cn } from "@/lib/utils";
 
 // Định nghĩa kiểu cho props của component
 interface ProgressRingArcProps {
   progress?: number; // Giá trị từ 0 (0%) đến 1 (100%), mặc định là 0
   size?: number; // Kích thước của SVG (width và height), mặc định là 98
-  trackColor?: string; // Màu của rãnh nền, mặc định là rgb(var(--color-swan))
-  progressColor?: string; // Màu của phần vòng tròn thể hiện tiến độ, mặc định là màu vàng
   strokeWidth?: number; // Độ dày của vòng tròn, mặc định là 8
   className?: string; // Class CSS tùy chỉnh cho thẻ svg
 }
@@ -14,8 +12,6 @@ interface ProgressRingArcProps {
 const ProgressRingArc: React.FC<ProgressRingArcProps> = ({
   progress = 0,
   size = 98,
-  trackColor = "rgb(var(--color-swan))", // <-- Đã cập nhật lại màu mặc định
-  progressColor = "white",
   strokeWidth = 8,
   className,
 }) => {
@@ -40,8 +36,9 @@ const ProgressRingArc: React.FC<ProgressRingArcProps> = ({
           cy="0"
           r={radius}
           fill="none"
-          stroke={trackColor}
+          stroke="currentColor"
           strokeWidth={strokeWidth}
+          className="text-gray-300 dark:text-gray-600"
         />
         {/* Vòng tròn tiến độ */}
         {currentProgress > 0 && (
@@ -50,11 +47,12 @@ const ProgressRingArc: React.FC<ProgressRingArcProps> = ({
             cy="0"
             r={radius}
             fill="none"
-            stroke={progressColor}
+            stroke="currentColor"
             strokeWidth={strokeWidth}
             strokeDasharray={circumference}
             strokeDashoffset={offset}
             strokeLinecap="round"
+            className="text-gray-800 transition-all duration-500 dark:text-gray-200"
           />
         )}
       </g>

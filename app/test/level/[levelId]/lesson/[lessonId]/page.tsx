@@ -3,7 +3,7 @@ import { supabaseBrowser } from "@/lib/supabase/client";
 import { VocabularyCard } from "@/types/vocabulary";
 import { PostgrestError } from "@supabase/supabase-js";
 
-export const revalidate = 3600 * 24;
+export const revalidate = 86400;
 
 export default async function VocabularyPage({
   params,

@@ -4,7 +4,7 @@ import { LevelNode } from "./LevelNode";
 import { supabaseBrowser } from "@/lib/supabase/client";
 
 export async function UnitSection({ level }: { level: Level }) {
-  const { data: lessons } = await supabaseBrowser
+  const { data: lessons, error } = await supabaseBrowser
     .from("lessons_with_progress")
     .select(
       `
@@ -19,6 +19,11 @@ export async function UnitSection({ level }: { level: Level }) {
     )
     .eq("level_id", level.id)
     .order("letter", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching lessons:", error);
+    return <div>Error fetching lessons</div>;
+  }
 
   // Chuỗi pattern zig-zag (độ dịch sang trái – phải theo px)
   const offsets = [0, -44.884, -70, -44.884, 0, 44.884, 70, 44.884, 0];

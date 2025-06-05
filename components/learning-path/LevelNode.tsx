@@ -114,11 +114,12 @@ export function LevelNode({ left, lessonData, levelData, progress }: LevelNodePr
                         </Link>
                       </Button>
 
-                      <Button className="group relative overflow-hidden border border-gray-900 bg-gray-900 font-mono text-white hover:bg-gray-800 dark:border-white dark:bg-white dark:text-black dark:hover:bg-gray-100">
+                      {/* Disabled for now */}
+                      {/* <Button className="group relative overflow-hidden border border-gray-900 bg-gray-900 font-mono text-white hover:bg-gray-800 dark:border-white dark:bg-white dark:text-black dark:hover:bg-gray-100">
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:via-black/10"></div>
                         <Volume2 className="mr-2 h-4 w-4" />
                         <span className="relative z-10">Speak</span>
-                      </Button>
+                      </Button> */}
                     </div>
                   </div>
 

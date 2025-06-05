@@ -40,7 +40,12 @@ export function LessonNode({ left, lessonData, levelData, progress }: LessonNode
         <div className="m-4 relative">
           <Popover>
             <PopoverTrigger asChild>
-              <button className="node" type="button">
+              <button
+                className="node"
+                type="button"
+                aria-label={`Open lesson ${lessonData.letter} details - ${lessonData.learned_words} of ${lessonData.total_words} words learned`}
+                aria-describedby="lesson-progress"
+              >
                 <span className={cn(orbitron.className, "font-bold text-2xl text-white")}>
                   {lessonData.letter ?? ""}
                 </span>
@@ -61,8 +66,8 @@ export function LessonNode({ left, lessonData, levelData, progress }: LessonNode
                   {/* Header with AI assistant indicator */}
                   <div className="relative border-b border-gray-900/10 bg-gray-50/50 p-4 dark:border-white/10 dark:bg-gray-900/50">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 dark:bg-white">
-                        <Bot className="h-4 w-4 text-white dark:text-black" />
+                      <div className="hidden sm:flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 dark:bg-white">
+                        <Bot className="h-4 w-4 text-white dark:text-black " />
                       </div>
                       <div>
                         <h3 className="font-mono text-sm font-bold text-gray-900 dark:text-white uppercase">
@@ -70,7 +75,10 @@ export function LessonNode({ left, lessonData, levelData, progress }: LessonNode
                         </h3>
                         <div className="flex items-center gap-2">
                           <span className="font-mono text-xs text-gray-600 dark:text-gray-400">
-                            {progress ? Math.round(progress * 100) : 0}%
+                            {progress != null && !isNaN(progress)
+                              ? Math.round(Math.max(0, Math.min(100, progress * 100)))
+                              : 0}
+                            %
                           </span>
                           <span className="font-mono text-xs text-gray-600 dark:text-gray-400">
                             completed
@@ -87,7 +95,7 @@ export function LessonNode({ left, lessonData, levelData, progress }: LessonNode
                     {/* Level info */}
                     <div className="mb-6 text-center">
                       <div className="inline-flex items-center gap-2 rounded-full border border-gray-900/20 bg-gray-50 px-4 py-2 dark:border-white/20 dark:bg-gray-900">
-                        <BookOpen className="h-4 w-4 text-gray-900 dark:text-white" />
+                        <BookOpen className="h-4 w-4 text-gray-900 dark:text-white hidden sm:block" />
                         <span
                           className={cn(
                             orbitron.className,

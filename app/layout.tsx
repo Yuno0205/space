@@ -22,6 +22,8 @@ export const metadata: Metadata = {
     "Discover the mysteries of space through immersive experiences, cutting-edge research, and breathtaking imagery.",
 };
 
+export const revalidate = 7200;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>

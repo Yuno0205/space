@@ -6,7 +6,7 @@ import { Level } from "@/types/lesson";
 
 export default function UnitHeader({ data }: { data: Level }) {
   return (
-    <Card className="relative overflow-hidden rounded-xl border border-gray-900/20 bg-white p-6 shadow-[0_0_15px_rgba(0,0,0,0.1)] backdrop-blur-sm dark:border-white/10 dark:bg-black dark:shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+    <Card className="relative overflow-hidden rounded-xl border border-gray-900/20 bg-white p-2 sm:p-6 shadow-[0_0_15px_rgba(0,0,0,0.1)] backdrop-blur-sm dark:border-white/10 dark:bg-black dark:shadow-[0_0_15px_rgba(255,255,255,0.1)]">
       {/* Circuit pattern background */}
       <div className="absolute inset-0 opacity-5">
         <div className="h-full w-full bg-[radial-gradient(circle_at_center,_transparent_10%,_#000_10%,_#000_10.5%,_transparent_10.5%,_transparent_20%,_#000_20%,_#000_20.5%,_transparent_20.5%)] bg-[length:20px_20px] dark:bg-[radial-gradient(circle_at_center,_transparent_10%,_#fff_10%,_#fff_10.5%,_transparent_10.5%,_transparent_20%,_#fff_20%,_#fff_20.5%,_transparent_20.5%)]"></div>

@@ -41,7 +41,7 @@ export function LessonNode({ left, lessonData, levelData, progress }: LessonNode
           <Popover>
             <PopoverTrigger asChild>
               <button className="node" type="button">
-                <span className={cn(orbitron.className, "font-bold text-2xl")}>
+                <span className={cn(orbitron.className, "font-bold text-2xl text-white")}>
                   {lessonData.letter ?? ""}
                 </span>
               </button>
@@ -50,20 +50,14 @@ export function LessonNode({ left, lessonData, levelData, progress }: LessonNode
               side="bottom"
               sideOffset={30}
               avoidCollisions={false}
-              className="w-80 border-0 bg-transparent p-0 shadow-none"
+              className="sm:w-80 w-60 border-0 bg-transparent p-0 shadow-none"
             >
-              {/* Chat-like container */}
               <div className="relative">
-                {/* Speech bubble tail */}
                 <div className="absolute -top-2 left-1/2 h-4 w-4 rotate-45 border-l border-t border-gray-900/20 bg-white dark:border-white/20 dark:bg-black"></div>
-
-                {/* Main chat container */}
                 <div className="relative overflow-hidden rounded-2xl border border-gray-900/20 bg-white shadow-[0_0_20px_rgba(0,0,0,0.1)] backdrop-blur-sm dark:border-white/20 dark:bg-black dark:shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                  {/* Circuit pattern background */}
                   <div className="absolute inset-0 opacity-5 ">
                     <div className="h-full w-full bg-[radial-gradient(circle_at_center,_transparent_10%,_#000_10%,_#000_10.5%,_transparent_10.5%,_transparent_20%,_#000_20%,_#000_20.5%,_transparent_20.5%)] bg-[length:15px_15px] dark:bg-[radial-gradient(circle_at_center,_transparent_10%,_#fff_10%,_#fff_10.5%,_transparent_10.5%,_transparent_20%,_#fff_20%,_#fff_20.5%,_transparent_20.5%)]"></div>
                   </div>
-
                   {/* Header with AI assistant indicator */}
                   <div className="relative border-b border-gray-900/10 bg-gray-50/50 p-4 dark:border-white/10 dark:bg-gray-900/50">
                     <div className="flex items-center gap-3">
@@ -89,7 +83,6 @@ export function LessonNode({ left, lessonData, levelData, progress }: LessonNode
                     </div>
                   </div>
 
-                  {/* Chat content */}
                   <div className="relative p-6">
                     {/* Level info */}
                     <div className="mb-6 text-center">

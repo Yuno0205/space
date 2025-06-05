@@ -1,4 +1,4 @@
-// LevelNode.tsx
+// LessonNode.tsx
 "use client";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -15,11 +15,13 @@ const orbitron = Orbitron({
   variable: "--font-orbitron",
 });
 
-interface LevelNodeProps {
+interface LessonNodeProps {
   left: number;
   lessonData: {
     id: number;
     letter: string;
+    total_words: number;
+    learned_words: number;
   };
   levelData: {
     id: number;
@@ -28,7 +30,7 @@ interface LevelNodeProps {
   progress?: number;
 }
 
-export function LevelNode({ left, lessonData, levelData, progress }: LevelNodeProps) {
+export function LessonNode({ left, lessonData, levelData, progress }: LessonNodeProps) {
   return (
     <div className="relative flex mt-4 item" style={{ left: `${left}px` }}>
       <div className="inline-flex cursor-pointer">
@@ -80,6 +82,9 @@ export function LevelNode({ left, lessonData, levelData, progress }: LevelNodePr
                             completed
                           </span>
                         </div>
+                      </div>
+                      <div className="font-mono text-sm font-bold text-gray-900 dark:text-white ml-auto mb-auto">
+                        {lessonData.learned_words} / {lessonData.total_words} words
                       </div>
                     </div>
                   </div>

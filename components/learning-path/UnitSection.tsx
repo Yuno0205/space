@@ -1,7 +1,8 @@
 import { LessonWithProgress, Level } from "@/types/lesson";
-import LevelCard from "./LevelCard";
-import { LevelNode } from "./LevelNode";
+
 import { supabaseBrowser } from "@/lib/supabase/client";
+import { LessonNode } from "./LessonNode";
+import UnitHeader from "./UnitHeader";
 
 export async function UnitSection({ level }: { level: Level }) {
   const { data: lessons, error } = await supabaseBrowser
@@ -25,23 +26,29 @@ export async function UnitSection({ level }: { level: Level }) {
     return <div>Error fetching lessons</div>;
   }
 
-  // Chuỗi pattern zig-zag (độ dịch sang trái – phải theo px)
+  // Zigzag offsets for lesson nodes
   const offsets = [0, -44.884, -70, -44.884, 0, 44.884, 70, 44.884, 0];
 
   return (
     <div className="w-full">
-      <LevelCard data={level} />
+      <UnitHeader data={level} />
 
+      {/* LessonMap */}
       <div className="relative flex flex-col items-center min-h-[300px] bg-transparent px-4">
         {lessons?.map((lesson: LessonWithProgress, index) => {
           const i = index + 1;
           const arrayIndex = (i - 1) % offsets.length;
           const leftOffset = offsets[arrayIndex];
           return (
-            <LevelNode
+            <LessonNode
               key={lesson.id}
               left={leftOffset}
-              lessonData={{ id: lesson.id, letter: lesson.letter }}
+              lessonData={{
+                id: lesson.id,
+                letter: lesson.letter,
+                total_words: lesson.total_words,
+                learned_words: lesson.learned_words,
+              }}
               levelData={{ id: level.id, name: level.name }}
               progress={lesson.progress}
             />

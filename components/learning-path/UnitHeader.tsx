@@ -4,7 +4,7 @@ import { Cpu, Layers } from "lucide-react";
 import { Card } from "../ui/card";
 import { Level } from "@/types/lesson";
 
-export default function LevelCard({ data }: { data: Level }) {
+export default function UnitHeader({ data }: { data: Level }) {
   return (
     <Card className="relative overflow-hidden rounded-xl border border-gray-900/20 bg-white p-6 shadow-[0_0_15px_rgba(0,0,0,0.1)] backdrop-blur-sm dark:border-white/10 dark:bg-black dark:shadow-[0_0_15px_rgba(255,255,255,0.1)]">
       {/* Circuit pattern background */}

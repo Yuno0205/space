@@ -110,7 +110,7 @@ export function LessonNode({ left, lessonData, levelData, progress }: LessonNode
                     {/* Action buttons */}
                     <div className="flex gap-3">
                       <Link
-                        href={`/test/level/${levelData.id}/lesson/${lessonData.id}`}
+                        href={`/english/vocabulary/level/${levelData.id}/lesson/${lessonData.id}`}
                         className="w-full"
                       >
                         <Button className="w-full group relative overflow-hidden border border-gray-900 bg-gray-900 font-mono text-white hover:bg-gray-800 dark:border-white dark:bg-white dark:text-black dark:hover:bg-gray-100">

@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { BookOpen, Bot, Notebook, Volume2 } from "lucide-react";
+import { BookOpen, Bot, Notebook } from "lucide-react";
 import { Orbitron } from "next/font/google";
 import Link from "next/link";
 import ProgressRing from "./ProgressRing";
@@ -102,17 +102,17 @@ export function LevelNode({ left, lessonData, levelData, progress }: LevelNodePr
                     </div>
 
                     {/* Action buttons */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <Button
-                        className="group relative overflow-hidden border border-gray-900/20 bg-white font-mono text-gray-900 hover:bg-gray-50 dark:border-white/20 dark:bg-black dark:text-white dark:hover:bg-gray-900"
-                        variant="outline"
+                    <div className="flex gap-3">
+                      <Link
+                        href={`/test/level/${levelData.id}/lesson/${lessonData.id}`}
+                        className="w-full"
                       >
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-900/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:via-white/5"></div>
-                        <Notebook className="mr-2 h-4 w-4" />
-                        <Link href={`/test/level/${levelData.id}/lesson/${lessonData.id}`}>
-                          <span className="relative z-10">Flashcard</span>
-                        </Link>
-                      </Button>
+                        <Button className="w-full group relative overflow-hidden border border-gray-900 bg-gray-900 font-mono text-white hover:bg-gray-800 dark:border-white dark:bg-white dark:text-black dark:hover:bg-gray-100">
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:via-black/10"></div>
+                          <Notebook className="mr-2 h-4 w-4" />
+                          <span className="relative z-10">Learn</span>
+                        </Button>
+                      </Link>
 
                       {/* Disabled for now */}
                       {/* <Button className="group relative overflow-hidden border border-gray-900 bg-gray-900 font-mono text-white hover:bg-gray-800 dark:border-white dark:bg-white dark:text-black dark:hover:bg-gray-100">

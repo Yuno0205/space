@@ -1,5 +1,5 @@
 import { VocabularyPractice } from "@/components/English/vocabulary-practice";
-import { supabaseBrowser } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/public";
 import { VocabularyCard } from "@/types/vocabulary";
 import { PostgrestError } from "@supabase/supabase-js";
 
@@ -15,7 +15,7 @@ export default async function VocabularyPage({
   const lesId = Number(lessonId);
 
   // Bước 1: Lấy mảng vocabulary_id, nhúng lessons(level_id) để có thể filter
-  const { data, error } = await supabaseBrowser
+  const { data, error } = await supabase
     .from("lesson_vocabularies")
     .select(
       `
@@ -48,7 +48,7 @@ export default async function VocabularyPage({
   const {
     data: vocabList,
     error: vocabErr,
-  }: { data: VocabularyCard[] | null; error: PostgrestError | null } = await supabaseBrowser
+  }: { data: VocabularyCard[] | null; error: PostgrestError | null } = await supabase
     .from("vocabularies")
     .select("*")
     .in("id", vocabIds)

@@ -1,5 +1,5 @@
 import SpeakingPractice from "@/components/English/speaking-practice";
-import { supabaseBrowser as supabase } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/public";
 
 export default async function Home({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

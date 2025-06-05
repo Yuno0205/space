@@ -6,22 +6,22 @@ import { Footer } from "@/components/Footer/footer";
 import { DashedHero } from "@/components/Hero/dashed-hero";
 import { MissionCard } from "@/components/Card/mission-card";
 import PowerBy from "@/components/PowerBy";
-import { supabaseBrowser } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/public";
 import Stats from "../components/Stats";
 
 export default async function Home() {
-  const { count } = await supabaseBrowser
+  const { count } = await supabase
     .from("vocabularies")
     .select("*", { count: "exact", head: true }) // Thêm head: true để chỉ lấy count
     .eq("is_learned", true);
 
-  const { data: progress } = await supabaseBrowser
+  const { data: progress } = await supabase
     .from("courses")
     .select("completed_words, total_words")
     .eq("letter", "a")
     .single();
 
-  const { data: unstartedCourse } = await supabaseBrowser
+  const { data: unstartedCourse } = await supabase
     .from("courses")
     .select("*")
     .eq("completed_words", 0)

@@ -1,12 +1,12 @@
 import { FadeIn } from "@/components/animations/fade-in";
 import { UnitSection } from "@/components/learning-path/UnitSection";
-import { supabaseBrowser } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/public";
 import { Level } from "@/types/lesson";
 
 export const revalidate = 3600;
 
 export default async function LearningHomePage() {
-  const { data: levels, error } = await supabaseBrowser
+  const { data: levels, error } = await supabase
     .from("levels")
     .select("*")
     .order("name", { ascending: true });

@@ -1,11 +1,11 @@
 import { LessonWithProgress, Level } from "@/types/lesson";
 
-import { supabaseBrowser } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/public";
 import { LessonNode } from "./LessonNode";
 import UnitHeader from "./UnitHeader";
 
 export async function UnitSection({ level }: { level: Level }) {
-  const { data: lessons, error } = await supabaseBrowser
+  const { data: lessons, error } = await supabase
     .from("lessons_with_progress")
     .select(
       `

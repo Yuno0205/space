@@ -1,51 +1,71 @@
+import { VocabularyPractice } from "@/components/English/vocabulary-practice";
 import { supabaseBrowser } from "@/lib/supabase/client";
+import { VocabularyCard } from "@/types/vocabulary";
+import { PostgrestError } from "@supabase/supabase-js";
 
-export const revalidate = 0; // SSR mỗi lần
+export const revalidate = 3600 * 24;
 
-export default async function LessonPage({
+export default async function VocabularyPage({
   params,
 }: {
-  params: { levelId: string; lessonId: string };
+  params: Promise<{ levelId: string; lessonId: string }>;
 }) {
-  const levelId = Number(params.levelId);
-  const lessonId = Number(params.lessonId);
+  const { levelId, lessonId } = await params;
+  const lvlId = Number(levelId);
+  const lesId = Number(lessonId);
 
-  const { data: rows, error } = await supabaseBrowser
+  // Bước 1: Lấy mảng vocabulary_id, nhúng lessons(level_id) để có thể filter
+  const { data, error } = await supabaseBrowser
     .from("lesson_vocabularies")
     .select(
       `
-    vocabularies (
-      id,
-      word,
-      phonetic,
-        audio_url,
-        word_type,
-        definition,
-        translation,
-        synonyms,
-        antonyms,
-      is_learned
+      vocabulary_id,
+      lessons ( level_id )
+    `
     )
-  `
-    )
-    .eq("lesson_id", lessonId);
+    .eq("lesson_id", lesId)
+    .eq("lessons.level_id", lvlId);
 
   if (error) {
-    // Nếu có lỗi lớn (ví dụ kết nối, quyền) thì trả về thông báo
-    return <div style={{ padding: "2rem" }}>Lỗi: {error.message}</div>;
-  }
-  if (!rows || rows.length === 0) {
-    // Nếu không có kết quả, có thể lesson không thuộc level hoặc chưa có từ
     return (
-      <div style={{ padding: "2rem" }}>
-        Không tìm thấy từ cho Lesson {lessonId} của Level {levelId}.
-      </div>
+      <main style={{ padding: "2rem" }}>
+        <h1>Lỗi khi lấy ID từ lesson_vocabularies</h1>
+        <p>{error.message}</p>
+      </main>
     );
   }
 
-  // 2. Lấy riêng mảng vocabularies
-  console.log("Fetched rows:", rows);
+  const vocabIds: string[] = (data ?? []).map((r) => r.vocabulary_id);
 
-  // 3. Render UI
-  return <main style={{ padding: "2rem" }}>Haha</main>;
+  if (vocabIds.length === 0) {
+    return (
+      <main style={{ padding: "2rem" }}>
+        <p>Vocabularies in this lesson is empty!</p>
+      </main>
+    );
+  }
+
+  const {
+    data: vocabList,
+    error: vocabErr,
+  }: { data: VocabularyCard[] | null; error: PostgrestError | null } = await supabaseBrowser
+    .from("vocabularies")
+    .select("*")
+    .in("id", vocabIds)
+    .order("word", { ascending: true });
+
+  if (vocabErr) {
+    return (
+      <main style={{ padding: "2rem" }}>
+        <h1>Lỗi khi fetch vocabularies</h1>
+        <p>{vocabErr.message}</p>
+      </main>
+    );
+  }
+
+  return (
+    <main className="container mx-auto py-8 px-2 sm:px-4">
+      <VocabularyPractice vocabularies={vocabList ?? []} />
+    </main>
+  );
 }

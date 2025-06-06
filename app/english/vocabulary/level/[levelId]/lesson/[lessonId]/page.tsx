@@ -2,8 +2,7 @@ import { VocabularyPractice } from "@/components/English/vocabulary-practice";
 import { supabase } from "@/lib/supabase/public";
 import { VocabularyCard } from "@/types/vocabulary";
 import { PostgrestError } from "@supabase/supabase-js";
-
-export const revalidate = 86400;
+import { notFound } from "next/navigation";
 
 export default async function VocabularyPage({
   params,
@@ -11,10 +10,15 @@ export default async function VocabularyPage({
   params: Promise<{ levelId: string; lessonId: string }>;
 }) {
   const { levelId, lessonId } = await params;
+
   const lvlId = Number(levelId);
   const lesId = Number(lessonId);
 
-  // Bước 1: Lấy mảng vocabulary_id, nhúng lessons(level_id) để có thể filter
+  if (isNaN(lvlId) || isNaN(lesId)) {
+    return notFound();
+  }
+
+  // Step 1: Fetch vocabulary_id array, embedding lessons(level_id) for filtering
   const { data, error } = await supabase
     .from("lesson_vocabularies")
     .select(
@@ -52,6 +56,7 @@ export default async function VocabularyPage({
     .from("vocabularies")
     .select("*")
     .in("id", vocabIds)
+    .eq("is_learned", false)
     .order("word", { ascending: true });
 
   if (vocabErr) {

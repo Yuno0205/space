@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     "Discover the mysteries of space through immersive experiences, cutting-edge research, and breathtaking imagery.",
 };
 
-export const revalidate = 7200;
+export const revalidate = 86400;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

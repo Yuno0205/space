@@ -33,7 +33,7 @@ export default async function VocabularyPage({
   if (error) {
     return (
       <main style={{ padding: "2rem" }}>
-        <h1>Lỗi khi lấy ID từ lesson_vocabularies</h1>
+        <h1>Error fetching vocabulary IDs</h1>
         <p>{error.message}</p>
       </main>
     );
@@ -44,7 +44,7 @@ export default async function VocabularyPage({
   if (vocabIds.length === 0) {
     return (
       <main style={{ padding: "2rem" }}>
-        <p>Vocabularies in this lesson is empty!</p>
+        <p>No vocabularies found for this lesson.</p>
       </main>
     );
   }
@@ -62,7 +62,7 @@ export default async function VocabularyPage({
   if (vocabErr) {
     return (
       <main style={{ padding: "2rem" }}>
-        <h1>Lỗi khi fetch vocabularies</h1>
+        <h1>Error fetching vocabularies</h1>
         <p>{vocabErr.message}</p>
       </main>
     );

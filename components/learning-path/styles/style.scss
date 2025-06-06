@@ -1,0 +1,85 @@
+.progress-ring {
+  height: 98px;
+  left: 50%;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%) scaleY(0.946);
+  width: 98px;
+}
+
+.item:first-child {
+  margin-top: 67px;
+}
+.item:last-child {
+  margin-bottom: 67px;
+}
+
+.node {
+  --web-ui_button-filter-hover: none;
+  --path-level-color: #1f2937;
+  --color-black: 0, 0, 0;
+  height: 65px;
+  position: relative;
+  width: 70px;
+  z-index: 0;
+  outline: none;
+  background: none;
+  border: none;
+  padding: 0;
+  transition: filter 0.2s;
+}
+
+.node:hover:not(:active) {
+  transform: translateY(1.5px);
+}
+
+.node:hover:not(:active):after {
+  box-shadow:
+    0 6.5px 0 rgb(var(--color-black), 0.2),
+    0 6.5px 0 var(--path-level-color);
+}
+
+.node:active {
+  transform: translateY(8px);
+}
+
+.node:active::before {
+  display: none;
+}
+
+.node:hover::before {
+  display: none;
+}
+
+.node::before {
+  content: "";
+  left: 0;
+  position: absolute;
+  width: 100%;
+  z-index: -1;
+  background:
+    linear-gradient(rgb(var(--color-black), 0.2), rgb(var(--color-black), 0.2)),
+    linear-gradient(var(--path-level-color), var(--path-level-color));
+  height: 8px;
+  top: 28.5px;
+}
+
+.node::after {
+  content: "";
+  left: 0;
+  position: absolute;
+  width: 100%;
+  z-index: -1;
+  background: var(--path-level-color);
+  border-radius: 50% / 50%;
+  box-shadow:
+    0 8px 0 rgb(var(--color-black), 0.2),
+    0 8px 0 var(--path-level-color);
+  height: 57px;
+  top: 0;
+}
+
+.node:active:after {
+  box-shadow: none;
+}

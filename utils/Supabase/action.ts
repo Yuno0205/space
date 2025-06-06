@@ -1,4 +1,4 @@
-import { supabaseBrowser as supabase } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/public";
 
 export async function updateProficiency(vocabId: string, key: string, value: boolean) {
   const { error } = await supabase.rpc("update_proficiently_field", {

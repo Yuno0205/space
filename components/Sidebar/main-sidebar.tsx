@@ -46,6 +46,12 @@ const navigationItems = [
     items: [],
   },
   {
+    title: "Learning Path",
+    icon: BookText,
+    href: "/roadmap",
+    items: [],
+  },
+  {
     title: "English",
     icon: BookOpen,
     href: "/english",

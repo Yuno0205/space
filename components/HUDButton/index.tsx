@@ -54,7 +54,7 @@ export default function HUDButton({
         onClick={onClick}
         disabled={disabled}
         className={cn(
-          "bg-white text-black hover:bg-gray-100 font-bold h-auto border-2 border-black hover:shadow-lg hover:scale-105 transition-all duration-300 uppercase tracking-wider relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100",
+          "bg-white rounded-none text-black hover:bg-gray-100 font-bold h-auto border-2 border-black hover:shadow-lg  transition-all duration-300 uppercase tracking-wider relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100",
           sizeClasses[size],
           className
         )}
@@ -67,7 +67,7 @@ export default function HUDButton({
 
       {/* Corner decorations with animations */}
       {/* Top left corner */}
-      <div className="absolute -top-2 -left-2 w-6 h-6 group-hover:scale-110 transition-all duration-300">
+      <div className="absolute -top-1 -left-1 w-6 h-6 group-hover:scale-110 transition-all duration-300">
         <div
           className={cn(
             "absolute top-0 left-0 w-4 h-0.5 bg-white group-hover:shadow-md transition-all duration-300 group-hover:w-6",
@@ -83,7 +83,7 @@ export default function HUDButton({
       </div>
 
       {/* Top right corner */}
-      <div className="absolute -top-2 -right-2 w-6 h-6 group-hover:scale-110 transition-all duration-300 delay-75">
+      <div className="absolute -top-1 -right-1 w-6 h-6 group-hover:scale-110 transition-all duration-300 delay-75">
         <div
           className={cn(
             "absolute top-0 right-0 w-4 h-0.5 bg-white group-hover:shadow-md transition-all duration-300 group-hover:w-6",
@@ -99,7 +99,7 @@ export default function HUDButton({
       </div>
 
       {/* Bottom left corner */}
-      <div className="absolute -bottom-2 -left-2 w-6 h-6 group-hover:scale-110 transition-all duration-300 delay-150">
+      <div className="absolute -bottom-1 -left-1 w-6 h-6 group-hover:scale-110 transition-all duration-300 delay-150">
         <div
           className={cn(
             "absolute bottom-0 left-0 w-4 h-0.5 bg-white group-hover:shadow-md transition-all duration-300 group-hover:w-6",
@@ -115,7 +115,7 @@ export default function HUDButton({
       </div>
 
       {/* Bottom right corner */}
-      <div className="absolute -bottom-2 -right-2 w-6 h-6 group-hover:scale-110 transition-all duration-300 delay-200">
+      <div className="absolute -bottom-1 -right-1 w-6 h-6 group-hover:scale-110 transition-all duration-300 delay-200">
         <div
           className={cn(
             "absolute bottom-0 right-0 w-4 h-0.5 bg-white group-hover:shadow-md transition-all duration-300 group-hover:w-6",

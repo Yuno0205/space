@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-// KHÔNG CẦN DÙNG useInView NỮA
-// import { useInView } from "react-intersection-observer";
+
 import { FadeIn } from "@/components/animations/fade-in";
 import { UnitSection } from "@/components/learning-path/UnitSection";
 import { supabase } from "@/lib/supabase/public";
 import { Level } from "@/types/lesson";
+import HUDButton from "@/components/HUDButton";
 
 export default function LearningHomePage() {
   const [levels, setLevels] = useState<Level[]>([]);
@@ -14,10 +14,6 @@ export default function LearningHomePage() {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  // KHÔNG CẦN useInView NỮA
-  // const { ref, inView } = useInView({...});
-
-  // Hàm loadMoreLevels vẫn giữ nguyên, nó đã hoạt động rất tốt
   const loadMoreLevels = useCallback(async () => {
     if (loading || !hasMore) return;
     setLoading(true);
@@ -52,15 +48,8 @@ export default function LearningHomePage() {
     }
   }, [loadMoreLevels, levels.length]);
 
-  // KHÔNG CẦN useEffect theo dõi inView NỮA
-  // useEffect(() => {
-  //   if (inView && hasMore && !loading) {
-  //     loadMoreLevels();
-  //   }
-  // }, [inView, hasMore, loading, loadMoreLevels]);
-
   return (
-    <div className="container mx-auto py-8 px-4 dark:bg-[url('/assets/images/stars_bg.jpg')] bg-none">
+    <div className="container mx-auto py-8 px-4 dark:bg-[url('/assets/images/stars_bg.jpg')] bg-none min-h-screen">
       <FadeIn>
         {/* Vẫn render danh sách levels như cũ */}
         {levels.map((level: Level) => (
@@ -72,12 +61,9 @@ export default function LearningHomePage() {
       <div className="flex justify-center mt-8 mb-4">
         {/* Chỉ hiển thị nút khi không đang tải và vẫn còn level để tải */}
         {!loading && hasMore && (
-          <button
-            onClick={loadMoreLevels}
-            className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-          >
-            Tải thêm
-          </button>
+          <HUDButton size="sm" onClick={loadMoreLevels}>
+            Load more
+          </HUDButton>
         )}
 
         {/* Hiển thị chỉ báo đang tải */}

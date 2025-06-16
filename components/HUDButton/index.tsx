@@ -67,16 +67,16 @@ export default function HUDButton({
 
       {/* Corner decorations with animations */}
       {/* Top left corner */}
-      <div className="absolute -top-1 -left-1 w-6 h-6 group-hover:scale-110 transition-all duration-300">
+      <div className="absolute -top-1 -left-1 w-6 h-6 group-hover:scale-110 transition-all duration-300 delay-200">
         <div
           className={cn(
-            "absolute top-0 left-0 w-4 h-0.5 bg-white group-hover:shadow-md transition-all duration-300 group-hover:w-6",
+            "absolute top-0 left-0 w-2 h-0.5 bg-white group-hover:shadow-md transition-all duration-300 group-hover:w-4",
             variantClasses[variant].corner
           )}
         ></div>
         <div
           className={cn(
-            "absolute top-0 left-0 w-0.5 h-4 bg-white group-hover:shadow-md transition-all duration-300 group-hover:h-6",
+            "absolute top-0 left-0 w-0.5 h-2 bg-white group-hover:shadow-md transition-all duration-300 group-hover:h-4",
             variantClasses[variant].corner
           )}
         ></div>
@@ -86,13 +86,13 @@ export default function HUDButton({
       <div className="absolute -top-1 -right-1 w-6 h-6 group-hover:scale-110 transition-all duration-300 delay-75">
         <div
           className={cn(
-            "absolute top-0 right-0 w-4 h-0.5 bg-white group-hover:shadow-md transition-all duration-300 group-hover:w-6",
+            "absolute top-0 right-0 w-2 h-0.5 bg-white group-hover:shadow-md transition-all duration-300 group-hover:w-4",
             variantClasses[variant].corner
           )}
         ></div>
         <div
           className={cn(
-            "absolute top-0 right-0 w-0.5 h-4 bg-white group-hover:shadow-md transition-all duration-300 group-hover:h-6",
+            "absolute top-0 right-0 w-0.5 h-2 bg-white group-hover:shadow-md transition-all duration-300 group-hover:h-4",
             variantClasses[variant].corner
           )}
         ></div>
@@ -102,13 +102,13 @@ export default function HUDButton({
       <div className="absolute -bottom-1 -left-1 w-6 h-6 group-hover:scale-110 transition-all duration-300 delay-150">
         <div
           className={cn(
-            "absolute bottom-0 left-0 w-4 h-0.5 bg-white group-hover:shadow-md transition-all duration-300 group-hover:w-6",
+            "absolute bottom-0 left-0 w-2 h-0.5 bg-white group-hover:shadow-md transition-all duration-300 group-hover:w-4",
             variantClasses[variant].corner
           )}
         ></div>
         <div
           className={cn(
-            "absolute bottom-0 left-0 w-0.5 h-4 bg-white group-hover:shadow-md transition-all duration-300 group-hover:h-6",
+            "absolute bottom-0 left-0 w-0.5 h-2 bg-white group-hover:shadow-md transition-all duration-300 group-hover:h-4",
             variantClasses[variant].corner
           )}
         ></div>
@@ -118,13 +118,13 @@ export default function HUDButton({
       <div className="absolute -bottom-1 -right-1 w-6 h-6 group-hover:scale-110 transition-all duration-300 delay-200">
         <div
           className={cn(
-            "absolute bottom-0 right-0 w-4 h-0.5 bg-white group-hover:shadow-md transition-all duration-300 group-hover:w-6",
+            "absolute bottom-0 right-0 w-2 h-0.5 bg-white group-hover:shadow-md transition-all duration-300 group-hover:w-4",
             variantClasses[variant].corner
           )}
         ></div>
         <div
           className={cn(
-            "absolute bottom-0 right-0 w-0.5 h-4 bg-white group-hover:shadow-md transition-all duration-300 group-hover:h-6",
+            "absolute bottom-0 right-0 w-0.5 h-2 bg-white group-hover:shadow-md transition-all duration-300 group-hover:h-4",
             variantClasses[variant].corner
           )}
         ></div>
@@ -132,9 +132,7 @@ export default function HUDButton({
 
       {/* Outer glow effect */}
       <div className="absolute inset-0 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-        <div
-          className={cn("absolute inset-0 blur-xl scale-110", variantClasses[variant].glow)}
-        ></div>
+        <div className={cn("absolute inset-0 blur-xl scale-110")}></div>
       </div>
     </div>
   );

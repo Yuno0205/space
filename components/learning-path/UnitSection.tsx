@@ -1,46 +1,34 @@
-// /components/learning-path/UnitSection.tsx
-
-"use client"; // <<== THÊM DÒNG NÀY
-
 import { LessonWithProgress, Level } from "@/types/lesson";
 import { supabase } from "@/lib/supabase/public";
-import { useEffect, useState } from "react";
-
 import { LessonNode } from "./LessonNode";
 import UnitHeader from "./UnitHeader";
 
-// Props bây giờ chỉ cần nhận 'level'
-export function UnitSection({ level }: { level: Level }) {
-  const [lessons, setLessons] = useState<LessonWithProgress[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface UnitSectionProps {
+  level: Level;
+  triggerRef?: (node?: Element | null) => void;
+}
 
-  useEffect(() => {
-    // Hàm async để tải các lesson cho level này
-    const fetchLessons = async () => {
-      setLoading(true);
-      const { data: fetchedLessons, error: fetchError } = await supabase
-        .from("lessons_with_progress")
-        .select(
-          `
-          id, letter, name, description,
-          learned_words, total_words, progress
-        `
-        )
-        .eq("level_id", level.id)
-        .order("letter", { ascending: true });
+export async function UnitSection({ level, triggerRef }: UnitSectionProps) {
+  const { data: lessons, error } = await supabase
+    .from("lessons_with_progress")
+    .select(
+      `
+      id,
+      letter,
+      name,
+      description,
+      learned_words,
+      total_words,
+      progress
+    `
+    )
+    .eq("level_id", level.id)
+    .order("letter", { ascending: true });
 
-      if (fetchError) {
-        console.error("Error fetching lessons:", fetchError);
-        setError("Error fetching lessons");
-      } else {
-        setLessons(fetchedLessons || []);
-      }
-      setLoading(false);
-    };
-
-    fetchLessons();
-  }, [level.id]); // Chỉ chạy lại khi level.id thay đổi
+  if (error) {
+    console.error("Error fetching lessons:", error);
+    return <div>Error fetching lessons</div>;
+  }
 
   // Zigzag offsets for lesson nodes
   const offsets = [0, -44.884, -70, -44.884, 0, 44.884, 70, 44.884, 0];
@@ -51,17 +39,15 @@ export function UnitSection({ level }: { level: Level }) {
 
       {/* LessonMap */}
       <div className="relative flex flex-col items-center min-h-[300px] bg-transparent px-4">
-        {loading ? (
-          <div>Loading...</div>
-        ) : error ? (
-          <div>{error}</div> // Hiển thị lỗi
-        ) : (
-          lessons.map((lesson, index) => {
-            const arrayIndex = index % offsets.length;
-            const leftOffset = offsets[arrayIndex];
-            return (
+        {lessons?.map((lesson: LessonWithProgress, index) => {
+          const i = index + 1;
+          const arrayIndex = (i - 1) % offsets.length;
+          const leftOffset = offsets[arrayIndex];
+          const isLastLesson = index === lessons.length - 1;
+
+          return (
+            <div key={lesson.id} ref={isLastLesson ? triggerRef : undefined}>
               <LessonNode
-                key={lesson.id}
                 left={leftOffset}
                 lessonData={{
                   id: lesson.id,
@@ -72,9 +58,9 @@ export function UnitSection({ level }: { level: Level }) {
                 levelData={{ id: level.id, name: level.name }}
                 progress={lesson.progress}
               />
-            );
-          })
-        )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

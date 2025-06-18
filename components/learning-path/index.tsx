@@ -1,0 +1,185 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { useInView } from "react-intersection-observer";
+import { FadeIn } from "@/components/animations/fade-in";
+import { LessonNode } from "./LessonNode";
+import UnitHeader from "./UnitHeader";
+import { supabase } from "@/lib/supabase/public";
+import { Level, LessonWithProgress } from "@/types/lesson";
+
+const LEVELS_PER_PAGE = 1;
+
+interface LevelWithLessons {
+  level: Level;
+  lessons: LessonWithProgress[];
+}
+
+export function InfinityScrollLearningPath() {
+  const [levelsData, setLevelsData] = useState<LevelWithLessons[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(
+    async (page: number) => {
+      if (loading) return;
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Fetch levels
+        const { data: levels, error: levelsError } = await supabase
+          .from("levels")
+          .select("*")
+          .order("name", { ascending: true })
+          .range(page * LEVELS_PER_PAGE, (page + 1) * LEVELS_PER_PAGE - 1);
+
+        if (levelsError) throw levelsError;
+
+        if (levels && levels.length > 0) {
+          // Fetch lessons for each level
+          const levelsWithLessons = await Promise.all(
+            levels.map(async (level) => {
+              const { data: lessons } = await supabase
+                .from("lessons_with_progress")
+                .select(
+                  `
+                id, letter, name, description,
+                learned_words, total_words, progress
+              `
+                )
+                .eq("level_id", level.id)
+                .order("letter", { ascending: true });
+
+              return { level, lessons: lessons || [] };
+            })
+          );
+
+          setLevelsData((prev) =>
+            page === 0 ? levelsWithLessons : [...prev, ...levelsWithLessons]
+          );
+          setHasMore(levels.length === LEVELS_PER_PAGE);
+
+          // Auto increment page for next load
+          setCurrentPage(page + 1);
+        } else {
+          setHasMore(false);
+        }
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError("Error loading levels");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [loading]
+  );
+
+  // Load next level function
+  const loadNext = useCallback(() => {
+    if (!loading && hasMore) {
+      fetchData(currentPage);
+    }
+  }, [currentPage, loading, hasMore, fetchData]);
+
+  // Load first level on mount
+  useEffect(() => {
+    fetchData(0);
+  }, []);
+
+  if (error && levelsData.length === 0) {
+    return <div className="text-center text-red-500">{error}</div>;
+  }
+
+  return (
+    <FadeIn>
+      {levelsData.map((item, levelIndex) => (
+        <LevelSection
+          key={item.level.id}
+          level={item.level}
+          lessons={item.lessons}
+          isLastLevel={levelIndex === levelsData.length - 1}
+          onLoadNext={loadNext}
+          hasMore={hasMore}
+        />
+      ))}
+
+      {loading && (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+        </div>
+      )}
+
+      {!hasMore && levelsData.length > 0 && (
+        <div className="text-center py-8 text-gray-600 dark:text-gray-400">
+          🎉 You've reached the end! Great job!
+        </div>
+      )}
+    </FadeIn>
+  );
+}
+
+// Internal component - không tách file
+function LevelSection({
+  level,
+  lessons,
+  isLastLevel,
+  onLoadNext,
+  hasMore,
+}: {
+  level: Level;
+  lessons: LessonWithProgress[];
+  isLastLevel: boolean;
+  onLoadNext: () => void;
+  hasMore: boolean;
+}) {
+  // Intersection observer cho lesson cuối cùng
+  const { ref: triggerRef, inView } = useInView({
+    threshold: 0.1,
+    rootMargin: "200px", // Trigger sớm hơn
+  });
+
+  // Load next level khi scroll đến lesson cuối
+  useEffect(() => {
+    if (isLastLevel && inView && hasMore) {
+      onLoadNext();
+    }
+  }, [isLastLevel, inView, hasMore, onLoadNext]);
+
+  // Zigzag offsets
+  const offsets = [0, -44.884, -70, -44.884, 0, 44.884, 70, 44.884, 0];
+
+  return (
+    <div className="w-full">
+      <UnitHeader data={level} />
+
+      <div className="relative flex flex-col items-center min-h-[300px] bg-transparent px-4">
+        {lessons.map((lesson, index) => {
+          const i = index + 1;
+          const arrayIndex = (i - 1) % offsets.length;
+          const leftOffset = offsets[arrayIndex];
+          const isLastLesson = index === lessons.length - 1;
+
+          return (
+            <div key={lesson.id} ref={isLastLevel && isLastLesson ? triggerRef : undefined}>
+              <LessonNode
+                left={leftOffset}
+                lessonData={{
+                  id: lesson.id,
+                  letter: lesson.letter,
+                  total_words: lesson.total_words,
+                  learned_words: lesson.learned_words,
+                }}
+                levelData={{ id: level.id, name: level.name }}
+                progress={lesson.progress}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

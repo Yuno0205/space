@@ -31,7 +31,7 @@ export function useInfinityScroll<T>(
         observer.unobserve(lastItemRef.current);
       }
     };
-  }, [loadMore, hasMore, loading]);
+  }, [items.length, loadMore, hasMore, loading]);
 
   return lastItemRef;
 }

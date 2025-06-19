@@ -1,5 +1,5 @@
-// LessonNode.tsx
 "use client";
+
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -32,7 +32,7 @@ interface LessonNodeProps {
 
 export function LessonNode({ left, lessonData, levelData, progress }: LessonNodeProps) {
   return (
-    <div className="relative flex mt-4 item" style={{ left: `${left}px` }}>
+    <div className="relative flex mt-4" style={{ left: `${left}px` }}>
       <div className="inline-flex cursor-pointer">
         {/* Vòng tròn progress */}
         <ProgressRing progress={progress} />

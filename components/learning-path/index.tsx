@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useInView } from "react-intersection-observer";
 import { FadeIn } from "@/components/animations/fade-in";
-import { LessonNode } from "./LessonNode";
-import UnitHeader from "./UnitHeader";
 import { supabase } from "@/lib/supabase/public";
-import { Level, LessonWithProgress } from "@/types/lesson";
+import { LessonWithProgress, Level } from "@/types/lesson";
+import { useCallback, useEffect, useState } from "react";
+import { useInView } from "react-intersection-observer";
+import { LessonNode } from "./LessonNode";
+import "./styles/style.scss";
+import UnitHeader from "./UnitHeader";
 
 const LEVELS_PER_PAGE = 1;
 
@@ -30,40 +31,34 @@ export function InfinityScrollLearningPath() {
       setError(null);
 
       try {
-        // Fetch levels
-        const { data: levels, error: levelsError } = await supabase
+        const { data: fetchedData, error: queryError } = await supabase
           .from("levels")
-          .select("*")
+          .select(
+            `
+            id, name, description,
+            lessons:lessons_with_progress(
+              id, letter, name, description,
+              learned_words, total_words, progress
+            )
+          `
+          )
           .order("name", { ascending: true })
+          .order("letter", { foreignTable: "lessons_with_progress", ascending: true })
           .range(page * LEVELS_PER_PAGE, (page + 1) * LEVELS_PER_PAGE - 1);
 
-        if (levelsError) throw levelsError;
+        if (queryError) throw queryError;
 
-        if (levels && levels.length > 0) {
-          // Fetch lessons for each level
-          const levelsWithLessons = await Promise.all(
-            levels.map(async (level) => {
-              const { data: lessons } = await supabase
-                .from("lessons_with_progress")
-                .select(
-                  `
-                id, letter, name, description,
-                learned_words, total_words, progress
-              `
-                )
-                .eq("level_id", level.id)
-                .order("letter", { ascending: true });
-
-              return { level, lessons: lessons || [] };
-            })
-          );
+        if (fetchedData && fetchedData.length > 0) {
+          // Map lại dữ liệu cho đúng kiểu LevelWithLessons
+          const newLevelsWithLessons = fetchedData.map((d) => ({
+            level: { id: d.id, name: d.name, description: d.description },
+            lessons: d.lessons || [],
+          }));
 
           setLevelsData((prev) =>
-            page === 0 ? levelsWithLessons : [...prev, ...levelsWithLessons]
+            page === 0 ? newLevelsWithLessons : [...prev, ...newLevelsWithLessons]
           );
-          setHasMore(levels.length === LEVELS_PER_PAGE);
-
-          // Auto increment page for next load
+          setHasMore(fetchedData.length === LEVELS_PER_PAGE);
           setCurrentPage(page + 1);
         } else {
           setHasMore(false);
@@ -75,7 +70,9 @@ export function InfinityScrollLearningPath() {
         setLoading(false);
       }
     },
-    [loading]
+    // `loading` được kiểm tra bên trong nên không cần làm dependency
+    // Các hàm set state là stable, nên dependency array có thể để rỗng
+    []
   );
 
   // Load next level function
@@ -115,7 +112,7 @@ export function InfinityScrollLearningPath() {
 
       {!hasMore && levelsData.length > 0 && (
         <div className="text-center py-8 text-gray-600 dark:text-gray-400">
-          🎉 You've reached the end! Great job!
+          🎉 You have reached the end! Great job!
         </div>
       )}
     </FadeIn>
@@ -164,7 +161,11 @@ function LevelSection({
           const isLastLesson = index === lessons.length - 1;
 
           return (
-            <div key={lesson.id} ref={isLastLevel && isLastLesson ? triggerRef : undefined}>
+            <div
+              key={lesson.id}
+              ref={isLastLevel && isLastLesson ? triggerRef : undefined}
+              className="item"
+            >
               <LessonNode
                 left={leftOffset}
                 lessonData={{

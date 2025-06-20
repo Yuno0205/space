@@ -34,7 +34,7 @@ export function LessonNode({ left, lessonData, levelData, progress }: LessonNode
   return (
     <div className="relative flex mt-4" style={{ left: `${left}px` }}>
       <div className="inline-flex cursor-pointer">
-        {/* Vòng tròn progress */}
+        {/* Progress ring */}
         <ProgressRing progress={progress} />
 
         <div className="m-4 relative">

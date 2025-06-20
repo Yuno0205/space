@@ -4,10 +4,8 @@ import { FadeIn } from "@/components/animations/fade-in";
 import { supabase } from "@/lib/supabase/public";
 import { LessonWithProgress, Level } from "@/types/lesson";
 import { useCallback, useEffect, useState } from "react";
-import { useInView } from "react-intersection-observer";
-import { LessonNode } from "./LessonNode";
 import "./styles/style.scss";
-import UnitHeader from "./UnitHeader";
+import { LevelSection } from "./LevelSection";
 
 const LEVELS_PER_PAGE = 1;
 
@@ -47,7 +45,7 @@ export function InfinityScrollLearningPath() {
         if (queryError) throw queryError;
 
         if (fetchedData && fetchedData.length > 0) {
-          // Map lại dữ liệu cho đúng kiểu LevelWithLessons
+          // Reformat data to match LevelWithLessons structure
           const newLevelsWithLessons = fetchedData.map((d) => ({
             level: { id: d.id, name: d.name, description: d.description },
             lessons: d.lessons || [],
@@ -111,71 +109,5 @@ export function InfinityScrollLearningPath() {
         </div>
       )}
     </FadeIn>
-  );
-}
-
-// Internal component - không tách file
-function LevelSection({
-  level,
-  lessons,
-  isLastLevel,
-  onLoadNext,
-  hasMore,
-}: {
-  level: Level;
-  lessons: LessonWithProgress[];
-  isLastLevel: boolean;
-  onLoadNext: () => void;
-  hasMore: boolean;
-}) {
-  // Intersection observer cho lesson cuối cùng
-  const { ref: triggerRef, inView } = useInView({
-    threshold: 0.1,
-    rootMargin: "200px", // Trigger sớm hơn
-  });
-
-  // Load next level khi scroll đến lesson cuối
-  useEffect(() => {
-    if (isLastLevel && inView && hasMore) {
-      onLoadNext();
-    }
-  }, [isLastLevel, inView, hasMore, onLoadNext]);
-
-  // Zigzag offsets
-  const offsets = [0, -44.884, -70, -44.884, 0, 44.884, 70, 44.884, 0];
-
-  return (
-    <div className="w-full">
-      <UnitHeader data={level} />
-
-      <div className="relative flex flex-col items-center min-h-[300px] bg-transparent px-4">
-        {lessons.map((lesson, index) => {
-          const i = index + 1;
-          const arrayIndex = (i - 1) % offsets.length;
-          const leftOffset = offsets[arrayIndex];
-          const isLastLesson = index === lessons.length - 1;
-
-          return (
-            <div
-              key={lesson.id}
-              ref={isLastLevel && isLastLesson ? triggerRef : undefined}
-              className="lesson-node"
-            >
-              <LessonNode
-                left={leftOffset}
-                lessonData={{
-                  id: lesson.id,
-                  letter: lesson.letter,
-                  total_words: lesson.total_words,
-                  learned_words: lesson.learned_words,
-                }}
-                levelData={{ id: level.id, name: level.name }}
-                progress={lesson.progress}
-              />
-            </div>
-          );
-        })}
-      </div>
-    </div>
   );
 }

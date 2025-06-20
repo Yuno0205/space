@@ -25,8 +25,6 @@ export function InfinityScrollLearningPath() {
 
   const fetchData = useCallback(
     async (page: number) => {
-      if (loading) return;
-
       setLoading(true);
       setError(null);
 
@@ -70,22 +68,19 @@ export function InfinityScrollLearningPath() {
         setLoading(false);
       }
     },
-    // `loading` được kiểm tra bên trong nên không cần làm dependency
-    // Các hàm set state là stable, nên dependency array có thể để rỗng
+
     []
   );
 
-  // Load next level function
   const loadNext = useCallback(() => {
     if (!loading && hasMore) {
       fetchData(currentPage);
     }
   }, [currentPage, loading, hasMore, fetchData]);
 
-  // Load first level on mount
   useEffect(() => {
     fetchData(0);
-  }, []);
+  }, [fetchData]);
 
   if (error && levelsData.length === 0) {
     return <div className="text-center text-red-500">{error}</div>;
@@ -164,7 +159,7 @@ function LevelSection({
             <div
               key={lesson.id}
               ref={isLastLevel && isLastLesson ? triggerRef : undefined}
-              className="item"
+              className="lesson-node"
             >
               <LessonNode
                 left={leftOffset}

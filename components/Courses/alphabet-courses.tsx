@@ -1,4 +1,4 @@
-import { supabaseBrowser } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/public";
 import Link from "next/link";
 import { LetterCard } from "./letter-card";
 
@@ -94,7 +94,7 @@ export async function AlphabetCourses({ searchParams }: AlphabetCoursesProps) {
     data: Course[] | null;
     error: PostgrestError | null;
     count: number | null;
-  } = await supabaseBrowser
+  } = await supabase
     .from("courses")
     .select("*", { count: "exact" })
     .order("letter", { ascending: true })

@@ -15,7 +15,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, BookText, Check, Volume2, X } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "../ui/badge"; // Assuming this path is correct for Badge
-import { supabaseBrowser as supabase } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/public";
 import { VocabularyCard } from "@/types/vocabulary";
 
 export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyCard[] }) {
@@ -26,10 +26,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
   const [knownWords, setKnownWords] = useState<string[]>([]);
   const [unknownWords, setUnknownWords] = useState<string[]>([]);
 
-  // Ensure cards array is not empty before accessing currentCard
   if (cards.length === 0) {
-    // Handle the case where there are no vocabularies
-    // You could return a message or a loading state, for example:
     return (
       <Card>
         <CardHeader>
@@ -46,7 +43,6 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
   const progress = cards.length > 0 ? ((currentCardIndex + 1) / cards.length) * 100 : 0;
 
   async function handleKnown(id: string) {
-    // supabaseBrowser handles anon key automatically
     await supabase.from("vocabularies").update({ is_learned: true }).eq("id", id);
     await supabase.from("review_queue").upsert({
       vocab_id: id,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabaseBrowser as supabase } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/public";
 
 // Định nghĩa kiểu cho thẻ ôn tập
 interface ReviewCard {

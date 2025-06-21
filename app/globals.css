@@ -27,6 +27,9 @@
     --input: 0 0% 89.8%;
     --ring: 0 0% 3.9%;
     --radius: 0.5rem;
+    --color-snow: 19, 31, 36;
+    --color-swan: 55, 70, 79;
+    --path-unit-character-color: rgb(88, 204, 2);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;

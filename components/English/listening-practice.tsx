@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useCallback } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import {
   Play,
   Pause,
@@ -14,311 +14,339 @@ import {
   Eye,
   ChevronDown,
   ChevronUp,
-} from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
+  HelpCircle,
+  Target,
+  BookOpen,
+} from "lucide-react"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
+import { Badge } from "@/components/ui/badge"
 
 interface ListeningExercise {
-  id: number;
-  relatedVocabulary?: string;
-  fullSentenceText: string;
-  definition?: string;
-  hint?: string;
+  id: number
+  relatedVocabulary?: string
+  fullSentenceText: string
+  definition?: string
+  category?: string
+  example?: string
+  phonetic?: string
 }
-
-// Hàm tạo âm thanh
-const playSound = (
-  frequency: number,
-  duration: number,
-  type: "sine" | "square" | "triangle" = "sine"
-) => {
-  try {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    oscillator.frequency.value = frequency;
-    oscillator.type = type;
-
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + duration);
-  } catch (error) {
-    console.log("Audio not supported");
-  }
-};
-
-// Các âm thanh khác nhau
-const sounds = {
-  click: () => playSound(800, 0.1, "sine"),
-  success: () => {
-    playSound(523, 0.2, "sine"); // C5
-    setTimeout(() => playSound(659, 0.2, "sine"), 100); // E5
-    setTimeout(() => playSound(784, 0.3, "sine"), 200); // G5
-  },
-  error: () => {
-    playSound(300, 0.3, "square");
-    setTimeout(() => playSound(250, 0.3, "square"), 150);
-  },
-  select: () => playSound(600, 0.1, "triangle"),
-  deselect: () => playSound(400, 0.1, "triangle"),
-};
 
 // Hàm giả lập cho Text-to-Speech (TTS)
 const speak = (text: string, onEnd?: () => void): SpeechSynthesisUtterance | null => {
-  console.log("TTS: Đang phát - ", text);
+  console.log("TTS: Đang phát - ", text)
   if (typeof SpeechSynthesisUtterance !== "undefined" && typeof speechSynthesis !== "undefined") {
     if (speechSynthesis.speaking || speechSynthesis.pending) {
-      speechSynthesis.cancel();
+      speechSynthesis.cancel()
     }
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "en-US";
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.lang = "en-US"
     utterance.onend = () => {
-      if (onEnd) onEnd();
-    };
+      if (onEnd) onEnd()
+    }
     utterance.onerror = (event) => {
-      console.error("SpeechSynthesis Error:", event);
-      if (onEnd) onEnd();
-    };
-    speechSynthesis.speak(utterance);
-    return utterance;
+      console.error("SpeechSynthesis Error:", event)
+      if (onEnd) onEnd()
+    }
+    speechSynthesis.speak(utterance)
+    return utterance
   } else {
-    console.warn("SpeechSynthesis API không được trình duyệt này hỗ trợ.");
+    console.warn("SpeechSynthesis API không được trình duyệt này hỗ trợ.")
     setTimeout(
       () => {
-        if (onEnd) onEnd();
+        if (onEnd) onEnd()
       },
-      text.length * 50 + 500
-    );
-    return null;
+      text.length * 50 + 500,
+    )
+    return null
   }
-};
+}
 
 // Hàm xáo trộn mảng (Fisher-Yates shuffle)
 function shuffleArray<T>(array: T[]): T[] {
-  const newArray = [...array];
+  const newArray = [...array]
   for (let i = newArray.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[newArray[i], newArray[j]] = [newArray[j], newArray[i]]
   }
-  return newArray;
+  return newArray
 }
 
-// Dữ liệu bài tập mẫu với định nghĩa và gợi ý
+// Dữ liệu bài tập mẫu với thông tin đầy đủ
 const initialExercises: ListeningExercise[] = [
   {
     id: 1,
     relatedVocabulary: "Diligent",
     fullSentenceText: "diligent",
     definition: "Working hard and carefully",
-    hint: "Starts with 'd' and means hardworking",
+    category: "Personality trait",
+    example: "She is very _____ in her studies.",
+    phonetic: "/ˈdɪlɪdʒənt/",
   },
   {
     id: 2,
     relatedVocabulary: "Efficient",
     fullSentenceText: "efficient",
     definition: "Working well without wasting time or energy",
-    hint: "Starts with 'e' and relates to productivity",
+    category: "Work quality",
+    example: "The new system is more _____ than the old one.",
+    phonetic: "/ɪˈfɪʃənt/",
   },
   {
     id: 3,
     relatedVocabulary: "Persuade",
     fullSentenceText: "persuade",
     definition: "To convince someone to do something",
-    hint: "Starts with 'p' and means to convince",
+    category: "Communication",
+    example: "He tried to _____ her to join the team.",
+    phonetic: "/pərˈsweɪd/",
   },
   {
     id: 4,
     relatedVocabulary: "Beautiful",
     fullSentenceText: "beautiful",
     definition: "Very attractive or pleasing to look at",
-    hint: "Starts with 'b' and describes something pretty",
+    category: "Appearance",
+    example: "The sunset was absolutely _____.",
+    phonetic: "/ˈbjuːtɪfəl/",
   },
   {
     id: 5,
     relatedVocabulary: "Important",
     fullSentenceText: "important",
     definition: "Having great significance or value",
-    hint: "Starts with 'i' and means significant",
+    category: "Significance",
+    example: "This is an _____ decision for our future.",
+    phonetic: "/ɪmˈpɔːrtənt/",
   },
   {
     id: 6,
     relatedVocabulary: "Knowledge",
     fullSentenceText: "knowledge",
     definition: "Information and understanding gained through experience",
-    hint: "Starts with 'k' and relates to learning",
+    category: "Learning",
+    example: "His _____ of history is impressive.",
+    phonetic: "/ˈnɑːlɪdʒ/",
   },
-];
+]
 
 export function ListeningPractice() {
-  const [exercises] = useState<ListeningExercise[]>(initialExercises);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [currentUtterance, setCurrentUtterance] = useState<SpeechSynthesisUtterance | null>(null);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedParts, setSelectedParts] = useState<string[]>([]);
-  const [availableParts, setAvailableParts] = useState<string[]>([]);
-  const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
-  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const [score, setScore] = useState(0);
-  const [showFinalScore, setShowFinalScore] = useState(false);
-  const [showHint, setShowHint] = useState(false);
-  const [showDefinition, setShowDefinition] = useState(false);
-  const [hintsUsed, setHintsUsed] = useState(0);
-  const [streak, setStreak] = useState(0);
-  const [showHelpSection, setShowHelpSection] = useState(false);
+  const [exercises] = useState<ListeningExercise[]>(initialExercises)
+  const [isSpeaking, setIsSpeaking] = useState(false)
+  const [currentUtterance, setCurrentUtterance] = useState<SpeechSynthesisUtterance | null>(null)
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [selectedParts, setSelectedParts] = useState<string[]>([])
+  const [availableParts, setAvailableParts] = useState<string[]>([])
+  const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false)
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
+  const [score, setScore] = useState(0)
+  const [showFinalScore, setShowFinalScore] = useState(false)
+  const [hintsUsed, setHintsUsed] = useState(0)
+  const [streak, setStreak] = useState(0)
+  const [showHelpSection, setShowHelpSection] = useState(false)
+  const [currentHintLevel, setCurrentHintLevel] = useState(0)
 
-  const currentExercise = exercises[currentQuestionIndex];
-  const progressPercentage = ((currentQuestionIndex + 1) / exercises.length) * 100;
+  const currentExercise = exercises[currentQuestionIndex]
+  const progressPercentage = ((currentQuestionIndex + 1) / exercises.length) * 100
+
+  // Hàm tạo gợi ý theo cấp độ
+  const getHintByLevel = (level: number, exercise: ListeningExercise) => {
+    const word = exercise.fullSentenceText
+    switch (level) {
+      case 1:
+        return {
+          title: "Độ dài từ",
+          content: `Từ này có ${word.length} chữ cái: ${word
+            .split("")
+            .map(() => "_")
+            .join(" ")}`,
+          icon: Target,
+          color: "blue",
+        }
+      case 2:
+        return {
+          title: "Chữ cái đầu và cuối",
+          content: `Bắt đầu bằng "${word[0].toUpperCase()}" và kết thúc bằng "${word[word.length - 1].toUpperCase()}"`,
+          icon: HelpCircle,
+          color: "green",
+        }
+      case 3:
+        return {
+          title: "Chủ đề",
+          content: `Thuộc chủ đề: ${exercise.category}`,
+          icon: BookOpen,
+          color: "purple",
+        }
+      case 4:
+        return {
+          title: "Câu ví dụ",
+          content: exercise.example || "Không có ví dụ",
+          icon: Eye,
+          color: "orange",
+        }
+      case 5:
+        return {
+          title: "Định nghĩa",
+          content: exercise.definition || "Không có định nghĩa",
+          icon: Lightbulb,
+          color: "yellow",
+        }
+      case 6:
+        return {
+          title: "Phiên âm",
+          content: exercise.phonetic || "Không có phiên âm",
+          icon: Volume2,
+          color: "pink",
+        }
+      case 7:
+        return {
+          title: "Từ gốc",
+          content: `Từ cần tìm là: "${exercise.relatedVocabulary}"`,
+          icon: CheckCircle,
+          color: "red",
+        }
+      default:
+        return null
+    }
+  }
 
   // Hàm chuẩn bị các phần của từ cho bài tập hiện tại (tách thành từng chữ cái)
   const prepareExercise = useCallback((exercise: ListeningExercise | undefined) => {
-    if (!exercise) return;
+    if (!exercise) return
 
     // Tách từ thành các chữ cái
     const letters = exercise.fullSentenceText
       .toLowerCase()
       .split("")
-      .filter((letter) => letter.trim() !== "");
-    setAvailableParts(shuffleArray(letters));
-    setSelectedParts([]);
-    setIsAnswerSubmitted(false);
-    setIsCorrect(null);
-    setIsSpeaking(false);
-    setShowHint(false);
-    setShowDefinition(false);
-    setShowHelpSection(false);
+      .filter((letter) => letter.trim() !== "")
+    setAvailableParts(shuffleArray(letters))
+    setSelectedParts([])
+    setIsAnswerSubmitted(false)
+    setIsCorrect(null)
+    setIsSpeaking(false)
+    setShowHelpSection(false)
+    setCurrentHintLevel(0)
 
     if (speechSynthesis.speaking || speechSynthesis.pending) {
-      speechSynthesis.cancel();
+      speechSynthesis.cancel()
     }
-    setCurrentUtterance(null);
-  }, []);
+    setCurrentUtterance(null)
+  }, [])
 
   useEffect(() => {
-    prepareExercise(exercises[currentQuestionIndex]);
-  }, [currentQuestionIndex, exercises, prepareExercise]);
+    prepareExercise(exercises[currentQuestionIndex])
+  }, [currentQuestionIndex, exercises, prepareExercise])
 
   const handlePlaySentence = () => {
-    if (!currentExercise) return;
-    sounds.click();
+    if (!currentExercise) return
 
     if (isSpeaking && currentUtterance) {
-      speechSynthesis.pause();
-      setIsSpeaking(false);
+      speechSynthesis.pause()
+      setIsSpeaking(false)
     } else if (!isSpeaking && currentUtterance && speechSynthesis.paused) {
-      speechSynthesis.resume();
-      setIsSpeaking(true);
+      speechSynthesis.resume()
+      setIsSpeaking(true)
     } else {
-      setIsSpeaking(true);
+      setIsSpeaking(true)
       const utterance = speak(currentExercise.fullSentenceText, () => {
-        setIsSpeaking(false);
-      });
-      setCurrentUtterance(utterance);
+        setIsSpeaking(false)
+      })
+      setCurrentUtterance(utterance)
     }
-  };
+  }
 
   const handleReplaySentence = () => {
-    if (!currentExercise) return;
-    sounds.click();
-    setIsSpeaking(true);
+    if (!currentExercise) return
+    setIsSpeaking(true)
     const utterance = speak(currentExercise.fullSentenceText, () => {
-      setIsSpeaking(false);
-    });
-    setCurrentUtterance(utterance);
-  };
+      setIsSpeaking(false)
+    })
+    setCurrentUtterance(utterance)
+  }
 
   const handleSelectPart = (part: string, index: number) => {
-    if (isAnswerSubmitted) return;
-    sounds.select();
-    setSelectedParts([...selectedParts, part]);
-    setAvailableParts((prevParts) => prevParts.filter((_, i) => i !== index));
-  };
+    if (isAnswerSubmitted) return
+    setSelectedParts([...selectedParts, part])
+    setAvailableParts((prevParts) => prevParts.filter((_, i) => i !== index))
+  }
 
   const handleDeselectPart = (part: string, index: number) => {
-    if (isAnswerSubmitted) return;
-    sounds.deselect();
-    setAvailableParts(shuffleArray([...availableParts, part]));
-    setSelectedParts((prevParts) => prevParts.filter((_, i) => i !== index));
-  };
+    if (isAnswerSubmitted) return
+    setAvailableParts(shuffleArray([...availableParts, part]))
+    setSelectedParts((prevParts) => prevParts.filter((_, i) => i !== index))
+  }
 
   const submitAnswer = () => {
-    if (isAnswerSubmitted || !currentExercise) return;
-    const userAnswer = selectedParts.join("");
-    const correctAnswerNormalized = currentExercise.fullSentenceText.toLowerCase().trim();
-    const userAnswerNormalized = userAnswer.toLowerCase().trim();
+    if (isAnswerSubmitted || !currentExercise) return
+    const userAnswer = selectedParts.join("")
+    const correctAnswerNormalized = currentExercise.fullSentenceText.toLowerCase().trim()
+    const userAnswerNormalized = userAnswer.toLowerCase().trim()
 
-    const correct = userAnswerNormalized === correctAnswerNormalized;
-    setIsCorrect(correct);
-    setIsAnswerSubmitted(true);
+    const correct = userAnswerNormalized === correctAnswerNormalized
+    setIsCorrect(correct)
+    setIsAnswerSubmitted(true)
 
     if (correct) {
-      sounds.success();
-      setScore((prevScore) => prevScore + 1);
-      setStreak((prevStreak) => prevStreak + 1);
+      setScore((prevScore) => prevScore + 1)
+      setStreak((prevStreak) => prevStreak + 1)
     } else {
-      sounds.error();
-      setStreak(0);
+      setStreak(0)
     }
-  };
+  }
 
   const nextQuestion = () => {
-    sounds.click();
     if (currentQuestionIndex < exercises.length - 1) {
-      setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
+      setCurrentQuestionIndex((prevIndex) => prevIndex + 1)
     } else {
-      setShowFinalScore(true);
+      setShowFinalScore(true)
       if (speechSynthesis.speaking || speechSynthesis.pending) {
-        speechSynthesis.cancel();
+        speechSynthesis.cancel()
       }
     }
-  };
+  }
 
   const resetCurrentExercise = () => {
-    sounds.click();
-    prepareExercise(currentExercise);
-  };
+    prepareExercise(currentExercise)
+  }
 
   const restartQuiz = () => {
-    sounds.click();
-    setCurrentQuestionIndex(0);
-    setScore(0);
-    setShowFinalScore(false);
-    setHintsUsed(0);
-    setStreak(0);
-  };
+    setCurrentQuestionIndex(0)
+    setScore(0)
+    setShowFinalScore(false)
+    setHintsUsed(0)
+    setStreak(0)
+  }
 
-  const handleShowHint = () => {
-    sounds.click();
-    setShowHint(true);
-    setHintsUsed((prev) => prev + 1);
-    if (!showHelpSection) setShowHelpSection(true);
-  };
-
-  const handleShowDefinition = () => {
-    sounds.click();
-    setShowDefinition(true);
-    if (!showHelpSection) setShowHelpSection(true);
-  };
+  const handleNextHint = () => {
+    if (currentHintLevel < 7) {
+      setCurrentHintLevel((prev) => prev + 1)
+      setHintsUsed((prev) => prev + 1)
+      if (!showHelpSection) setShowHelpSection(true)
+    }
+  }
 
   const toggleHelpSection = () => {
-    sounds.click();
-    setShowHelpSection(!showHelpSection);
-  };
+    setShowHelpSection(!showHelpSection)
+  }
+
+  const getColorClasses = (color: string) => {
+    const colorMap = {
+      blue: "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300",
+      green:
+        "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 text-green-700 dark:text-green-300",
+      purple:
+        "bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300",
+      orange:
+        "bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-700 text-orange-700 dark:text-orange-300",
+      yellow:
+        "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700 text-yellow-700 dark:text-yellow-300",
+      pink: "bg-pink-50 dark:bg-pink-900/20 border-pink-200 dark:border-pink-700 text-pink-700 dark:text-pink-300",
+      red: "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700 text-red-700 dark:text-red-300",
+    }
+    return colorMap[color as keyof typeof colorMap] || colorMap.blue
+  }
 
   if (showFinalScore) {
     return (
@@ -342,15 +370,11 @@ export function ListeningPractice() {
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg">
-                    <div className="font-semibold text-gray-600 dark:text-gray-400">
-                      Gợi ý đã dùng
-                    </div>
+                    <div className="font-semibold text-gray-600 dark:text-gray-400">Gợi ý đã dùng</div>
                     <div className="text-lg font-bold text-black dark:text-white">{hintsUsed}</div>
                   </div>
                   <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg">
-                    <div className="font-semibold text-gray-600 dark:text-gray-400">
-                      Tỷ lệ chính xác
-                    </div>
+                    <div className="font-semibold text-gray-600 dark:text-gray-400">Tỷ lệ chính xác</div>
                     <div className="text-lg font-bold text-black dark:text-white">
                       {Math.round((score / exercises.length) * 100)}%
                     </div>
@@ -369,7 +393,7 @@ export function ListeningPractice() {
           </motion.div>
         </div>
       </div>
-    );
+    )
   }
 
   if (!currentExercise) {
@@ -377,7 +401,7 @@ export function ListeningPractice() {
       <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex items-center justify-center">
         <div className="text-center p-10">Đang tải bài tập...</div>
       </div>
-    );
+    )
   }
 
   return (
@@ -396,19 +420,12 @@ export function ListeningPractice() {
                   <Volume2 className="mr-2 h-6 w-6 text-gray-600 dark:text-gray-400" />
                   Bài Luyện Nghe: Ghép Chữ Thành Từ
                 </div>
-                {streak > 0 && (
-                  <Badge className="bg-orange-500 text-white">🔥 {streak} streak</Badge>
-                )}
+                {streak > 0 && <Badge className="bg-orange-500 text-white">🔥 {streak} streak</Badge>}
               </CardTitle>
               <CardDescription className="text-gray-600 dark:text-gray-400">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div>
-                    Bài {currentQuestionIndex + 1}/{exercises.length}
-                    {currentExercise.relatedVocabulary && (
-                      <span className="ml-2 font-semibold text-blue-600 dark:text-blue-400">
-                        Từ vựng: "{currentExercise.relatedVocabulary}"
-                      </span>
-                    )}
+                    Bài {currentQuestionIndex + 1}/{exercises.length} - Nghe và ghép các chữ cái thành từ hoàn chỉnh
                   </div>
                   <div className="text-sm">Gợi ý đã dùng: {hintsUsed}</div>
                 </div>
@@ -445,7 +462,7 @@ export function ListeningPractice() {
                 </motion.div>
               </div>
 
-              {/* Khu vực gợi ý và trợ giúp - Collapsible */}
+              {/* Khu vực gợi ý thông minh - Progressive Hints */}
               <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                 <Button
                   onClick={toggleHelpSection}
@@ -454,20 +471,14 @@ export function ListeningPractice() {
                 >
                   <div className="flex items-center gap-2">
                     <Lightbulb className="h-4 w-4 text-yellow-500" />
-                    <span className="font-medium">Trợ giúp & Gợi ý</span>
-                    {(showHint || showDefinition) && (
+                    <span className="font-medium">Gợi ý thông minh</span>
+                    {currentHintLevel > 0 && (
                       <Badge variant="secondary" className="text-xs">
-                        {[showHint && "Gợi ý", showDefinition && "Định nghĩa"]
-                          .filter(Boolean)
-                          .join(", ")}
+                        Cấp độ {currentHintLevel}/7
                       </Badge>
                     )}
                   </div>
-                  {showHelpSection ? (
-                    <ChevronUp className="h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" />
-                  )}
+                  {showHelpSection ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </Button>
 
                 <AnimatePresence>
@@ -480,62 +491,60 @@ export function ListeningPractice() {
                       className="border-t border-gray-200 dark:border-gray-700"
                     >
                       <div className="p-4 space-y-4">
-                        {/* Buttons */}
-                        <div className="flex flex-wrap justify-center gap-2">
+                        {/* Button để lấy gợi ý tiếp theo */}
+                        <div className="flex justify-center">
                           <Button
-                            onClick={handleShowHint}
-                            variant="outline"
-                            size="sm"
-                            disabled={showHint || isAnswerSubmitted}
-                            className="border-yellow-400 text-yellow-600 hover:bg-yellow-50 dark:border-yellow-500 dark:text-yellow-400 dark:hover:bg-yellow-900/20"
+                            onClick={handleNextHint}
+                            disabled={currentHintLevel >= 7 || isAnswerSubmitted}
+                            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
                           >
                             <Lightbulb className="mr-2 h-4 w-4" />
-                            {showHint ? "Đã hiện gợi ý" : "Gợi ý"}
-                          </Button>
-                          <Button
-                            onClick={handleShowDefinition}
-                            variant="outline"
-                            size="sm"
-                            disabled={showDefinition}
-                            className="border-blue-400 text-blue-600 hover:bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-900/20"
-                          >
-                            <Eye className="mr-2 h-4 w-4" />
-                            {showDefinition ? "Đã hiện định nghĩa" : "Định nghĩa"}
+                            {currentHintLevel === 0
+                              ? "Lấy gợi ý đầu tiên"
+                              : currentHintLevel >= 7
+                                ? "Đã hết gợi ý"
+                                : `Gợi ý tiếp theo (${currentHintLevel + 1}/7)`}
                           </Button>
                         </div>
 
-                        {/* Hiển thị gợi ý */}
-                        {showHint && currentExercise.hint && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-3"
-                          >
-                            <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-300 mb-1">
-                              <Lightbulb className="h-4 w-4" />
-                              <span className="font-medium">Gợi ý:</span>
-                            </div>
-                            <p className="text-yellow-800 dark:text-yellow-200">
-                              {currentExercise.hint}
-                            </p>
-                          </motion.div>
-                        )}
+                        {/* Hiển thị tất cả gợi ý đã mở */}
+                        <div className="space-y-3">
+                          {Array.from({ length: currentHintLevel }, (_, index) => {
+                            const hint = getHintByLevel(index + 1, currentExercise)
+                            if (!hint) return null
 
-                        {/* Hiển thị định nghĩa */}
-                        {showDefinition && currentExercise.definition && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-3"
-                          >
-                            <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300 mb-1">
-                              <Eye className="h-4 w-4" />
-                              <span className="font-medium">Định nghĩa:</span>
+                            const IconComponent = hint.icon
+                            return (
+                              <motion.div
+                                key={index + 1}
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className={`border rounded-lg p-3 ${getColorClasses(hint.color)}`}
+                              >
+                                <div className="flex items-center gap-2 mb-1">
+                                  <IconComponent className="h-4 w-4" />
+                                  <span className="font-medium">
+                                    Gợi ý {index + 1}: {hint.title}
+                                  </span>
+                                </div>
+                                <p className={`${hint.color === "pink" ? "font-mono text-lg" : ""}`}>{hint.content}</p>
+                              </motion.div>
+                            )
+                          })}
+                        </div>
+
+                        {/* Hiển thị progress của hints */}
+                        {currentHintLevel > 0 && (
+                          <div className="mt-4">
+                            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
+                              <span>Tiến độ gợi ý</span>
+                              <span>{currentHintLevel}/7</span>
                             </div>
-                            <p className="text-blue-800 dark:text-blue-200">
-                              {currentExercise.definition}
-                            </p>
-                          </motion.div>
+                            <Progress
+                              value={(currentHintLevel / 7) * 100}
+                              className="h-2 bg-gray-200 dark:bg-gray-700 [&>div]:bg-gradient-to-r [&>div]:from-blue-500 [&>div]:to-purple-600"
+                            />
+                          </div>
                         )}
                       </div>
                     </motion.div>
@@ -566,9 +575,7 @@ export function ListeningPractice() {
                   >
                     <div
                       className={`cursor-pointer p-3 px-4 text-2xl font-bold shadow-lg min-w-[60px] h-[60px] flex items-center justify-center rounded-xl border-2 transition-all duration-200 ${
-                        isAnswerSubmitted
-                          ? "cursor-not-allowed"
-                          : "hover:shadow-xl hover:-translate-y-1"
+                        isAnswerSubmitted ? "cursor-not-allowed" : "hover:shadow-xl hover:-translate-y-1"
                       } ${
                         isAnswerSubmitted && isCorrect
                           ? "bg-gradient-to-br from-green-400 to-green-600 text-white border-green-500 shadow-green-200"
@@ -597,9 +604,7 @@ export function ListeningPractice() {
                 )}
                 {availableParts.length === 0 && isAnswerSubmitted && (
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {isCorrect
-                      ? "Chính xác! Nhấn 'Từ tiếp theo'."
-                      : "Hãy nhấn 'Từ tiếp theo' hoặc 'Làm lại'."}
+                    {isCorrect ? "Chính xác! Nhấn 'Từ tiếp theo'." : "Hãy nhấn 'Từ tiếp theo' hoặc 'Làm lại'."}
                   </p>
                 )}
                 {availableParts.map((part, index) => (
@@ -631,22 +636,34 @@ export function ListeningPractice() {
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className={`mt-4 p-4 rounded-xl text-center font-medium flex items-center justify-center gap-2 shadow-lg ${
+                  className={`mt-4 p-4 rounded-xl text-center font-medium shadow-lg ${
                     isCorrect
                       ? "bg-gradient-to-r from-green-100 to-green-200 dark:from-green-800/40 dark:to-green-700/40 text-green-700 dark:text-green-300 border-2 border-green-500"
                       : "bg-gradient-to-r from-red-100 to-red-200 dark:from-red-800/40 dark:to-red-700/40 text-red-700 dark:text-red-300 border-2 border-red-500"
                   }`}
                 >
-                  {isCorrect ? (
-                    <CheckCircle className="h-6 w-6" />
-                  ) : (
-                    <XCircle className="h-6 w-6" />
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    {isCorrect ? <CheckCircle className="h-6 w-6" /> : <XCircle className="h-6 w-6" />}
+                    <span className="text-sm sm:text-base">{isCorrect ? "🎉 Chính xác!" : "❌ Chưa đúng"}</span>
+                  </div>
+                  {!isCorrect && (
+                    <div className="text-sm">
+                      <p>
+                        Đáp án đúng là: <span className="font-bold">{currentExercise.fullSentenceText}</span>
+                      </p>
+                      <p className="mt-1">
+                        Từ vựng: <span className="font-bold">{currentExercise.relatedVocabulary}</span>
+                      </p>
+                    </div>
                   )}
-                  <span className="text-sm sm:text-base">
-                    {isCorrect
-                      ? "🎉 Chính xác!"
-                      : `❌ Chưa đúng. Đáp án đúng là: "${currentExercise.fullSentenceText}"`}
-                  </span>
+                  {isCorrect && (
+                    <div className="text-sm">
+                      <p>
+                        Từ vựng: <span className="font-bold">{currentExercise.relatedVocabulary}</span>
+                      </p>
+                      <p>Nghĩa: {currentExercise.definition}</p>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </CardContent>
@@ -709,5 +726,5 @@ export function ListeningPractice() {
         </motion.div>
       </div>
     </div>
-  );
+  )
 }

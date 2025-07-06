@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { AlertTriangle, ArrowRight, CheckCircle, Mic, RefreshCw, Volume2 } from "lucide-react";
-import { useEffect, useRef, useState, useCallback } from "react"; // Thêm useCallback
+import { useEffect, useRef, useState, useCallback } from "react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -18,11 +18,9 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { VocabularyCard } from "@/types/vocabulary";
-// Bỏ import usePronunciationStore
 import { updateCompletedWords, updateProficiency } from "@/utils/Supabase/action";
 import { dictionary } from "cmu-pronouncing-dictionary";
 
-// --- Types ---
 type DictType = Record<string, string | string[]>;
 
 interface WordDisplay {

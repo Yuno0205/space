@@ -1,5 +1,5 @@
 import { FadeIn } from "@/components/animations/fade-in";
-import { ListeningPractice } from "@/components/English/listening-practice";
+import { ListeningPractice } from "@/components/English/features/listening-practice";
 
 const myVocabularies = [
   {

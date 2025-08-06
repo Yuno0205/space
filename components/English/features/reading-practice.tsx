@@ -16,14 +16,14 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 
-export function ListeningPractice() {
+export function ReadingPractice() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
   const [score, setScore] = useState(0);
 
-  const listeningExercises = [
+  const readingExercises = [
     {
       id: 1,
       title: "Business Meeting",
@@ -65,8 +65,8 @@ export function ListeningPractice() {
     },
   ];
 
-  const currentExercise = listeningExercises[currentQuestion];
-  const progress = ((currentQuestion + 1) / listeningExercises.length) * 100;
+  const currentExercise = readingExercises[currentQuestion];
+  const progress = ((currentQuestion + 1) / readingExercises.length) * 100;
 
   const togglePlayback = () => {
     setIsPlaying(!isPlaying);
@@ -94,7 +94,7 @@ export function ListeningPractice() {
   };
 
   const nextQuestion = () => {
-    if (currentQuestion < listeningExercises.length - 1) {
+    if (currentQuestion < readingExercises.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
       setSelectedAnswer(null);
       setIsAnswerSubmitted(false);
@@ -118,7 +118,7 @@ export function ListeningPractice() {
               {currentExercise.title}
             </CardTitle>
             <CardDescription>
-              Bài {currentQuestion + 1}/{listeningExercises.length} - Nghe và trả lời câu hỏi
+              Bài {currentQuestion + 1}/{readingExercises.length} - Nghe và trả lời câu hỏi
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -196,7 +196,7 @@ export function ListeningPractice() {
           </CardContent>
           <CardFooter className="flex justify-between">
             <div className="text-sm">
-              Điểm: {score}/{listeningExercises.length}
+              Điểm: {score}/{readingExercises.length}
             </div>
             <div className="space-x-2">
               {!isAnswerSubmitted ? (
@@ -205,7 +205,7 @@ export function ListeningPractice() {
                 </Button>
               ) : (
                 <Button onClick={nextQuestion}>
-                  {currentQuestion < listeningExercises.length - 1 ? "Câu tiếp theo" : "Hoàn thành"}
+                  {currentQuestion < readingExercises.length - 1 ? "Câu tiếp theo" : "Hoàn thành"}
                 </Button>
               )}
             </div>
@@ -225,7 +225,7 @@ export function ListeningPractice() {
           <CardContent>
             <Progress value={progress} className="h-2" />
             <p className="text-sm text-gray-400 mt-2">
-              {currentQuestion + 1}/{listeningExercises.length} câu hỏi
+              {currentQuestion + 1}/{readingExercises.length} câu hỏi
             </p>
           </CardContent>
         </Card>

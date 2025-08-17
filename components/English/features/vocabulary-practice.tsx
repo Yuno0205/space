@@ -14,9 +14,9 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { ArrowRight, BookText, Check, Volume2, X } from "lucide-react";
 import { useState } from "react";
-import { Badge } from "../ui/badge"; // Assuming this path is correct for Badge
 import { supabase } from "@/lib/supabase/public";
 import { VocabularyCard } from "@/types/vocabulary";
+import { Badge } from "@/components/ui/badge";
 
 export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyCard[] }) {
   const [cards] = useState<VocabularyCard[]>(vocabularies);

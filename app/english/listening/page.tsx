@@ -3,7 +3,7 @@ import { ListeningPractice } from "@/components/English/features/listening-pract
 
 const myVocabularies = [
   {
-    id: 1,
+    id: "1",
     word: "diligent",
     phonetic: "/ˈdɪlɪdʒənt/",
     audio: "/audio/diligent.mp3", // Tùy chọn
@@ -13,7 +13,7 @@ const myVocabularies = [
     example: "She is very diligent in her work.",
   },
   {
-    id: 2,
+    id: "2",
     word: "efficient",
     phonetic: "/ɪˈfɪʃənt/",
     audio: "/audio/efficient.mp3",

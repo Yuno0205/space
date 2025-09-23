@@ -1,11 +1,11 @@
 .progress-ring {
+  width: 98px;
   height: 98px;
   left: 50%;
   pointer-events: none;
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%) scaleY(0.946);
-  width: 98px;
 }
 
 .lesson-node:first-child {

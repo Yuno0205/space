@@ -1,59 +1,81 @@
 "use client";
 
-import { Cpu, Layers } from "lucide-react";
-import { Card } from "../ui/card";
 import { Level } from "@/types/lesson";
+import { Orbitron } from "next/font/google";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+
+const orbitron = Orbitron({
+  subsets: ["latin"],
+  weight: ["700", "900"],
+  variable: "--font-orbitron",
+});
 
 export default function UnitHeader({ data }: { data: Level }) {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2, // Hiệu ứng xuất hiện lần lượt
+        delayChildren: 0.3,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.7, ease: "easeOut" },
+    },
+  };
+
   return (
-    <Card className="relative overflow-hidden rounded-xl border border-gray-900/20 bg-white p-2 sm:p-6 shadow-[0_0_15px_rgba(0,0,0,0.1)] backdrop-blur-sm dark:border-white/10 dark:bg-black dark:shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-      {/* Circuit pattern background */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="h-full w-full bg-[radial-gradient(circle_at_center,_transparent_10%,_#000_10%,_#000_10.5%,_transparent_10.5%,_transparent_20%,_#000_20%,_#000_20.5%,_transparent_20.5%)] bg-[length:20px_20px] dark:bg-[radial-gradient(circle_at_center,_transparent_10%,_#fff_10%,_#fff_10.5%,_transparent_10.5%,_transparent_20%,_#fff_20%,_#fff_20.5%,_transparent_20.5%)]"></div>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="relative my-16 w-full max-w-6xl mx-auto py-10 px-8"
+    >
+      {/* Decorative lines and grid */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-0 left-0 h-full w-px bg-gradient-to-b from-white/20 via-white/50 to-white/20"></div>
+        <div className="absolute top-0 right-0 h-full w-px bg-gradient-to-b from-white/20 via-white/50 to-white/20"></div>
+        <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
       </div>
 
-      {/* Glowing border effect */}
-      <div className="absolute inset-0 rounded-xl opacity-20 blur-[2px]">
-        <div className="h-full w-full rounded-xl border-2 border-gray-900 dark:border-white"></div>
-      </div>
-
-      {/* Diagonal line decoration */}
-      <div className="absolute -right-4 -top-4 h-16 w-32 rotate-45 bg-gradient-to-r from-gray-900/0 via-gray-900/20 to-gray-900/0 dark:from-white/0 dark:via-white/20 dark:to-white/0"></div>
-
-      <div className="relative z-10 flex flex-col justify-between gap-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Cpu className="h-5 w-5 text-gray-900 dark:text-white" />
-            <h2 className={`font-mono text-xl tracking-wider text-gray-900 dark:text-white`}>
-              Part {data.id} - {data.description || "The Oxford 3000 "}
-            </h2>
-          </div>
-
-          {/* Futuristic decorative element */}
-          <div className="flex h-6 items-center gap-1"></div>
+      <div className="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-8">
+        {/* Left side: Log Entry Info */}
+        <div className="md:col-span-1 text-left">
+          <motion.div variants={itemVariants}>
+            <p className="font-mono text-sm uppercase tracking-widest text-white/50">LOG ENTRY</p>
+            <p className="text-4xl font-bold text-white">0{data.id}</p>
+          </motion.div>
         </div>
 
-        <div className="mt-2 flex items-center gap-3">
-          <Layers className="h-5 w-5 text-gray-600 dark:text-white/70" />
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-sm uppercase tracking-widest text-gray-600 dark:text-white/70">
-              Level
-            </span>
-            <div className="relative">
-              <p className={`font-mono text-2xl font-bold text-gray-900 dark:text-white `}>
-                {data.name}
-              </p>
-              {/* Highlight effect */}
-              <div className="absolute -bottom-1 left-0 h-[2px] w-full bg-gradient-to-r from-gray-900/0 via-gray-900 to-gray-900/0 dark:from-white/0 dark:via-white dark:to-white/0"></div>
-            </div>
-          </div>
+        {/* Right side: Destination Details */}
+        <div className="md:col-span-3 border-l-2 border-white/20 pl-8">
+          <motion.div variants={itemVariants}>
+            <p className="font-mono text-sm uppercase tracking-widest text-white/50">
+              DESTINATION REACHED:
+            </p>
+            <h1
+              className={cn("text-7xl md:text-8xl font-black text-white mt-2", orbitron.className)}
+            >
+              SECTOR {data.name}
+            </h1>
+          </motion.div>
+
+          <motion.div variants={itemVariants} className="mt-6">
+            <p className="font-mono text-sm uppercase tracking-widest text-white/50">ANALYSIS:</p>
+            <p className="mt-2 text-lg text-white/80 max-w-md">
+              {data.description || "The Oxford 3000 core vocabulary."}
+            </p>
+          </motion.div>
         </div>
       </div>
-
-      {/* Bottom corner decoration */}
-      <div className="absolute bottom-0 right-0 h-12 w-12 overflow-hidden">
-        <div className="absolute bottom-0 right-0 h-16 w-16 translate-x-8 translate-y-8 rotate-45 border-l-2 border-t-2 border-gray-900/30 dark:border-white/30"></div>
-      </div>
-    </Card>
+    </motion.div>
   );
 }

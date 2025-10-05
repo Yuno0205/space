@@ -11,7 +11,6 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 
 // Dữ liệu mẫu, bạn nên fetch từ database
 const listeningLevels = [

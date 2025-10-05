@@ -1,7 +1,6 @@
 // app/english/speaking/page.tsx
 import { FadeIn } from "@/components/animations/fade-in";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 
 // Dữ liệu mẫu, bạn nên fetch từ database

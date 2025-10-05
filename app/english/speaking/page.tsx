@@ -8,13 +8,11 @@ import { Volume2 } from "lucide-react";
 import Link from "next/link";
 import type React from "react";
 
-// Bổ sung progress và audioUrl vào dữ liệu mẫu
 const vowels = [
   { ipa: "iː", example: "sheep", progress: 80, audioUrl: "/audio/phonemes/iː.mp3" },
   { ipa: "ɪ", example: "ship", progress: 65, audioUrl: "/audio/phonemes/ɪ.mp3" },
   { ipa: "e", example: "bed", progress: 40, audioUrl: "/audio/phonemes/e.mp3" },
   { ipa: "æ", example: "cat", progress: 0, audioUrl: "/audio/phonemes/æ.mp3" },
-  // ... thêm các nguyên âm khác
 ];
 
 const consonants = [
@@ -22,10 +20,8 @@ const consonants = [
   { ipa: "b", example: "bad", progress: 88, audioUrl: "/audio/phonemes/b.mp3" },
   { ipa: "t", example: "tea", progress: 70, audioUrl: "/audio/phonemes/t.mp3" },
   { ipa: "d", example: "did", progress: 10, audioUrl: "/audio/phonemes/d.mp3" },
-  // ... thêm các phụ âm khác
 ];
 
-// Component PhonemeCard đã được nâng cấp
 const PhonemeCard = ({
   ipa,
   example,
@@ -38,7 +34,6 @@ const PhonemeCard = ({
   audioUrl: string;
 }) => {
   const handlePlaySound = (e: React.MouseEvent) => {
-    // Ngăn sự kiện click lan ra component Link bên ngoài, tránh chuyển trang
     e.stopPropagation();
     e.preventDefault();
 
@@ -47,8 +42,8 @@ const PhonemeCard = ({
   };
 
   return (
-    <Link
-      href={`/english/speaking/phoneme/${encodeURIComponent(ipa)}`}
+    <div
+      // href={`/english/speaking/phoneme/${encodeURIComponent(ipa)}`}
       className="group relative flex flex-col w-32 rounded-lg border border-border bg-card/50 transition-all duration-300 hover:bg-accent hover:border-primary/50 hover:-translate-y-1"
     >
       <div className="flex-grow p-4 flex flex-col items-center justify-center">
@@ -70,7 +65,7 @@ const PhonemeCard = ({
         </div>
         <Progress value={progress} className="h-1.5" />
       </div>
-    </Link>
+    </div>
   );
 };
 

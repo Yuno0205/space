@@ -12,7 +12,6 @@ import { Progress } from "@/components/ui/progress";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-// Dữ liệu mẫu, bạn nên fetch từ database
 const listeningLevels = [
   {
     slug: "beginner",
@@ -50,10 +49,12 @@ export default function ListeningPage() {
   return (
     <div className="container mx-auto py-8 px-4">
       <FadeIn>
-        <h1 className="text-3xl font-bold mb-2">Listening Practice</h1>
-        <p className="text-muted-foreground mb-8">
+        <h1 className="text-3xl font-bold mb-8">
           Choose your level to start improving your comprehension skills.
-        </p>
+        </h1>
+        {/* <h1 className="text-muted-foreground mb-8">
+          Choose your level to start improving your comprehension skills.
+        </h1> */}
       </FadeIn>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

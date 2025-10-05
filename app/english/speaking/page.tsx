@@ -78,16 +78,15 @@ export default function SpeakingPage() {
   return (
     <div className="container mx-auto py-8 px-4">
       <FadeIn>
-        <h1 className="text-3xl font-bold mb-2">Speaking Practice</h1>
-        <p className="text-muted-foreground mb-8">
+        <h1 className="text-3xl font-bold mb-8">
           Master English pronunciation by practicing each sound individually.
-        </p>
+        </h1>
       </FadeIn>
 
       <div className="space-y-12">
         <Card>
           <CardHeader>
-            <CardTitle>Vowels (Nguyên âm)</CardTitle>
+            <CardTitle>Vowels</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-4">
             {vowels.map((v) => (
@@ -104,7 +103,7 @@ export default function SpeakingPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Consonants (Phụ âm)</CardTitle>
+            <CardTitle>Consonants </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-4">
             {consonants.map((c) => (

@@ -1,9 +1,10 @@
-"use client";
+// app/english/revise/page.tsx
+import { ReviewSession } from "@/components/English/features/review-session";
 
 export default function ReviewPage() {
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Ôn tập từ vựng</h1>
+    <div className="container mx-auto py-8 px-4">
+      <ReviewSession />
     </div>
   );
 }

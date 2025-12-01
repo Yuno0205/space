@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "cypress:open": "cypress open"
   },
   "dependencies": {
     "@humeai/voice-react": "^0.1.22",
@@ -60,6 +61,7 @@
     "@types/react-speech-recognition": "^3.9.6",
     "@types/react-virtualized": "^9.22.2",
     "@types/string-similarity": "^4.0.2",
+    "cypress": "^15.7.0",
     "eslint": "^9.24.0",
     "eslint-config-next": "^15.1.6",
     "postcss": "^8",

@@ -3,7 +3,7 @@
 import { Level } from "@/types/lesson";
 import { Orbitron } from "next/font/google";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -12,18 +12,18 @@ const orbitron = Orbitron({
 });
 
 export default function UnitHeader({ data }: { data: Level }) {
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2, // Hiệu ứng xuất hiện lần lượt
+        staggerChildren: 0.2,
         delayChildren: 0.3,
       },
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,

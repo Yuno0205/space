@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { LottieComponentProps } from "lottie-react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import notFoundAnimationData from "@/public/animations/not-found.json";
 import { Orbitron } from "next/font/google";
 import { cn } from "@/lib/utils";
@@ -22,7 +22,7 @@ const NotFoundPage = () => {
     autoplay: true,
   };
 
-  const ufoVariants = {
+  const ufoVariants: Variants = {
     initial: { scale: 0.8, opacity: 0, y: 20 },
     animate: {
       scale: 1,

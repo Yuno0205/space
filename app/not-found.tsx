@@ -29,7 +29,7 @@ const NotFoundPage = () => {
       opacity: 1,
       y: 0,
       transition: {
-        type: "spring",
+        type: "spring" as const, // Thêm 'as const' ở đây
         stiffness: 100,
         damping: 10,
         delay: 0.2,
@@ -38,7 +38,11 @@ const NotFoundPage = () => {
     hover: {
       y: [-5, 5, -5],
       transition: {
-        y: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+        y: {
+          duration: 1.5,
+          repeat: Infinity,
+          ease: "easeInOut" as const,
+        },
       },
     },
   };
@@ -51,7 +55,7 @@ const NotFoundPage = () => {
       transition: {
         delay: 0.3,
         duration: 0.5,
-        ease: "easeOut",
+        ease: "easeOut" as const,
       },
     },
   };

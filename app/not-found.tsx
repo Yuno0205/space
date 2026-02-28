@@ -43,7 +43,7 @@ const NotFoundPage = () => {
     },
   };
 
-  const contentVariants = {
+  const contentVariants: Variants = {
     initial: { opacity: 0, y: 15 },
     animate: {
       opacity: 1,

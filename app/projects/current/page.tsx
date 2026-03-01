@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, Variants } from "framer-motion";
 import dynamic from "next/dynamic";
 import type { LottieComponentProps } from "lottie-react";
 import spaceshipAnimationData from "@/public/animations/spaceship.json";
@@ -33,7 +33,7 @@ const LoadingSpinner = () => {
         },
       },
     },
-  };
+  } as Variants;
 
   const textVariants = {
     initial: { opacity: 0.5 },
@@ -45,7 +45,7 @@ const LoadingSpinner = () => {
         ease: "easeInOut",
       },
     },
-  };
+  } as Variants;
 
   return (
     <AnimatePresence>

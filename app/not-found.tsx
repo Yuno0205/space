@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { LottieComponentProps } from "lottie-react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import notFoundAnimationData from "@/public/animations/not-found.json";
 import { Orbitron } from "next/font/google";
 import { cn } from "@/lib/utils";
@@ -22,14 +22,14 @@ const NotFoundPage = () => {
     autoplay: true,
   };
 
-  const ufoVariants = {
+  const ufoVariants: Variants = {
     initial: { scale: 0.8, opacity: 0, y: 20 },
     animate: {
       scale: 1,
       opacity: 1,
       y: 0,
       transition: {
-        type: "spring",
+        type: "spring" as const, // Thêm 'as const' ở đây
         stiffness: 100,
         damping: 10,
         delay: 0.2,
@@ -38,12 +38,16 @@ const NotFoundPage = () => {
     hover: {
       y: [-5, 5, -5],
       transition: {
-        y: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+        y: {
+          duration: 1.5,
+          repeat: Infinity,
+          ease: "easeInOut" as const,
+        },
       },
     },
   };
 
-  const contentVariants = {
+  const contentVariants: Variants = {
     initial: { opacity: 0, y: 15 },
     animate: {
       opacity: 1,
@@ -51,7 +55,7 @@ const NotFoundPage = () => {
       transition: {
         delay: 0.3,
         duration: 0.5,
-        ease: "easeOut",
+        ease: "easeOut" as const,
       },
     },
   };

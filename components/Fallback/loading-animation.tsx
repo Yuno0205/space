@@ -1,7 +1,7 @@
 "use client";
 
 import spaceshipAnimationData from "@/public/animations/spaceship.json";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, Variants } from "framer-motion";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import type { LottieComponentProps } from "lottie-react";
@@ -16,8 +16,7 @@ const LoadingAnimation = () => {
     autoplay: true,
   };
 
-  // (Phần variants giữ nguyên)
-  const spaceshipVariants = {
+  const spaceshipVariants: Variants = {
     initial: { y: 10, opacity: 0 },
     animate: {
       y: [-5, 5, -5],
@@ -36,7 +35,7 @@ const LoadingAnimation = () => {
     },
   };
 
-  const textVariants = {
+  const textVariants: Variants = {
     initial: { opacity: 0, y: 5 },
     animate: {
       opacity: [0.6, 1, 0.6],

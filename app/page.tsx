@@ -12,7 +12,7 @@ import Stats from "../components/Stats";
 export default async function Home() {
   const { count } = await supabase
     .from("vocabularies")
-    .select("*", { count: "exact", head: true }) // Thêm head: true để chỉ lấy count
+    .select("*", { count: "exact", head: true })
     .eq("is_learned", true);
 
   const { data: progress } = await supabase

@@ -1,4 +1,3 @@
-// components/English/features/review-session.tsx
 "use client";
 
 import { supabase } from "@/lib/supabase/public";
@@ -8,27 +7,39 @@ import { ScoreCard } from "../ScoreCard";
 import { EmptyState } from "@/components/Fallback/empty-state";
 import { BookCopy } from "lucide-react";
 import { shuffleArray } from "@/lib/utils";
-import { MultipleChoiceReview, MCQProps } from "./multiple-choice-review";
+import { MultipleChoiceReview } from "./multiple-choice-review";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
-// --- CÁC TYPE VÀ INTERFACE ---
+// ===== Types =====
+
+// Row from srs_cards + joined vocab
 type ReviewItem = VocabularyCard & {
-  review_id: number;
+  card_id: number; // srs_cards.id (int8)
+  vocab_id: string;
+
   repetition_count: number;
   easiness_factor: number;
   interval_days: number;
+  due_at: string; // timestamptz ISO
+  lane: "flashcard" | "speaking" | "listening" | "reading" | "writing";
 };
 
-interface GeneratedMCQ {
-  type: "mcq";
-  props: MCQProps;
+type FeedbackQuality = 0 | 3 | 4 | 5; // dùng đúng chuẩn SM-2 UI: Again/Hard/Good/Easy
+
+interface MCQProps {
+  question: string;
+  options: { id: string; text: string }[];
+  correctAnswerId: string;
+  onAnswer: (isCorrect: boolean) => void;
 }
 
-type GeneratedExercise = GeneratedMCQ; // Có thể mở rộng sau
-type FeedbackQuality = 0 | 1 | 2 | 3 | 4 | 5; // Chất lượng phản hồi (0=sai hẳn, 5=rất dễ)
+type GeneratedExercise = {
+  type: "mcq";
+  props: MCQProps;
+};
 
-// --- COMPONENT PHỤ: CÁC NÚT PHẢN HỒI ---
+// ===== UI: Feedback buttons =====
 const FeedbackControls = ({ onFeedback }: { onFeedback: (quality: FeedbackQuality) => void }) => (
   <motion.div
     className="flex flex-wrap justify-center gap-3 mt-6"
@@ -36,7 +47,7 @@ const FeedbackControls = ({ onFeedback }: { onFeedback: (quality: FeedbackQualit
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5 }}
   >
-    <Button variant="destructive" onClick={() => onFeedback(1)}>
+    <Button variant="destructive" onClick={() => onFeedback(0)}>
       Again
     </Button>
     <Button variant="outline" onClick={() => onFeedback(3)}>
@@ -59,12 +70,16 @@ export function ReviewSession() {
   const [currentExercise, setCurrentExercise] = useState<GeneratedExercise | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
 
-  // --- LOGIC CỐT LÕI CỦA SRS (SuperMemo 2 Algorithm) ---
+  // ===== SM-2 (Anki-like) 계산 =====
+  // item: current srs card snapshot
+  // quality: 0/3/4/5 (Again/Hard/Good/Easy)
   const calculateSRS = (item: ReviewItem, quality: FeedbackQuality) => {
-    let { easiness_factor, repetition_count, interval_days } = item;
+    let easiness_factor = item.easiness_factor ?? 2.5;
+    let repetition_count = item.repetition_count ?? 0;
+    let interval_days = item.interval_days ?? 0;
 
+    // SuperMemo-2 core
     if (quality < 3) {
-      // Nếu trả lời sai hoặc "Again"
       repetition_count = 0;
       interval_days = 1;
     } else {
@@ -88,104 +103,179 @@ export function ReviewSession() {
       repetition_count,
       easiness_factor,
       interval_days,
-      next_review: nextReviewDate.toISOString().split("T")[0],
+      due_at: nextReviewDate.toISOString(), // timestamptz
+      last_reviewed_at: new Date().toISOString(),
+      // nếu bạn chưa có state thì bỏ qua; nếu có state thì có thể update ở đây
+      // state: quality < 3 ? "learning" : repetition_count >= 2 ? "review" : "learning",
     };
   };
 
-  // --- HÀM XỬ LÝ PHẢN HỒI VÀ CHUYỂN CÂU HỎI ---
-  const handleFeedback = async (quality: FeedbackQuality) => {
-    const currentItem = reviewQueue[currentIndex];
-    const newSRSData = calculateSRS(currentItem, quality);
-
-    // Cập nhật lịch ôn tập trên Supabase
-    await supabase.from("review_queue").update(newSRSData).eq("id", currentItem.review_id);
-
-    // Chuyển sang câu hỏi tiếp theo
-    moveToNextItem();
-  };
-
-  const moveToNextItem = () => {
+  const moveToNextItem = useCallback(() => {
     if (currentIndex < reviewQueue.length - 1) {
       const nextIndex = currentIndex + 1;
       setCurrentIndex(nextIndex);
-      generateExercise(reviewQueue[nextIndex]);
       setIsAnswered(false);
+      generateExercise(reviewQueue[nextIndex]);
     } else {
       setSessionComplete(true);
     }
-  };
+  }, [currentIndex, reviewQueue]);
 
-  // --- LOGIC SINH BÀI TẬP (BAO GỒM TRẮC NGHIỆM) ---
-  const generateExercise = useCallback(async (item: ReviewItem) => {
-    setCurrentExercise(null); // Xóa bài tập cũ
+  // ===== Update SRS + Insert Review Log =====
+  const handleFeedback = useCallback(
+    async (quality: FeedbackQuality, item: ReviewItem, questionType?: string) => {
+      const newSRSData = calculateSRS(item, quality);
 
-    // Tạm thời luôn tạo MCQ, có thể thêm logic chọn dạng bài tập ở đây
-    const { data: distractors } = await supabase
-      .from("vocabularies")
-      .select("id, word, definition")
-      .neq("id", item.id)
-      .limit(3);
+      // 1) update srs_cards
+      const { error: updateErr } = await supabase
+        .from("srs_cards")
+        .update(newSRSData)
+        .eq("id", item.card_id);
 
-    if (!distractors || distractors.length < 3) {
-      // Fallback nếu không đủ đáp án nhiễu (hiếm khi xảy ra)
-      console.error("Not enough distractors for MCQ.");
-      moveToNextItem(); // Bỏ qua từ này
-      return;
-    }
+      if (updateErr) {
+        console.error("Update srs_cards failed:", updateErr);
+        // vẫn move next để UX không bị kẹt, nhưng bạn có thể return nếu muốn strict
+      }
 
-    const mcqProps: MCQProps = {
-      question: `What is the definition of "${item.word}"?`,
-      options: shuffleArray([
-        { id: item.id, text: item.definition || "" },
-        ...distractors.map((d) => ({ id: d.id, text: d.definition || "" })),
-      ]),
-      correctAnswerId: item.id,
-      onAnswer: (isCorrect) => {
-        setIsAnswered(true); // Hiển thị các nút feedback
-        if (!isCorrect) {
-          // Nếu sai, tự động coi như người dùng bấm "Again" sau 2 giây
-          setTimeout(() => handleFeedback(0), 2000);
-        }
-      },
-    };
+      // 2) insert review_logs (bảng riêng)
+      // Nếu bạn chưa tạo review_logs thì đoạn này sẽ báo lỗi — đúng design thì nên có.
+      const { error: logErr } = await supabase.from("review_logs").insert({
+        srs_card_id: item.card_id,
+        rating: quality, // nếu DB constraint 0..3 thì bạn đổi mapping (0,1,2,3). Còn nếu cho 0..5 thì ok.
+        question_type: questionType ?? "mcq",
+        answer: null,
+        score: null,
+        response_ms: null,
+      });
 
-    setCurrentExercise({ type: "mcq", props: mcqProps });
-  }, []);
+      if (logErr) {
+        console.error("Insert review_logs failed:", logErr);
+      }
 
-  // --- FETCH DỮ LIỆU KHI COMPONENT ĐƯỢC LOAD ---
+      moveToNextItem();
+    },
+    [moveToNextItem]
+  );
+
+  // ===== Generate Exercise (MCQ for now) =====
+  const generateExercise = useCallback(
+    async (item: ReviewItem) => {
+      setCurrentExercise(null);
+
+      // fetch 3 distractors (same table: vocabulary)
+      const { data: distractors, error } = await supabase
+        .from("vocabulary")
+        .select("id, definition, translation")
+        .neq("id", item.id) // item.id from VocabularyCard
+        .not("definition", "is", null)
+        .limit(3);
+
+      if (error) {
+        console.error("Fetch distractors failed:", error);
+        // fallback: skip
+        moveToNextItem();
+        return;
+      }
+
+      if (!distractors || distractors.length < 3) {
+        console.error("Not enough distractors for MCQ.");
+        moveToNextItem();
+        return;
+      }
+
+      const correctText = item.definition || item.translation || "";
+      const options = shuffleArray([
+        { id: item.id, text: correctText },
+        ...distractors.map((d) => ({
+          id: d.id as string,
+          text: d.definition || d.translation || "",
+        })),
+      ]);
+
+      const mcqProps: MCQProps = {
+        question: `What is the meaning of "${item.word}"?`,
+        options,
+        correctAnswerId: item.id,
+        onAnswer: (isCorrect: boolean) => {
+          setIsAnswered(true);
+
+          if (!isCorrect) {
+            // Auto "Again" after 1.2s (optional)
+            setTimeout(() => {
+              handleFeedback(0, item, "mcq_meaning");
+            }, 1200);
+          }
+        },
+      };
+
+      setCurrentExercise({ type: "mcq", props: mcqProps });
+    },
+    [handleFeedback, moveToNextItem]
+  );
+
+  // ===== Fetch review queue =====
   useEffect(() => {
     const fetchReviewQueue = async () => {
       setIsLoading(true);
-      const today = new Date().toISOString().split("T")[0];
-      const { data: queueData } = await supabase
-        .from("review_queue")
-        .select(`*, vocabularies (*)`)
-        .lte("next_review", today)
-        .order("next_review", { ascending: true }) // Ưu tiên từ cũ hơn
+
+      const lane: ReviewItem["lane"] = "flashcard"; // MVP: review flashcard lane
+
+      const { data: queueData, error } = await supabase
+        .from("srs_cards")
+        .select(
+          `
+          id,
+          vocab_id,
+          repetition_count,
+          easiness_factor,
+          interval_days,
+          due_at,
+          lane,
+          vocabulary (*)
+        `
+        )
+        .eq("lane", lane)
+        .lte("due_at", new Date().toISOString())
+        .order("due_at", { ascending: true })
         .limit(20);
 
-      if (queueData) {
-        const items: ReviewItem[] = queueData.map((item: any) => ({
-          ...item.vocabularies,
-          review_id: item.id,
-          repetition_count: item.repetition_count,
-          easiness_factor: item.easiness_factor,
-          interval_days: item.interval_days,
-        }));
-        setReviewQueue(items);
-        if (items.length > 0) {
-          generateExercise(items[0]);
-        }
+      if (error) {
+        console.error("Fetch srs queue failed:", error);
+        setReviewQueue([]);
+        setIsLoading(false);
+        return;
       }
+
+      if (queueData && queueData.length > 0) {
+        const items: ReviewItem[] = queueData.map((row: any) => ({
+          // row.vocabulary is the joined vocab record
+          ...row.vocabulary,
+          card_id: row.id,
+          vocab_id: row.vocab_id,
+          repetition_count: row.repetition_count,
+          easiness_factor: row.easiness_factor,
+          interval_days: row.interval_days,
+          due_at: row.due_at,
+          lane: row.lane,
+        }));
+
+        setReviewQueue(items);
+        setCurrentIndex(0);
+        setIsAnswered(false);
+        generateExercise(items[0]);
+      } else {
+        setReviewQueue([]);
+      }
+
       setIsLoading(false);
     };
 
     fetchReviewQueue();
   }, [generateExercise]);
 
-  const handleRestart = () => window.location.reload(); // Cách đơn giản nhất để bắt đầu lại
+  const handleRestart = () => window.location.reload();
 
-  // --- RENDER CÁC TRẠNG THÁI UI ---
+  // ===== Render states =====
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
@@ -201,7 +291,6 @@ export function ReviewSession() {
           score={reviewQueue.length}
           total={reviewQueue.length}
           onRestart={handleRestart}
-          message="Great job! You've completed your review for now."
         />
       </div>
     );
@@ -217,6 +306,8 @@ export function ReviewSession() {
     );
   }
 
+  const currentItem = reviewQueue[currentIndex];
+
   const renderReviewComponent = () => {
     if (!currentExercise) return <div className="text-center">Generating exercise...</div>;
     return <MultipleChoiceReview {...currentExercise.props} />;
@@ -227,13 +318,16 @@ export function ReviewSession() {
       <div className="text-center">
         <h1 className="text-3xl font-bold">Review Session</h1>
         <p className="text-muted-foreground">
-          {currentIndex + 1} / {reviewQueue.length}
+          {currentIndex + 1} / {reviewQueue.length} • Lane: {currentItem?.lane}
         </p>
       </div>
+
       {renderReviewComponent()}
 
-      {/* Hiển thị các nút Feedback sau khi đã trả lời */}
-      {isAnswered && <FeedbackControls onFeedback={handleFeedback} />}
+      {/* Show feedback controls after answered */}
+      {isAnswered && (
+        <FeedbackControls onFeedback={(q) => handleFeedback(q, currentItem, "mcq_meaning")} />
+      )}
     </div>
   );
 }

@@ -4,7 +4,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { VocabularyCard } from "@/types/vocabulary";
 import { motion } from "framer-motion";
 import { CheckCircle, XCircle } from "lucide-react";
 import React, { useState } from "react";

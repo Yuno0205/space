@@ -1,333 +1,675 @@
 "use client";
 
 import { supabase } from "@/lib/supabase/public";
-import { VocabularyCard } from "@/types/vocabulary";
-import { useEffect, useState, useCallback } from "react";
-import { ScoreCard } from "../ScoreCard";
-import { EmptyState } from "@/components/Fallback/empty-state";
-import { BookCopy } from "lucide-react";
-import { shuffleArray } from "@/lib/utils";
-import { MultipleChoiceReview } from "./multiple-choice-review";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-// ===== Types =====
+type SkillCode = "flashcard" | "listening" | "reading" | "speaking" | "writing";
 
-// Row from srs_cards + joined vocab
-type ReviewItem = VocabularyCard & {
-  card_id: number; // srs_cards.id (int8)
-  vocab_id: string;
+type ActivityCode =
+  | "mcq_meaning"
+  | "mcq_word"
+  | "match_word_meaning"
+  | "listen_choose"
+  | "listen_type"
+  | "fill_blank"
+  | "context_mcq";
 
-  repetition_count: number;
-  easiness_factor: number;
-  interval_days: number;
-  due_at: string; // timestamptz ISO
-  lane: "flashcard" | "speaking" | "listening" | "reading" | "writing";
+type Vocabulary = {
+  id: string;
+  word: string;
+  phonetic: string | null;
+  audio_url: string | null;
+  word_type: string | null;
+  definition: string | null;
+  translation: string | null;
+  example: string | null;
+  synonyms: string[] | string | null;
+  antonyms: string[] | string | null;
+  level: string | null;
+  is_learned: boolean | null;
+  proficiently: number | null;
+  created_at: string | null;
 };
 
-type FeedbackQuality = 0 | 3 | 4 | 5; // dùng đúng chuẩn SM-2 UI: Again/Hard/Good/Easy
+type ProgressRow = {
+  id: string;
+  vocabulary_id: string;
+  skill_code: SkillCode;
+  last_reviewed_at: string | null;
+  next_review_at: string | null;
+  correct_count: number;
+  wrong_count: number;
+  created_at: string;
+  updated_at: string;
+  vocabulary?: Vocabulary | null;
+};
 
-interface MCQProps {
-  question: string;
-  options: { id: string; text: string }[];
-  correctAnswerId: string;
-  onAnswer: (isCorrect: boolean) => void;
+type ActivityType = {
+  id: string;
+  code: ActivityCode;
+  name: string;
+  skill_code: SkillCode;
+};
+
+type Question =
+  | {
+      type: "mcq";
+      progress: ProgressRow;
+      activity: ActivityType;
+      prompt: string;
+      options: string[];
+      correctAnswer: string;
+      meta?: {
+        audioUrl?: string | null;
+        sentence?: string | null;
+      };
+    }
+  | {
+      type: "typing";
+      progress: ProgressRow;
+      activity: ActivityType;
+      prompt: string;
+      correctAnswer: string;
+      meta?: {
+        audioUrl?: string | null;
+        sentence?: string | null;
+      };
+    };
+
+function shuffleArray<T>(arr: T[]): T[] {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
 }
 
-type GeneratedExercise = {
-  type: "mcq";
-  props: MCQProps;
-};
+function pickRandom<T>(arr: T[]): T | null {
+  if (!arr.length) return null;
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 
-// ===== UI: Feedback buttons =====
-const FeedbackControls = ({ onFeedback }: { onFeedback: (quality: FeedbackQuality) => void }) => (
-  <motion.div
-    className="flex flex-wrap justify-center gap-3 mt-6"
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5 }}
-  >
-    <Button variant="destructive" onClick={() => onFeedback(0)}>
-      Again
-    </Button>
-    <Button variant="outline" onClick={() => onFeedback(3)}>
-      Hard
-    </Button>
-    <Button variant="outline" onClick={() => onFeedback(4)}>
-      Good
-    </Button>
-    <Button variant="secondary" onClick={() => onFeedback(5)}>
-      Easy
-    </Button>
-  </motion.div>
-);
+function normalizeText(value: string) {
+  return value.trim().toLowerCase();
+}
 
-export function ReviewSession() {
-  const [reviewQueue, setReviewQueue] = useState<ReviewItem[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [sessionComplete, setSessionComplete] = useState(false);
-  const [currentExercise, setCurrentExercise] = useState<GeneratedExercise | null>(null);
-  const [isAnswered, setIsAnswered] = useState(false);
+function buildFillBlankSentence(example: string, word: string) {
+  if (!example || !word) return null;
 
-  // ===== SM-2 (Anki-like) 계산 =====
-  // item: current srs card snapshot
-  // quality: 0/3/4/5 (Again/Hard/Good/Easy)
-  const calculateSRS = (item: ReviewItem, quality: FeedbackQuality) => {
-    let easiness_factor = item.easiness_factor ?? 2.5;
-    let repetition_count = item.repetition_count ?? 0;
-    let interval_days = item.interval_days ?? 0;
+  const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`\\b${escapedWord}\\b`, "i");
 
-    // SuperMemo-2 core
-    if (quality < 3) {
-      repetition_count = 0;
-      interval_days = 1;
-    } else {
-      repetition_count += 1;
-      if (repetition_count === 1) {
-        interval_days = 1;
-      } else if (repetition_count === 2) {
-        interval_days = 6;
-      } else {
-        interval_days = Math.round(interval_days * easiness_factor);
-      }
-    }
+  if (!regex.test(example)) return null;
 
-    easiness_factor = easiness_factor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
-    if (easiness_factor < 1.3) easiness_factor = 1.3;
+  return example.replace(regex, "_____");
+}
 
-    const nextReviewDate = new Date();
-    nextReviewDate.setDate(nextReviewDate.getDate() + interval_days);
+function computeNextReviewDate(correctCountBeforeUpdate: number, isCorrect: boolean) {
+  const now = new Date();
 
-    return {
-      repetition_count,
-      easiness_factor,
-      interval_days,
-      due_at: nextReviewDate.toISOString(), // timestamptz
-      last_reviewed_at: new Date().toISOString(),
-      // nếu bạn chưa có state thì bỏ qua; nếu có state thì có thể update ở đây
-      // state: quality < 3 ? "learning" : repetition_count >= 2 ? "review" : "learning",
-    };
-  };
+  if (!isCorrect) {
+    now.setHours(now.getHours() + 12);
+    return now.toISOString();
+  }
 
-  const moveToNextItem = useCallback(() => {
-    if (currentIndex < reviewQueue.length - 1) {
-      const nextIndex = currentIndex + 1;
-      setCurrentIndex(nextIndex);
-      setIsAnswered(false);
-      generateExercise(reviewQueue[nextIndex]);
-    } else {
-      setSessionComplete(true);
-    }
-  }, [currentIndex, reviewQueue]);
+  if (correctCountBeforeUpdate === 0) {
+    now.setDate(now.getDate() + 1);
+    return now.toISOString();
+  }
 
-  // ===== Update SRS + Insert Review Log =====
-  const handleFeedback = useCallback(
-    async (quality: FeedbackQuality, item: ReviewItem, questionType?: string) => {
-      const newSRSData = calculateSRS(item, quality);
+  if (correctCountBeforeUpdate === 1) {
+    now.setDate(now.getDate() + 3);
+    return now.toISOString();
+  }
 
-      // 1) update srs_cards
-      const { error: updateErr } = await supabase
-        .from("srs_cards")
-        .update(newSRSData)
-        .eq("id", item.card_id);
+  if (correctCountBeforeUpdate === 2) {
+    now.setDate(now.getDate() + 7);
+    return now.toISOString();
+  }
 
-      if (updateErr) {
-        console.error("Update srs_cards failed:", updateErr);
-        // vẫn move next để UX không bị kẹt, nhưng bạn có thể return nếu muốn strict
-      }
+  now.setDate(now.getDate() + 14);
+  return now.toISOString();
+}
 
-      // 2) insert review_logs (bảng riêng)
-      // Nếu bạn chưa tạo review_logs thì đoạn này sẽ báo lỗi — đúng design thì nên có.
-      const { error: logErr } = await supabase.from("review_logs").insert({
-        srs_card_id: item.card_id,
-        rating: quality, // nếu DB constraint 0..3 thì bạn đổi mapping (0,1,2,3). Còn nếu cho 0..5 thì ok.
-        question_type: questionType ?? "mcq",
-        answer: null,
-        score: null,
-        response_ms: null,
-      });
+function generateQuestion(
+  progress: ProgressRow,
+  activities: ActivityType[],
+  vocabularies: Vocabulary[]
+): Question | null {
+  const vocab = progress.vocabulary;
+  if (!vocab) return null;
 
-      if (logErr) {
-        console.error("Insert review_logs failed:", logErr);
-      }
+  const skillActivities = activities.filter((a) => a.skill_code === progress.skill_code);
 
-      moveToNextItem();
-    },
-    [moveToNextItem]
+  if (!skillActivities.length) return null;
+
+  const supportedActivities = skillActivities.filter((a) =>
+    [
+      "mcq_meaning",
+      "mcq_word",
+      "listen_choose",
+      "listen_type",
+      "fill_blank",
+      "context_mcq",
+    ].includes(a.code)
   );
 
-  // ===== Generate Exercise (MCQ for now) =====
-  const generateExercise = useCallback(
-    async (item: ReviewItem) => {
-      setCurrentExercise(null);
+  const activity = pickRandom(supportedActivities);
+  if (!activity) return null;
 
-      // fetch 3 distractors (same table: vocabulary)
-      const { data: distractors, error } = await supabase
-        .from("vocabulary")
-        .select("id, definition, translation")
-        .neq("id", item.id) // item.id from VocabularyCard
-        .not("definition", "is", null)
-        .limit(3);
+  const sameLevelVocabs = vocabularies.filter(
+    (v) => v.id !== vocab.id && (!!v.level ? v.level === vocab.level : true)
+  );
 
-      if (error) {
-        console.error("Fetch distractors failed:", error);
-        // fallback: skip
-        moveToNextItem();
-        return;
-      }
+  switch (activity.code) {
+    case "mcq_meaning": {
+      if (!vocab.translation) return null;
 
-      if (!distractors || distractors.length < 3) {
-        console.error("Not enough distractors for MCQ.");
-        moveToNextItem();
-        return;
-      }
+      const distractors = shuffleArray(
+        sameLevelVocabs
+          .map((v) => v.translation)
+          .filter((t): t is string => !!t && t !== vocab.translation)
+      ).slice(0, 3);
 
-      const correctText = item.definition || item.translation || "";
-      const options = shuffleArray([
-        { id: item.id, text: correctText },
-        ...distractors.map((d) => ({
-          id: d.id as string,
-          text: d.definition || d.translation || "",
-        })),
-      ]);
+      const options = shuffleArray([vocab.translation, ...distractors]);
 
-      const mcqProps: MCQProps = {
-        question: `What is the meaning of "${item.word}"?`,
+      if (options.length < 2) return null;
+
+      return {
+        type: "mcq",
+        progress,
+        activity,
+        prompt: `What does "${vocab.word}" mean?`,
         options,
-        correctAnswerId: item.id,
-        onAnswer: (isCorrect: boolean) => {
-          setIsAnswered(true);
+        correctAnswer: vocab.translation,
+      };
+    }
 
-          if (!isCorrect) {
-            // Auto "Again" after 1.2s (optional)
-            setTimeout(() => {
-              handleFeedback(0, item, "mcq_meaning");
-            }, 1200);
-          }
+    case "mcq_word": {
+      if (!vocab.translation) return null;
+
+      const distractors = shuffleArray(
+        sameLevelVocabs.map((v) => v.word).filter((w) => !!w && w !== vocab.word)
+      ).slice(0, 3);
+
+      const options = shuffleArray([vocab.word, ...distractors]);
+
+      if (options.length < 2) return null;
+
+      return {
+        type: "mcq",
+        progress,
+        activity,
+        prompt: `Which English word means "${vocab.translation}"?`,
+        options,
+        correctAnswer: vocab.word,
+      };
+    }
+
+    case "listen_choose": {
+      if (!vocab.audio_url) return null;
+
+      const distractors = shuffleArray(
+        sameLevelVocabs.map((v) => v.word).filter((w) => !!w && w !== vocab.word)
+      ).slice(0, 3);
+
+      const options = shuffleArray([vocab.word, ...distractors]);
+
+      if (options.length < 2) return null;
+
+      return {
+        type: "mcq",
+        progress,
+        activity,
+        prompt: "Listen to the audio and choose the correct word:",
+        options,
+        correctAnswer: vocab.word,
+        meta: {
+          audioUrl: vocab.audio_url,
         },
       };
+    }
 
-      setCurrentExercise({ type: "mcq", props: mcqProps });
-    },
-    [handleFeedback, moveToNextItem]
+    case "listen_type": {
+      if (!vocab.audio_url) return null;
+
+      return {
+        type: "typing",
+        progress,
+        activity,
+        prompt: "Listen to the audio and type the word you hear:",
+        correctAnswer: vocab.word,
+        meta: {
+          audioUrl: vocab.audio_url,
+        },
+      };
+    }
+
+    case "fill_blank": {
+      if (!vocab.example) return null;
+
+      const blanked = buildFillBlankSentence(vocab.example, vocab.word);
+      if (!blanked) return null;
+
+      return {
+        type: "typing",
+        progress,
+        activity,
+        prompt: "Fill in the blank with the missing word:",
+        correctAnswer: vocab.word,
+        meta: {
+          sentence: blanked,
+        },
+      };
+    }
+
+    case "context_mcq": {
+      if (!vocab.example || !vocab.translation) return null;
+
+      const distractors = shuffleArray(
+        sameLevelVocabs
+          .map((v) => v.translation)
+          .filter((t): t is string => !!t && t !== vocab.translation)
+      ).slice(0, 3);
+
+      const options = shuffleArray([vocab.translation, ...distractors]);
+
+      if (options.length < 2) return null;
+
+      return {
+        type: "mcq",
+        progress,
+        activity,
+        prompt: `In the following sentence, what is the closest meaning of "${vocab.word}"?\n\n${vocab.example}`,
+        options,
+        correctAnswer: vocab.translation,
+      };
+    }
+
+    default:
+      return null;
+  }
+}
+
+export function ReviewSession() {
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [dueProgress, setDueProgress] = useState<ProgressRow[]>([]);
+  const [allActivities, setAllActivities] = useState<ActivityType[]>([]);
+  const [allVocabularies, setAllVocabularies] = useState<Vocabulary[]>([]);
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [typedAnswer, setTypedAnswer] = useState("");
+  const [result, setResult] = useState<{
+    isCorrect: boolean;
+    correctAnswer: string;
+  } | null>(null);
+
+  const remainingCount = useMemo(
+    () => Math.max(dueProgress.length - currentIndex, 0),
+    [dueProgress.length, currentIndex]
   );
 
-  // ===== Fetch review queue =====
-  useEffect(() => {
-    const fetchReviewQueue = async () => {
-      setIsLoading(true);
+  const loadReviewData = async () => {
+    setLoading(true);
+    setError(null);
 
-      const lane: ReviewItem["lane"] = "flashcard"; // MVP: review flashcard lane
+    try {
+      const nowIso = new Date().toISOString();
 
-      const { data: queueData, error } = await supabase
-        .from("srs_cards")
-        .select(
-          `
-          id,
-          vocab_id,
-          repetition_count,
-          easiness_factor,
-          interval_days,
-          due_at,
-          lane,
-          vocabulary (*)
-        `
-        )
-        .eq("lane", lane)
-        .lte("due_at", new Date().toISOString())
-        .order("due_at", { ascending: true })
-        .limit(20);
+      const [progressRes, activitiesRes, vocabRes] = await Promise.all([
+        supabase
+          .from("user_vocab_progress")
+          .select("*")
+          .lte("next_review_at", nowIso)
+          .order("next_review_at", { ascending: true }),
 
-      if (error) {
-        console.error("Fetch srs queue failed:", error);
-        setReviewQueue([]);
-        setIsLoading(false);
-        return;
-      }
+        supabase
+          .from("activity_types")
+          .select("id, code, name, skill_code")
+          .order("created_at", { ascending: true }),
 
-      if (queueData && queueData.length > 0) {
-        const items: ReviewItem[] = queueData.map((row: any) => ({
-          // row.vocabulary is the joined vocab record
-          ...row.vocabulary,
-          card_id: row.id,
-          vocab_id: row.vocab_id,
-          repetition_count: row.repetition_count,
-          easiness_factor: row.easiness_factor,
-          interval_days: row.interval_days,
-          due_at: row.due_at,
-          lane: row.lane,
-        }));
+        supabase.from("vocabularies").select("*"),
+      ]);
 
-        setReviewQueue(items);
-        setCurrentIndex(0);
-        setIsAnswered(false);
-        generateExercise(items[0]);
+      if (progressRes.error) throw progressRes.error;
+      if (activitiesRes.error) throw activitiesRes.error;
+      if (vocabRes.error) throw vocabRes.error;
+
+      const progressData = (progressRes.data ?? []) as unknown as ProgressRow[];
+      const activitiesData = (activitiesRes.data ?? []) as ActivityType[];
+      const vocabData = (vocabRes.data ?? []) as Vocabulary[];
+
+      const vocabById = new Map(vocabData.map((v) => [v.id, v]));
+      const progressWithVocab: ProgressRow[] = progressData.map((p) => ({
+        ...p,
+        vocabulary: vocabById.get(p.vocabulary_id) ?? null,
+      }));
+
+      setDueProgress(progressWithVocab);
+      setAllActivities(activitiesData);
+      setAllVocabularies(vocabData);
+      setCurrentIndex(0);
+      setSelectedOption(null);
+      setTypedAnswer("");
+      setResult(null);
+
+      if (progressWithVocab.length) {
+        const firstQuestion = generateQuestion(progressWithVocab[0], activitiesData, vocabData);
+        setCurrentQuestion(firstQuestion);
       } else {
-        setReviewQueue([]);
+        setCurrentQuestion(null);
       }
-
-      setIsLoading(false);
-    };
-
-    fetchReviewQueue();
-  }, [generateExercise]);
-
-  const handleRestart = () => window.location.reload();
-
-  // ===== Render states =====
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-[50vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (sessionComplete) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <ScoreCard
-          score={reviewQueue.length}
-          total={reviewQueue.length}
-          onRestart={handleRestart}
-        />
-      </div>
-    );
-  }
-
-  if (reviewQueue.length === 0) {
-    return (
-      <EmptyState
-        icon={BookCopy}
-        title="Nothing to review today!"
-        description="You're all caught up. Keep learning new words to fill your review queue."
-      />
-    );
-  }
-
-  const currentItem = reviewQueue[currentIndex];
-
-  const renderReviewComponent = () => {
-    if (!currentExercise) return <div className="text-center">Generating exercise...</div>;
-    return <MultipleChoiceReview {...currentExercise.props} />;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Unable to load your review data. Please try again.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold">Review Session</h1>
-        <p className="text-muted-foreground">
-          {currentIndex + 1} / {reviewQueue.length} • Lane: {currentItem?.lane}
+  useEffect(() => {
+    void loadReviewData();
+  }, []);
+
+  const goToNextQuestion = useCallback(() => {
+    const nextIndex = currentIndex + 1;
+    setCurrentIndex(nextIndex);
+    setSelectedOption(null);
+    setTypedAnswer("");
+    setResult(null);
+
+    if (nextIndex >= dueProgress.length) {
+      setCurrentQuestion(null);
+      return;
+    }
+
+    const nextQuestion = generateQuestion(dueProgress[nextIndex], allActivities, allVocabularies);
+    setCurrentQuestion(nextQuestion);
+  }, [allActivities, allVocabularies, currentIndex, dueProgress]);
+
+  const handleSubmit = useCallback(async () => {
+    if (!currentQuestion || submitting || result) return;
+
+    let isCorrect = false;
+
+    if (currentQuestion.type === "mcq") {
+      if (!selectedOption) return;
+      isCorrect = normalizeText(selectedOption) === normalizeText(currentQuestion.correctAnswer);
+    } else {
+      if (!typedAnswer.trim()) return;
+      isCorrect = normalizeText(typedAnswer) === normalizeText(currentQuestion.correctAnswer);
+    }
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const progress = currentQuestion.progress;
+
+      const attemptInsert = await supabase.from("review_attempts").insert({
+        vocabulary_id: progress.vocabulary_id,
+        skill_code: progress.skill_code,
+        activity_type_id: currentQuestion.activity.id,
+        is_correct: isCorrect,
+      });
+
+      if (attemptInsert.error) throw attemptInsert.error;
+
+      const nextReviewAt = computeNextReviewDate(progress.correct_count, isCorrect);
+
+      const progressUpdate = await supabase
+        .from("user_vocab_progress")
+        .update({
+          last_reviewed_at: new Date().toISOString(),
+          next_review_at: nextReviewAt,
+          correct_count: isCorrect ? progress.correct_count + 1 : progress.correct_count,
+          wrong_count: isCorrect ? progress.wrong_count : progress.wrong_count + 1,
+        })
+        .eq("id", progress.id);
+
+      if (progressUpdate.error) throw progressUpdate.error;
+
+      setResult({
+        isCorrect,
+        correctAnswer: currentQuestion.correctAnswer,
+      });
+
+      setDueProgress((prev) =>
+        prev.map((item, index) =>
+          index === currentIndex
+            ? {
+                ...item,
+                last_reviewed_at: new Date().toISOString(),
+                next_review_at: nextReviewAt,
+                correct_count: isCorrect ? item.correct_count + 1 : item.correct_count,
+                wrong_count: isCorrect ? item.wrong_count : item.wrong_count + 1,
+              }
+            : item
+        )
+      );
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Unable to save your answer. Please try again.";
+      setError(message);
+    } finally {
+      setSubmitting(false);
+    }
+  }, [currentIndex, currentQuestion, result, selectedOption, submitting, typedAnswer]);
+
+  if (loading) {
+    return (
+      <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4 text-sm text-slate-200 shadow-sm">
+        Loading your review session...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-3 rounded-2xl border border-red-500/50 bg-slate-950 p-4 text-slate-100 shadow-sm">
+        <p className="text-sm text-red-300">{error}</p>
+        <button
+          onClick={loadReviewData}
+          className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900 hover:bg-white"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (!dueProgress.length) {
+    return (
+      <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-100 shadow-sm">
+        <h2 className="text-xl font-semibold">No vocabulary is due for review</h2>
+        <p className="mt-2 text-sm text-slate-300">
+          You don&apos;t have any words scheduled for review right now. Learn some new words or come back
+          when next_review_at is reached.
         </p>
       </div>
+    );
+  }
 
-      {renderReviewComponent()}
+  if (!currentQuestion) {
+    return (
+      <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-100 shadow-sm">
+        <h2 className="text-xl font-semibold">Preparing your review...</h2>
+        <p className="mt-2 text-sm text-slate-300">We are generating questions from your due words.</p>
+      </div>
+    );
+  }
 
-      {/* Show feedback controls after answered */}
-      {isAnswered && (
-        <FeedbackControls onFeedback={(q) => handleFeedback(q, currentItem, "mcq_meaning")} />
-      )}
+  return (
+    <div className="mx-auto max-w-2xl space-y-6 text-slate-100">
+      <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-5 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm text-slate-400">
+              Question {currentIndex + 1} / {dueProgress.length}
+            </p>
+            <h2 className="text-xl font-semibold text-slate-50">Vocabulary review</h2>
+          </div>
+          <div className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-sm text-slate-200">
+            {remainingCount} words left
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-6 shadow-sm">
+        <h3 className="whitespace-pre-line text-lg font-medium text-slate-50">
+          {currentQuestion.prompt}
+        </h3>
+
+        {currentQuestion.meta?.sentence ? (
+          <div className="mt-4 rounded-xl bg-slate-900 p-4 text-base text-slate-100">
+            {currentQuestion.meta.sentence}
+          </div>
+        ) : null}
+
+        {currentQuestion.meta?.audioUrl ? (
+          <div className="mt-4">
+            <audio controls src={currentQuestion.meta.audioUrl} className="w-full" />
+          </div>
+        ) : null}
+
+        {currentQuestion.type === "mcq" ? (
+          <div className="mt-6 grid gap-3">
+            {currentQuestion.options.map((option) => {
+              const isSelected = selectedOption === option;
+              const showCorrect =
+                !!result && normalizeText(option) === normalizeText(currentQuestion.correctAnswer);
+              const showWrong =
+                !!result &&
+                isSelected &&
+                normalizeText(option) !== normalizeText(currentQuestion.correctAnswer);
+
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  disabled={!!result}
+                  onClick={() => setSelectedOption(option)}
+                  className={[
+                    "rounded-xl border px-4 py-3 text-left text-sm transition",
+                    isSelected
+                      ? "border-slate-100 bg-slate-100/10"
+                      : "border-slate-700 bg-slate-900/60",
+                    showCorrect ? "border-emerald-400 bg-emerald-500/10" : "",
+                    showWrong ? "border-red-400 bg-red-500/10" : "",
+                  ].join(" ")}
+                >
+                  {option}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="mt-6">
+            <input
+              value={typedAnswer}
+              onChange={(e) => setTypedAnswer(e.target.value)}
+              disabled={!!result}
+              placeholder="Type your answer..."
+              className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-slate-100"
+            />
+          </div>
+        )}
+
+        {!result ? (
+          <div className="mt-6">
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={
+                submitting ||
+                (currentQuestion.type === "mcq" ? !selectedOption : !typedAnswer.trim())
+              }
+              className="rounded-xl bg-slate-100 px-5 py-3 text-sm font-medium text-slate-900 transition hover:bg-white disabled:opacity-50"
+            >
+              {submitting ? "Saving..." : "Check answer"}
+            </button>
+          </div>
+        ) : (
+          <div className="mt-6 space-y-4">
+            <div
+              className={[
+                "rounded-xl p-4 text-sm",
+                result.isCorrect
+                  ? "border border-emerald-400/60 bg-emerald-500/10 text-emerald-200"
+                  : "border border-red-400/60 bg-red-500/10 text-red-200",
+              ].join(" ")}
+            >
+              {result.isCorrect ? "Correct!" : `Not quite. The correct answer is: ${result.correctAnswer}`}
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={goToNextQuestion}
+                className="rounded-xl bg-slate-100 px-5 py-3 text-sm font-medium text-slate-900 transition hover:bg-white"
+              >
+                {currentIndex + 1 >= dueProgress.length ? "Finish session" : "Next question"}
+              </button>
+
+              <button
+                type="button"
+                onClick={loadReviewData}
+                className="rounded-xl border border-slate-600 px-5 py-3 text-sm text-slate-100 hover:border-slate-400"
+              >
+                Refresh list
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Show word details only after a wrong answer to support learning without spoiling beforehand */}
+      {!result || result.isCorrect
+        ? null
+        : (() => {
+            const vocab = currentQuestion.progress.vocabulary;
+            if (!vocab) return null;
+
+            return (
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-5 text-sm text-slate-100 shadow-sm">
+                <h4 className="text-sm font-semibold text-slate-50">Word details</h4>
+                <div className="mt-3 space-y-1 text-slate-200">
+                  <p>
+                    <span className="font-medium text-slate-100">Word:</span> {vocab.word}
+                    {vocab.phonetic ? (
+                      <span className="ml-2 text-slate-400">/{vocab.phonetic}/</span>
+                    ) : null}
+                  </p>
+                  {vocab.translation ? (
+                    <p>
+                      <span className="font-medium text-slate-100">Translation:</span>{" "}
+                      {vocab.translation}
+                    </p>
+                  ) : null}
+                  {vocab.definition ? (
+                    <p>
+                      <span className="font-medium text-slate-100">Definition:</span>{" "}
+                      {vocab.definition}
+                    </p>
+                  ) : null}
+                  {vocab.example ? (
+                    <p>
+                      <span className="font-medium text-slate-100">Example:</span>{" "}
+                      <span className="italic">{vocab.example}</span>
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })()}
     </div>
   );
 }

@@ -12,7 +12,7 @@ import Stats from "../components/Stats";
 export default async function Home() {
   const { count } = await supabase
     .from("vocabularies")
-    .select("*", { count: "exact", head: true }) // Thêm head: true để chỉ lấy count
+    .select("*", { count: "exact", head: true })
     .eq("is_learned", true);
 
   const { data: progress } = await supabase
@@ -60,7 +60,7 @@ export default async function Home() {
             <ExploreCard
               title="Empathic Voice Interface (EVI)"
               description="EVI 2: New voice-to-voice AI for rapid, natural conversations that understands and matches your tone."
-              image="/assets/images/hume_showcase.png?height=400&width=600"
+              image="/assets/images/hume_showcase.png"
               delay={0.2}
               href="/english/dialogue"
             />

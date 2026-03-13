@@ -42,15 +42,33 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
   const currentCard = cards[currentCardIndex];
   const progress = cards.length > 0 ? ((currentCardIndex + 1) / cards.length) * 100 : 0;
 
-  async function handleKnown(id: string) {
-    await supabase.from("vocabularies").update({ is_learned: true }).eq("id", id);
-    await supabase.from("review_queue").upsert({
-      vocab_id: id,
-      repetition_count: 1,
-      interval_days: 1,
-      easiness_factor: 2.5,
-      next_review: new Date(Date.now() + 86400000).toISOString(), // 1 day later
-    });
+  // HÀM ĐÃ ĐƯỢC CẬP NHẬT (PHIÊN BẢN KHÔNG CẦN AUTH)
+  async function handleKnown(card: VocabularyCard) {
+    // Cập nhật is_learned = true trong bảng vocabularies
+    const { error: updateError } = await supabase
+      .from("vocabularies")
+      .update({ is_learned: true })
+      .eq("id", card.id);
+
+    if (updateError) {
+      console.error("Error updating vocabulary:", updateError);
+    }
+
+    // Thêm từ vào hàng đợi ôn tập (review_queue) với lịch ôn là ngày mai
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const { error: upsertError } = await supabase.from("review_queue").upsert(
+      {
+        vocab_id: card.id,
+        next_review: tomorrow.toISOString().split("T")[0], // Định dạng YYYY-MM-DD
+      },
+      { onConflict: "vocab_id" }
+    ); // Nếu đã tồn tại, không làm gì cả
+
+    if (upsertError) {
+      console.error("Error adding to review queue:", upsertError);
+    }
   }
 
   const flipCard = () => {
@@ -58,16 +76,16 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
   };
 
   const markAsKnown = () => {
-    if (!currentCard) return; // Guard clause
+    if (!currentCard) return;
     if (!knownWords.includes(currentCard.id)) {
       setKnownWords([...knownWords, currentCard.id]);
     }
-    handleKnown(currentCard.id);
+    handleKnown(currentCard);
     nextCard();
   };
 
   const markAsUnknown = () => {
-    if (!currentCard) return; // Guard clause
+    if (!currentCard) return;
     if (!unknownWords.includes(currentCard.id)) {
       setUnknownWords([...unknownWords, currentCard.id]);
     }
@@ -78,13 +96,14 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
     if (currentCardIndex < cards.length - 1) {
       setCurrentCardIndex(currentCardIndex + 1);
       setIsFlipped(false);
+    } else {
+      // (Optional) Xử lý khi học xong hết
     }
-    // Consider what happens when all cards are done (e.g., show a summary or loop)
   };
 
   const playAudio = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!currentCard || !currentCard.audio_url) return; // Guard clause
+    if (!currentCard || !currentCard.audio_url) return;
     new Audio(currentCard.audio_url).play().catch(console.error);
   };
 
@@ -144,7 +163,6 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
                     {currentCard.word_type}
                   </Badge>
                 )}
-                {/* <div className="absolute top-4 right-4"></div> // This div is empty, consider removing or adding content */}
                 <p className="text-sm text-gray-400 mt-4">Click to see definition</p>
               </div>
 
@@ -154,11 +172,9 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
                   "absolute inset-0 h-full rounded-xl border dark:border-white/10 border-black/20 bg-white/5 p-6 flex flex-col",
                   isFlipped ? "visible" : "invisible"
                 )}
-                style={{ transform: "rotateY(-180deg)" }} // Corrected transform for backface visibility
+                style={{ transform: "rotateY(-180deg)" }}
               >
                 <div className="flex-1 space-y-4 overflow-y-auto">
-                  {" "}
-                  {/* Added overflow-y-auto for long content */}
                   <div>
                     <h4 className="font-medium mb-2">Definition:</h4>
                     <p className="text-gray-300 mb-1">{currentCard.definition}</p>
@@ -172,7 +188,6 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
                       <p className="text-gray-300 italic">&quot;{currentCard.example}&quot;</p>
                     </div>
                   )}
-                  {/* Synonyms */}
                   {currentCard.synonyms && (
                     <div>
                       <h4 className="font-medium mb-2">Synonyms:</h4>
@@ -182,15 +197,12 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
                           : currentCard.synonyms.split(",").map((s) => s.trim())
                         ).map((synonym, idx) => (
                           <Badge key={idx} variant="secondary" className="capitalize px-3 py-1">
-                            {" "}
-                            {/* Adjusted padding */}
                             {synonym}
                           </Badge>
                         ))}
                       </div>
                     </div>
                   )}
-                  {/* Antonyms */}
                   {currentCard.antonyms && (
                     <div>
                       <h4 className="font-medium mb-2">Antonyms:</h4>
@@ -200,8 +212,6 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
                           : currentCard.antonyms.split(",").map((s) => s.trim())
                         ).map((antonym, idx) => (
                           <Badge key={idx} variant="outline" className="capitalize px-3 py-1">
-                            {" "}
-                            {/* Adjusted padding */}
                             {antonym}
                           </Badge>
                         ))}

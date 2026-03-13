@@ -1,9 +1,21 @@
 import SpeakingPractice from "@/components/English/features/speaking-practice";
 import { supabase } from "@/lib/supabase/public";
 
-export default async function Home({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const phoneme = decodeURIComponent(slug);
+export default async function SpeakingPage({ params }: { params: { id: string } }) {
+  const phonemeId = Number(params.id);
+
+  const { data: phonemeData, error: phonemeError } = await supabase
+    .from("phonemes")
+    .select("*")
+    .eq("id", phonemeId)
+    .single();
+
+  if (phonemeError || !phonemeData) {
+    console.error("Error fetching phoneme:", phonemeError);
+    return <div>Phoneme not found</div>;
+  }
+
+  const phoneme = phonemeData.symbol;
 
   const { data, error } = await supabase
     .from("vocabularies")

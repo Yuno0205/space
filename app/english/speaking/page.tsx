@@ -40,7 +40,7 @@ const PhonemeCard = ({ phoneme }: { phoneme: Phoneme }) => {
 
   return (
     <Link
-      href={`/english/speaking/${encodeURIComponent(phoneme.symbol)}`}
+      href={`/english/speaking/${phoneme.id}`}
       className="group relative flex flex-col w-32 rounded-lg border border-primary/20 bg-card/40 backdrop-blur-sm transition-all duration-300 hover:bg-accent hover:border-primary/60 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(var(--primary),0.15)]"
     >
       <div className="flex-grow p-4 flex flex-col items-center justify-center">

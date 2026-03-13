@@ -3,11 +3,13 @@ import { supabase } from "@/lib/supabase/public";
 
 export default async function Home({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const phoneme = decodeURIComponent(slug);
 
   const { data, error } = await supabase
     .from("vocabularies")
     .select("*")
-    .ilike("word", `${slug}%`)
+    .not("phonetic", "is", null)
+    .ilike("phonetic", `%${phoneme}%`)
     .eq("proficiently->>speaking", "false")
     .order("word", { ascending: true })
     .limit(50);
@@ -19,7 +21,7 @@ export default async function Home({ params }: { params: Promise<{ slug: string 
 
   return (
     <main className="container max-w-3xl mx-auto py-10 px-4">
-      <SpeakingPractice cards={data || []} slug={slug} />
+      <SpeakingPractice cards={data || []} slug={phoneme} />
     </main>
   );
 }

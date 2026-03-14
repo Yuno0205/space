@@ -2,6 +2,7 @@
 
 import { FadeIn } from "@/components/animations/fade-in";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/lib/supabase/public";
 import { Loader2, Volume2 } from "lucide-react";
@@ -39,31 +40,33 @@ const PhonemeCard = ({ phoneme }: { phoneme: Phoneme }) => {
   };
 
   return (
-    <Link
-      href={`/english/speaking/${phoneme.id}`}
-      className="group relative flex flex-col w-32 rounded-lg border border-primary/20 bg-card/40 backdrop-blur-sm transition-all duration-300 hover:bg-accent hover:border-primary/60 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(var(--primary),0.15)]"
-    >
-      <div className="flex-grow p-4 flex flex-col items-center justify-center">
-        <span className="text-4xl font-bold text-foreground drop-shadow-sm">{phoneme.symbol}</span>
-        <span className="text-xs text-muted-foreground mt-1 uppercase tracking-tighter">
-          {phoneme.description || "mission"}
-        </span>
-      </div>
+    <Link href={`/english/speaking/${phoneme.id}`} className="block h-full">
+      <Card className="group relative flex h-full flex-col rounded-lg border border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:border-primary hover:bg-accent/60 hover:shadow-lg">
+        <CardContent className="flex flex-1 flex-col items-center justify-center p-4">
+          <span className="text-4xl font-bold text-foreground drop-shadow-sm">
+            {phoneme.symbol}
+          </span>
+          <span className="mt-1 text-xs uppercase tracking-tight text-muted-foreground">
+            {phoneme.description || "Mission"}
+          </span>
+        </CardContent>
 
-      <div className="px-3 pb-3">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[10px] font-mono text-muted-foreground">{progress}%</span>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 rounded-full hover:bg-primary/20"
-            onClick={handlePlaySound}
-          >
-            <Volume2 className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-        <Progress value={progress} className="h-1 bg-primary/10" />
-      </div>
+        <CardFooter className="w-full px-3 pb-3 pt-0">
+          <div className="flex w-full items-center justify-between gap-2">
+            <span className="text-[10px] font-mono text-muted-foreground">{progress}%</span>
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 rounded-full hover:bg-primary/20"
+              onClick={handlePlaySound}
+            >
+              <Volume2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+          <Progress value={progress} className="mt-2 h-1 bg-primary/10" />
+        </CardFooter>
+      </Card>
     </Link>
   );
 };
@@ -78,6 +81,7 @@ export default function SpeakingPage() {
     consonants: [],
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAndGroupPhonemes();
@@ -89,6 +93,7 @@ export default function SpeakingPage() {
   async function fetchAndGroupPhonemes() {
     try {
       setLoading(true);
+      setError(null);
       const { data, error } = await supabase
         .from("phonemes")
         .select("*")
@@ -110,55 +115,55 @@ export default function SpeakingPage() {
       }
     } catch (err) {
       console.error("System Error: Failed to initialize phoneme data", err);
+      setError("Failed to initialize phoneme data");
     } finally {
       setLoading(false);
     }
   }
 
+  if (error) {
+    return (
+      <div className="container mx-auto min-h-screen px-4 py-12">
+        <p className="text-sm text-destructive">{error}</p>
+        <Button onClick={fetchAndGroupPhonemes}>Retry</Button>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-black text-primary font-mono">
-        <Loader2 className="h-8 w-8 animate-spin mb-4" />
-        <span className="animate-pulse">INITIALIZING_PHONETIC_DATABASE...</span>
+      <div className="flex min-h-[300px] w-full flex-col items-center justify-center">
+        <Loader2 className="mb-4 h-8 w-8 animate-spin text-primary" />
+        <span className="text-sm text-muted-foreground animate-pulse">
+          Initializing phonetic database...
+        </span>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-12 px-4 bg-black min-h-screen">
+    <div className="container mx-auto min-h-screen px-4 py-8">
       <FadeIn>
-        <header className="mb-12 border-l-4 border-primary pl-6">
-          <h1 className="text-4xl font-black tracking-tighter uppercase mb-2 italic">
+        <header className="mb-8">
+          <h1 className="mb-3 text-3xl font-bold tracking-tight md:text-4xl">
             Phonetic Training Ground
           </h1>
-          <p className="text-muted-foreground max-w-2xl font-light">
+          <p className="max-w-2xl text-muted-foreground">
             Calibrate your vocal output by mastering the 44 fundamental components of the English
             language.
           </p>
         </header>
       </FadeIn>
 
-      <div className="space-y-16">
+      <div className="space-y-12">
         {/* SECTION 01: MONOPHTHONGS */}
-        <PhonemeSection
-          title="Monophthongs"
-          subtitle="Single Vowel Core Frequencies"
-          data={phonemes.monophthongs}
-        />
+        <PhonemeSection title="Monophthongs" data={phonemes.monophthongs} />
 
         {/* SECTION 02: DIPHTHONGS */}
-        <PhonemeSection
-          title="Diphthongs"
-          subtitle="Dual Vowel Hybrid Signals"
-          data={phonemes.diphthongs}
-        />
+        <PhonemeSection title="Diphthongs" data={phonemes.diphthongs} />
 
         {/* SECTION 03: CONSONANTS */}
-        <PhonemeSection
-          title="Consonants"
-          subtitle="Pulse Waves & Fricatives"
-          data={phonemes.consonants}
-        />
+        <PhonemeSection title="Consonants" data={phonemes.consonants} />
       </div>
     </div>
   );
@@ -169,11 +174,11 @@ export default function SpeakingPage() {
  */
 function PhonemeSection({
   title,
-  subtitle,
+
   data,
 }: {
   title: string;
-  subtitle: string;
+
   data: Phoneme[];
 }) {
   if (data.length === 0) return null;
@@ -181,10 +186,9 @@ function PhonemeSection({
   return (
     <section>
       <div className="flex items-end gap-4 mb-6">
-        <h2 className="text-2xl font-bold tracking-tight uppercase">{title}</h2>
-        <span className="text-xs text-primary/60 font-mono mb-1 tracking-widest">{subtitle}</span>
+        <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
       </div>
-      <div className="flex flex-wrap gap-5">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
         {data.map((p) => (
           <PhonemeCard key={p.symbol} phoneme={p} />
         ))}

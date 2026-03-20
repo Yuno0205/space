@@ -60,7 +60,7 @@ const PhonemeCard = ({ phoneme }: { phoneme: Phoneme }) => {
         </div>
       </Link>
 
-      {/* Audio button sits OUTSIDE the Link, absolutely positioned */}
+      {/* Audio button  */}
       <Button
         variant="ghost"
         size="icon"
@@ -74,9 +74,8 @@ const PhonemeCard = ({ phoneme }: { phoneme: Phoneme }) => {
   );
 };
 
-/**
- * MAIN PAGE: Speaking System Dashboard
- */
+//MAIN PAGE: Speaking System Dashboard
+
 export default function SpeakingPage() {
   const [phonemes, setPhonemes] = useState<GroupedPhonemes>({
     monophthongs: [],
@@ -90,9 +89,8 @@ export default function SpeakingPage() {
     fetchAndGroupPhonemes();
   }, []);
 
-  /**
-   * Fetch phonemes from Supabase and group them by type
-   */
+  //Fetch phonemes from Supabase and group them by type
+
   async function fetchAndGroupPhonemes() {
     try {
       setLoading(true);
@@ -172,9 +170,8 @@ export default function SpeakingPage() {
   );
 }
 
-/**
- * HELPER: Section Wrapper
- */
+//HELPER: Section Wrapper
+
 function PhonemeSection({
   title,
 

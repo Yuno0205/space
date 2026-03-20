@@ -303,6 +303,7 @@ export function ReviewSession() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  const [sessionComplete, setSessionComplete] = useState(false);
 
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [typedAnswer, setTypedAnswer] = useState("");
@@ -359,6 +360,7 @@ export function ReviewSession() {
       setSelectedOption(null);
       setTypedAnswer("");
       setResult(null);
+      setSessionComplete(false);
 
       if (progressWithVocab.length) {
         const firstQuestion = generateQuestion(progressWithVocab[0], activitiesData, vocabData);
@@ -388,6 +390,7 @@ export function ReviewSession() {
 
     if (nextIndex >= dueProgress.length) {
       setCurrentQuestion(null);
+      setSessionComplete(true);
       return;
     }
 
@@ -491,18 +494,40 @@ export function ReviewSession() {
       <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-100 shadow-sm">
         <h2 className="text-xl font-semibold">No vocabulary is due for review</h2>
         <p className="mt-2 text-sm text-slate-300">
-          You don&apos;t have any words scheduled for review right now. Learn some new words or come back
-          when next_review_at is reached.
+          You don&apos;t have any words scheduled for review right now. Learn some new words or come
+          back when your next review is due.
         </p>
       </div>
     );
   }
 
+  //  the session is truly finished
+  if (sessionComplete) {
+    return (
+      <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-100 shadow-sm">
+        <h2 className="text-xl font-semibold">Session complete! 🎉</h2>
+        <p className="mt-2 text-sm text-slate-300">
+          You have reviewed all {dueProgress.length} words.
+        </p>
+        <button
+          type="button"
+          onClick={loadReviewData}
+          className="mt-4 rounded-xl bg-slate-100 px-5 py-3 text-sm font-medium text-slate-900 hover:bg-white"
+        >
+          Start new session
+        </button>
+      </div>
+    );
+  }
+
+  // during genuine question generation (e.g. first load edge case)
   if (!currentQuestion) {
     return (
       <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-100 shadow-sm">
         <h2 className="text-xl font-semibold">Preparing your review...</h2>
-        <p className="mt-2 text-sm text-slate-300">We are generating questions from your due words.</p>
+        <p className="mt-2 text-sm text-slate-300">
+          We are generating questions from your due words.
+        </p>
       </div>
     );
   }
@@ -607,7 +632,9 @@ export function ReviewSession() {
                   : "border border-red-400/60 bg-red-500/10 text-red-200",
               ].join(" ")}
             >
-              {result.isCorrect ? "Correct!" : `Not quite. The correct answer is: ${result.correctAnswer}`}
+              {result.isCorrect
+                ? "Correct!"
+                : `Not quite. The correct answer is: ${result.correctAnswer}`}
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">

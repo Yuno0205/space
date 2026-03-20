@@ -1,7 +1,7 @@
 import SpeakingPractice from "@/components/English/features/speaking-practice";
 import { supabase } from "@/lib/supabase/public";
 
-export default async function SpeakingPage({ params }: { params: { id: string } }) {
+export default async function SpeakingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const phonemeId = Number(id);
 

@@ -2,7 +2,6 @@
 
 import { FadeIn } from "@/components/animations/fade-in";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/lib/supabase/public";
 import { Loader2, Volume2 } from "lucide-react";
@@ -26,9 +25,6 @@ interface GroupedPhonemes {
   consonants: Phoneme[];
 }
 
-/**
- * COMPONENT: Individual Phoneme Card
- */
 const PhonemeCard = ({ phoneme }: { phoneme: Phoneme }) => {
   const progress = phoneme.progress || 0;
 
@@ -40,34 +36,41 @@ const PhonemeCard = ({ phoneme }: { phoneme: Phoneme }) => {
   };
 
   return (
-    <Link href={`/english/speaking/${phoneme.id}`} className="block h-full">
-      <Card className="group relative flex h-full flex-col rounded-lg border border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:border-primary hover:bg-accent/60 hover:shadow-lg">
-        <CardContent className="flex flex-1 flex-col items-center justify-center p-4">
+    <div className="relative group min-w-32">
+      {/* The navigable card */}
+      <Link
+        href={`/english/speaking/${phoneme.id}`}
+        className="flex flex-col rounded-lg border border-primary/20 bg-card/40 backdrop-blur-sm transition-all duration-300 hover:bg-accent hover:border-primary/60 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(var(--primary),0.15)]"
+      >
+        <div className="flex-grow p-4 flex flex-col items-center justify-center">
           <span className="text-4xl font-bold text-foreground drop-shadow-sm">
             {phoneme.symbol}
           </span>
-          <span className="mt-1 text-xs uppercase tracking-tight text-muted-foreground">
-            {phoneme.description || "Mission"}
+          <span className="text-xs text-muted-foreground mt-1 uppercase tracking-tighter">
+            {phoneme.description || "mission"}
           </span>
-        </CardContent>
-
-        <CardFooter className="w-full px-3 pb-3 pt-0">
-          <div className="flex w-full items-center justify-between gap-2">
+        </div>
+        <div className="px-3 pb-3">
+          <div className="flex items-center justify-between mb-1.5">
             <span className="text-[10px] font-mono text-muted-foreground">{progress}%</span>
-            <Button
-              asChild
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 rounded-full hover:bg-primary/20"
-              onClick={handlePlaySound}
-            >
-              <Volume2 className="h-3.5 w-3.5" />
-            </Button>
+            {/* Spacer to keep layout consistent */}
+            <div className="h-6 w-6" />
           </div>
-          <Progress value={progress} className="mt-2 h-1 bg-primary/10" />
-        </CardFooter>
-      </Card>
-    </Link>
+          <Progress value={progress} className="h-1 bg-primary/10" />
+        </div>
+      </Link>
+
+      {/* Audio button sits OUTSIDE the Link, absolutely positioned */}
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={`Play ${phoneme.symbol} audio`}
+        className="absolute top-3 right-3 h-6 w-6 rounded-full hover:bg-primary/20 z-10"
+        onClick={handlePlaySound}
+      >
+        <Volume2 className="h-3.5 w-3.5" />
+      </Button>
+    </div>
   );
 };
 

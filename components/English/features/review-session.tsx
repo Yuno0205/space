@@ -312,6 +312,19 @@ export function ReviewSession() {
     correctAnswer: string;
   } | null>(null);
 
+  const getNextValidQuestion = useCallback(
+    (startIndex: number, progressList: ProgressRow[]) => {
+      for (let i = startIndex; i < progressList.length; i += 1) {
+        const question = generateQuestion(progressList[i], allActivities, allVocabularies);
+        if (question) {
+          return { index: i, question };
+        }
+      }
+      return null;
+    },
+    [allActivities, allVocabularies]
+  );
+
   const remainingCount = useMemo(
     () => Math.max(dueProgress.length - currentIndex, 0),
     [dueProgress.length, currentIndex]
@@ -353,19 +366,41 @@ export function ReviewSession() {
         vocabulary: vocabById.get(p.vocabulary_id) ?? null,
       }));
 
-      setDueProgress(progressWithVocab);
+      const now = new Date();
+      const dueOnly = progressWithVocab.filter((item) => {
+        if (!item.next_review_at) return true;
+        const nextReviewAt = new Date(item.next_review_at);
+        if (Number.isNaN(nextReviewAt.getTime())) return false;
+        return nextReviewAt <= now;
+      });
+
+      setDueProgress(dueOnly);
       setAllActivities(activitiesData);
       setAllVocabularies(vocabData);
-      setCurrentIndex(0);
       setSelectedOption(null);
       setTypedAnswer("");
       setResult(null);
       setSessionComplete(false);
 
-      if (progressWithVocab.length) {
-        const firstQuestion = generateQuestion(progressWithVocab[0], activitiesData, vocabData);
-        setCurrentQuestion(firstQuestion);
+      if (dueOnly.length) {
+        const firstValid = dueOnly.reduce<{ index: number; question: Question } | null>(
+          (acc, item, index) => {
+            if (acc) return acc;
+            const question = generateQuestion(item, activitiesData, vocabData);
+            return question ? { index, question } : null;
+          },
+          null
+        );
+
+        if (firstValid) {
+          setCurrentIndex(firstValid.index);
+          setCurrentQuestion(firstValid.question);
+        } else {
+          setCurrentIndex(0);
+          setCurrentQuestion(null);
+        }
       } else {
+        setCurrentIndex(0);
         setCurrentQuestion(null);
       }
     } catch (err) {
@@ -382,21 +417,20 @@ export function ReviewSession() {
   }, []);
 
   const goToNextQuestion = useCallback(() => {
-    const nextIndex = currentIndex + 1;
-    setCurrentIndex(nextIndex);
+    const nextValid = getNextValidQuestion(currentIndex + 1, dueProgress);
     setSelectedOption(null);
     setTypedAnswer("");
     setResult(null);
 
-    if (nextIndex >= dueProgress.length) {
+    if (!nextValid) {
       setCurrentQuestion(null);
       setSessionComplete(true);
       return;
     }
 
-    const nextQuestion = generateQuestion(dueProgress[nextIndex], allActivities, allVocabularies);
-    setCurrentQuestion(nextQuestion);
-  }, [allActivities, allVocabularies, currentIndex, dueProgress]);
+    setCurrentIndex(nextValid.index);
+    setCurrentQuestion(nextValid.question);
+  }, [currentIndex, dueProgress, getNextValidQuestion]);
 
   const handleSubmit = useCallback(async () => {
     if (!currentQuestion || submitting || result) return;
@@ -520,14 +554,24 @@ export function ReviewSession() {
     );
   }
 
-  // during genuine question generation (e.g. first load edge case)
+  console.log(currentQuestion, dueProgress);
+
+  // No valid question can be generated from currently due rows
   if (!currentQuestion) {
     return (
       <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-100 shadow-sm">
-        <h2 className="text-xl font-semibold">Preparing your review...</h2>
+        <h2 className="text-xl font-semibold">No valid review question is available</h2>
         <p className="mt-2 text-sm text-slate-300">
-          We are generating questions from your due words.
+          Your due words are missing required data for the current activity types. Please refresh
+          after updating vocabulary details.
         </p>
+        <button
+          type="button"
+          onClick={loadReviewData}
+          className="mt-4 rounded-xl bg-slate-100 px-5 py-3 text-sm font-medium text-slate-900 hover:bg-white"
+        >
+          Refresh list
+        </button>
       </div>
     );
   }

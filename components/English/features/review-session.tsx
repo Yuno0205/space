@@ -1,6 +1,7 @@
 "use client";
 
 import { supabase } from "@/lib/supabase/public";
+import { VocabularyCard } from "@/types/vocabulary";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type SkillCode = "flashcard" | "listening" | "reading" | "speaking" | "writing";
@@ -14,23 +15,6 @@ type ActivityCode =
   | "fill_blank"
   | "context_mcq";
 
-type Vocabulary = {
-  id: string;
-  word: string;
-  phonetic: string | null;
-  audio_url: string | null;
-  word_type: string | null;
-  definition: string | null;
-  translation: string | null;
-  example: string | null;
-  synonyms: string[] | string | null;
-  antonyms: string[] | string | null;
-  level: string | null;
-  is_learned: boolean | null;
-  proficiently: number | null;
-  created_at: string | null;
-};
-
 type ProgressRow = {
   id: string;
   vocabulary_id: string;
@@ -41,7 +25,7 @@ type ProgressRow = {
   wrong_count: number;
   created_at: string;
   updated_at: string;
-  vocabulary?: Vocabulary | null;
+  vocabulary?: VocabularyCard | null;
 };
 
 type ActivityType = {
@@ -135,7 +119,7 @@ function computeNextReviewDate(correctCountBeforeUpdate: number, isCorrect: bool
 function generateQuestion(
   progress: ProgressRow,
   activities: ActivityType[],
-  vocabularies: Vocabulary[]
+  vocabularies: VocabularyCard[]
 ): Question | null {
   const vocab = progress.vocabulary;
   if (!vocab) return null;
@@ -299,7 +283,7 @@ export function ReviewSession() {
 
   const [dueProgress, setDueProgress] = useState<ProgressRow[]>([]);
   const [allActivities, setAllActivities] = useState<ActivityType[]>([]);
-  const [allVocabularies, setAllVocabularies] = useState<Vocabulary[]>([]);
+  const [allVocabularies, setAllVocabularies] = useState<VocabularyCard[]>([]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
@@ -358,7 +342,7 @@ export function ReviewSession() {
 
       const progressData = (progressRes.data ?? []) as unknown as ProgressRow[];
       const activitiesData = (activitiesRes.data ?? []) as ActivityType[];
-      const vocabData = (vocabRes.data ?? []) as Vocabulary[];
+      const vocabData = (vocabRes.data ?? []) as VocabularyCard[];
 
       const vocabById = new Map(vocabData.map((v) => [v.id, v]));
       const progressWithVocab: ProgressRow[] = progressData.map((p) => ({

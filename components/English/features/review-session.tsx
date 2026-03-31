@@ -12,6 +12,7 @@ type ActivityCode =
   | "match_word_meaning"
   | "listen_choose"
   | "listen_type"
+  | "listen_repeat"
   | "fill_blank"
   | "context_mcq";
 
@@ -54,6 +55,16 @@ type Question =
       activity: ActivityType;
       prompt: string;
       correctAnswer: string;
+      meta?: {
+        audioUrl?: string | null;
+        sentence?: string | null;
+      };
+    }
+  | {
+      type: "speaking";
+      progress: ProgressRow;
+      activity: ActivityType;
+      prompt: string;
       meta?: {
         audioUrl?: string | null;
         sentence?: string | null;
@@ -136,6 +147,7 @@ function generateQuestion(
       "listen_type",
       "fill_blank",
       "context_mcq",
+      "listen_repeat",
     ].includes(a.code)
   );
 
@@ -226,6 +238,22 @@ function generateQuestion(
         correctAnswer: vocab.word,
         meta: {
           audioUrl: vocab.audio_url,
+        },
+      };
+    }
+
+    case "listen_repeat": {
+      if (!vocab.audio_url) return null;
+
+      return {
+        type: "speaking",
+        progress,
+        activity,
+        prompt: "Listen to the word and repeat it clearly:",
+
+        meta: {
+          audioUrl: vocab.audio_url,
+          sentence: vocab.example,
         },
       };
     }
@@ -424,9 +452,11 @@ export function ReviewSession() {
     if (currentQuestion.type === "mcq") {
       if (!selectedOption) return;
       isCorrect = normalizeText(selectedOption) === normalizeText(currentQuestion.correctAnswer);
-    } else {
+    } else if (currentQuestion.type === "typing") {
       if (!typedAnswer.trim()) return;
       isCorrect = normalizeText(typedAnswer) === normalizeText(currentQuestion.correctAnswer);
+    } else if (currentQuestion.type === "speaking") {
+      isCorrect = true;
     }
 
     setSubmitting(true);
@@ -460,7 +490,7 @@ export function ReviewSession() {
 
       setResult({
         isCorrect,
-        correctAnswer: currentQuestion.correctAnswer,
+        correctAnswer: currentQuestion.type === "mcq" ? currentQuestion.correctAnswer : "",
       });
 
       setDueProgress((prev) =>
@@ -537,8 +567,6 @@ export function ReviewSession() {
       </div>
     );
   }
-
-  console.log(currentQuestion, dueProgress);
 
   // No valid question can be generated from currently due rows
   if (!currentQuestion) {

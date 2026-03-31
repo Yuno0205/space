@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { AlertTriangle, ArrowRight, CheckCircle, Mic, RefreshCw, Volume2 } from "lucide-react";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -18,10 +18,8 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { VocabularyCard } from "@/types/vocabulary";
+import { analyzeSpeech } from "@/utils/pronunciation";
 import { updateCompletedWords, updateProficiency } from "@/utils/Supabase/action";
-import { dictionary } from "cmu-pronouncing-dictionary";
-
-type DictType = Record<string, string | string[]>;
 
 interface WordDisplay {
   text: string;
@@ -95,142 +93,26 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
 
   useEffect(() => {
     resetPronunciationState();
-  }, [currentCard.id, resetPronunciationState]); // Thêm resetPronunciationState vào dependency array
-
-  const getPhonemes = useCallback((word: string): string => {
-    if (!word || typeof word !== "string") return "";
-    const lowerWord = word
-      .toLowerCase()
-      .trim()
-      .replace(/[.,!?]/g, "");
-    if (!lowerWord) return "";
-    if (
-      typeof dictionary !== "object" ||
-      dictionary === null ||
-      Object.keys(dictionary).length === 0
-    ) {
-      console.warn("CMU Dictionary is not available or empty.");
-      return "";
-    }
-    const phonemeEntry = (dictionary as DictType)[lowerWord];
-    if (Array.isArray(phonemeEntry)) return phonemeEntry.length > 0 ? phonemeEntry[0] : "";
-    return phonemeEntry || "";
-  }, []);
-
-  const levenshteinSimilarity = useCallback((strA: string, strB: string): number => {
-    const a = strA.toLowerCase();
-    const b = strB.toLowerCase();
-    if (!a.length && !b.length) return 1;
-    if (!a.length || !b.length) return 0;
-    const dp = Array(a.length + 1)
-      .fill(null)
-      .map(() => Array(b.length + 1).fill(null));
-    for (let i = 0; i <= a.length; i += 1) dp[i][0] = i;
-    for (let j = 0; j <= b.length; j += 1) dp[0][j] = j;
-    for (let i = 1; i <= a.length; i += 1) {
-      for (let j = 1; j <= b.length; j += 1) {
-        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-        dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
-      }
-    }
-    const distance = dp[a.length][b.length];
-    return 1 - distance / Math.max(a.length, b.length);
-  }, []);
+  }, [currentCard.id, resetPronunciationState]);
 
   const analyzePronunciation = useCallback(
     (currentTargetText: string, spokenText: string, sttConfidence: number) => {
-      const tgtWordsOriginal = currentTargetText.split(/\s+/).filter(Boolean);
-      const tgtWordsLower = currentTargetText.toLowerCase().split(/\s+/).filter(Boolean);
-      const spkWordsLower = spokenText.toLowerCase().split(/\s+/).filter(Boolean);
-
-      let correctWordCount = 0;
-      const newWordDisplays: WordDisplay[] = tgtWordsOriginal.map((originalTargetWord, i) => {
-        const targetWordLower = tgtWordsLower[i];
-        const spokenWordLower = spkWordsLower[i] || "";
-        if (spokenWordLower === targetWordLower) {
-          correctWordCount++;
-          return { text: originalTargetWord, color: "text-green-500" };
-        } else if (spokenWordLower) {
-          const similarity = levenshteinSimilarity(spokenWordLower, targetWordLower);
-          return {
-            text: originalTargetWord,
-            color: similarity >= 0.7 ? "text-yellow-500" : "text-red-500",
-          };
-        } else {
-          return { text: originalTargetWord, color: "text-red-500" };
-        }
-      });
-
-      const wordScore =
-        tgtWordsLower.length > 0 ? Math.round((correctWordCount / tgtWordsLower.length) * 100) : 0;
-      let phonemeMatchContributionSum = 0;
-      let wordsWithPhonemesCount = 0;
-
-      tgtWordsLower.forEach((targetWord, i) => {
-        const currentSpokenWord = spkWordsLower[i] || "";
-        const targetPhonemes = getPhonemes(targetWord);
-        if (targetPhonemes) {
-          wordsWithPhonemesCount++;
-          const spokenWordCanonicalPhonemes = getPhonemes(currentSpokenWord);
-          let wordPhonemeSimilarity = 0;
-          if (spokenWordCanonicalPhonemes) {
-            wordPhonemeSimilarity = levenshteinSimilarity(
-              targetPhonemes,
-              spokenWordCanonicalPhonemes
-            );
-          }
-          if (targetWord === currentSpokenWord && currentSpokenWord !== "") {
-            phonemeMatchContributionSum +=
-              wordPhonemeSimilarity * (sttConfidence > 0 ? sttConfidence : 0.1);
-          } else {
-            phonemeMatchContributionSum += wordPhonemeSimilarity;
-          }
-        }
-      });
-
-      const phonemeScoreVal =
-        wordsWithPhonemesCount > 0
-          ? Math.round((phonemeMatchContributionSum / wordsWithPhonemesCount) * 100)
-          : tgtWordsLower.length > 0 && spkWordsLower.length === 0
-            ? 0
-            : 50;
-      const accentProxyVal = Math.min(
-        100,
-        Math.max(
-          0,
-          phonemeScoreVal + Math.round(15 * (sttConfidence > 0 ? sttConfidence : 0.5) - 5)
-        )
-      );
-      const rhythmProxyVal = Math.max(0, wordScore - 10);
-      let speedScoreVal = 100;
-      if (tgtWordsLower.length > 0) {
-        const rate = spkWordsLower.length / tgtWordsLower.length;
-        if (rate < 0.7) speedScoreVal = Math.round(100 * rate * rate);
-        else if (rate > 1.3) speedScoreVal = Math.round(100 - (rate - 1.3) * 150);
-      } else if (spkWordsLower.length > 0) {
-        speedScoreVal = 0;
-      }
-      speedScoreVal = Math.max(0, Math.min(100, speedScoreVal));
-      const finalScore = Math.round(
-        phonemeScoreVal * 0.5 + accentProxyVal * 0.2 + rhythmProxyVal * 0.1 + speedScoreVal * 0.2
-      );
-      const calculatedDetailScores = {
-        phoneme: phonemeScoreVal,
-        accentProxy: accentProxyVal,
-        rhythmProxy: rhythmProxyVal,
-        speed: speedScoreVal,
-      };
+      const result = analyzeSpeech(currentTargetText, spokenText, sttConfidence);
 
       setPronunciationResult((prev) => ({
         ...prev,
         transcript: spokenText,
-        overallScore: finalScore,
-        detailScores: calculatedDetailScores,
-        wordsForDisplay: newWordDisplays,
+        overallScore: result.overallScore,
+        detailScores: {
+          phoneme: result.details.phoneme,
+          accentProxy: result.details.accent,
+          rhythmProxy: result.details.rhythm,
+          speed: result.details.speed,
+        },
+        wordsForDisplay: result.wordsForDisplay,
       }));
-      // Không còn gọi addScore nữa
     },
-    [getPhonemes, levenshteinSimilarity]
+    []
   );
 
   useEffect(() => {

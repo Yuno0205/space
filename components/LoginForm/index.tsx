@@ -1,21 +1,22 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/lib/supabase/public";
+import { useState } from "react";
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleGoogleLogin = () => {
-    setIsLoading(true);
-    // Simulate Google OAuth flow
-    setTimeout(() => {
-      console.log("Logging in with Google...");
-      setIsLoading(false);
-    }, 1500);
+  const handleGoogleLogin = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
   };
 
   const handleEmailLogin = (e: React.FormEvent) => {

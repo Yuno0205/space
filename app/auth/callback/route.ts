@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login`);
   }
 
-  // 🔥 Step 1: exchange code → session
+  //  Step 1: exchange code → session
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=auth_failed`);
   }
 
-  // 🔥 Step 2: get user
+  //  Step 2: get user
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -28,11 +28,13 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login`);
   }
 
-  // 🔥 Step 3: check profile exists
+  //  Step 3: check profile exists
   const { data: profile } = await supabase.from("profiles").select("id").eq("id", user.id).single();
 
-  // 🔥 Step 4: if not exists → create profile + stats
+  //  Step 4: if not exists → create profile + stats
   if (!profile) {
+    console.log("Creating profile and stats");
+
     const { error: profileError } = await supabase.from("profiles").insert({
       id: user.id,
       email: user.email,
@@ -49,6 +51,6 @@ export async function GET(request: Request) {
     }
   }
 
-  // 🔥 Step 5: redirect to app
+  //  Step 5: redirect to app
   return NextResponse.redirect(`${origin}${next}`);
 }

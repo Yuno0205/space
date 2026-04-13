@@ -66,6 +66,7 @@ type Question =
       progress: ProgressRow;
       activity: ActivityType;
       prompt: string;
+      correctAnswer: string;
       meta?: {
         audioUrl?: string | null;
         sentence?: string | null;
@@ -115,10 +116,6 @@ function generateQuestion(
   activities: ActivityType[],
   vocabularies: VocabularyCard[]
 ): Question | null {
-  console.log("progress", progress);
-  console.log("activities", activities);
-  console.log("vocabularies", vocabularies);
-
   const vocab = progress.vocabulary;
   if (!vocab) return null;
 
@@ -237,7 +234,7 @@ function generateQuestion(
         progress,
         activity,
         prompt: "Listen to the word and repeat it clearly:",
-
+        correctAnswer: vocab.word,
         meta: {
           audioUrl: vocab.audio_url,
           sentence: vocab.example,
@@ -657,7 +654,7 @@ export function ReviewSession() {
               );
             })}
           </div>
-        ) : (
+        ) : currentQuestion.type === "typing" ? (
           <div className="mt-6">
             <input
               value={typedAnswer}
@@ -666,6 +663,20 @@ export function ReviewSession() {
               placeholder="Type your answer..."
               className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-slate-100"
             />
+          </div>
+        ) : (
+          <div className="mt-6 space-y-4 rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+              Speaking practice
+            </p>
+            <p className="text-sm text-slate-200">
+              Read the sentence below out loud after listening to the audio.
+            </p>
+            <div className="rounded-lg border border-slate-600 bg-slate-950 p-4">
+              <p className="text-base leading-relaxed text-slate-100 break-words">
+                {currentQuestion.meta?.sentence || currentQuestion.progress.vocabulary?.word}
+              </p>
+            </div>
           </div>
         )}
 
@@ -676,11 +687,19 @@ export function ReviewSession() {
               onClick={handleSubmit}
               disabled={
                 submitting ||
-                (currentQuestion.type === "mcq" ? !selectedOption : !typedAnswer.trim())
+                (currentQuestion.type === "mcq"
+                  ? !selectedOption
+                  : currentQuestion.type === "typing"
+                    ? !typedAnswer.trim()
+                    : false)
               }
               className="rounded-xl bg-slate-100 px-5 py-3 text-sm font-medium text-slate-900 transition hover:bg-white disabled:opacity-50"
             >
-              {submitting ? "Saving..." : "Check answer"}
+              {submitting
+                ? "Saving..."
+                : currentQuestion.type === "speaking"
+                  ? "I have practiced"
+                  : "Check answer"}
             </button>
           </div>
         ) : (

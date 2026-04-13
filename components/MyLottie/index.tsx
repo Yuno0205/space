@@ -1,9 +1,8 @@
 // components/MyLottieAnimation.tsx
 import React from "react";
 import Lottie, { LottieComponentProps } from "lottie-react"; // Import LottieComponentProps nếu cần
-import animationData from "@/public/animations/spaceship.json"; // Đường dẫn tới file JSON
+import animationData from "@/public/animations/spaceship.json";
 
-// Định nghĩa props cho component của bạn nếu cần (ví dụ: tùy chỉnh kích thước)
 interface MyLottieAnimationProps {
   width?: string | number;
   height?: string | number;

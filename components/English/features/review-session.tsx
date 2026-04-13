@@ -1,6 +1,7 @@
 "use client";
 
 import { supabase } from "@/lib/supabase/public";
+import { normalizeText, pickRandom, shuffleArray } from "@/lib/utils";
 import { VocabularyCard } from "@/types/vocabulary";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -71,24 +72,6 @@ type Question =
       };
     };
 
-function shuffleArray<T>(arr: T[]): T[] {
-  const copy = [...arr];
-  for (let i = copy.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
-}
-
-function pickRandom<T>(arr: T[]): T | null {
-  if (!arr.length) return null;
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function normalizeText(value: string) {
-  return value.trim().toLowerCase();
-}
-
 function buildFillBlankSentence(example: string, word: string) {
   if (!example || !word) return null;
 
@@ -132,6 +115,10 @@ function generateQuestion(
   activities: ActivityType[],
   vocabularies: VocabularyCard[]
 ): Question | null {
+  console.log("progress", progress);
+  console.log("activities", activities);
+  console.log("vocabularies", vocabularies);
+
   const vocab = progress.vocabulary;
   if (!vocab) return null;
 
@@ -151,7 +138,7 @@ function generateQuestion(
     ].includes(a.code)
   );
 
-  const activity = pickRandom(supportedActivities);
+  const activity = pickRandom<ActivityType>(supportedActivities);
   if (!activity) return null;
 
   const sameLevelVocabs = vocabularies.filter(
@@ -352,16 +339,22 @@ export function ReviewSession() {
       const [progressRes, activitiesRes, vocabRes] = await Promise.all([
         supabase
           .from("user_vocab_progress")
-          .select("*")
+          .select(
+            `
+            *,
+            vocabulary:vocabularies (*) 
+          `
+          )
           .lte("next_review_at", nowIso)
-          .order("next_review_at", { ascending: true }),
+          .order("next_review_at", { ascending: true })
+          .limit(20),
 
         supabase
           .from("activity_types")
           .select("id, code, name, skill_code")
           .order("created_at", { ascending: true }),
 
-        supabase.from("vocabularies").select("*"),
+        supabase.from("vocabularies").select("*").limit(10),
       ]);
 
       if (progressRes.error) throw progressRes.error;
@@ -372,14 +365,8 @@ export function ReviewSession() {
       const activitiesData = (activitiesRes.data ?? []) as ActivityType[];
       const vocabData = (vocabRes.data ?? []) as VocabularyCard[];
 
-      const vocabById = new Map(vocabData.map((v) => [v.id, v]));
-      const progressWithVocab: ProgressRow[] = progressData.map((p) => ({
-        ...p,
-        vocabulary: vocabById.get(p.vocabulary_id) ?? null,
-      }));
-
       const now = new Date();
-      const dueOnly = progressWithVocab.filter((item) => {
+      const dueOnly = progressData.filter((item) => {
         if (!item.next_review_at) return true;
         const nextReviewAt = new Date(item.next_review_at);
         if (Number.isNaN(nextReviewAt.getTime())) return false;
@@ -394,15 +381,22 @@ export function ReviewSession() {
       setResult(null);
       setSessionComplete(false);
 
+      console.log("dueOnly", dueOnly);
+
       if (dueOnly.length) {
         const firstValid = dueOnly.reduce<{ index: number; question: Question } | null>(
           (acc, item, index) => {
+            console.log("item", item, "acc", acc);
+
             if (acc) return acc;
             const question = generateQuestion(item, activitiesData, vocabData);
+            console.log("question", question);
             return question ? { index, question } : null;
           },
           null
         );
+
+        console.log("firstValid", firstValid);
 
         if (firstValid) {
           setCurrentIndex(firstValid.index);
@@ -415,6 +409,17 @@ export function ReviewSession() {
         setCurrentIndex(0);
         setCurrentQuestion(null);
       }
+
+      console.log(
+        "Check data mapping:",
+        dueOnly.map((d) => ({
+          word: d.vocabulary?.word,
+          hasVocab: !!d.vocabulary,
+          hasTranslation: !!d.vocabulary?.translation,
+          hasAudio: !!d.vocabulary?.audio_url,
+          skill: d.skill_code,
+        }))
+      );
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Unable to load your review data. Please try again.";

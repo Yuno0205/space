@@ -13,3 +13,12 @@ export function shuffleArray<T>(array: T[]): T[] {
   }
   return newArray;
 }
+
+export function pickRandom<T>(arr: T[]): T | null {
+  if (!arr.length) return null;
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+export function normalizeText(value: string) {
+  return value.trim().toLowerCase();
+}

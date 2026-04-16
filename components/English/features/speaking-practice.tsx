@@ -16,15 +16,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { buildPronunciationAnalysis, createNeutralWordDisplay, type WordDisplay } from "@/lib/pronunciation-analysis";
 import { Progress } from "@/components/ui/progress";
 import { VocabularyCard } from "@/types/vocabulary";
-import { analyzeSpeech } from "@/utils/pronunciation";
 import { updateCompletedWords, updateProficiency } from "@/utils/Supabase/action";
 
-interface WordDisplay {
-  text: string;
-  color: string;
-}
 interface DetailScores {
   phoneme: number;
   accentProxy: number;
@@ -37,7 +33,7 @@ interface SpeakingPracticeProps {
   slug: string;
 }
 
-interface PronunciationResultState {
+export interface PronunciationResultState {
   wordsForDisplay: WordDisplay[];
   transcript: string;
   overallScore: number | null;
@@ -46,7 +42,7 @@ interface PronunciationResultState {
   isListening: boolean;
 }
 
-const initialPronunciationResultState: PronunciationResultState = {
+export const initialPronunciationResultState: PronunciationResultState = {
   wordsForDisplay: [],
   transcript: "",
   overallScore: null,
@@ -82,10 +78,7 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
   const resetPronunciationState = useCallback(() => {
     setPronunciationResult({
       ...initialPronunciationResultState,
-      wordsForDisplay: currentCard.word
-        .split(/\s+/)
-        .filter(Boolean)
-        .map((w) => ({ text: w, color: "text-gray-300" })),
+      wordsForDisplay: createNeutralWordDisplay(currentCard.word),
     });
     setShowDefinition(false);
     setIsMarkedMastered(false);
@@ -97,18 +90,13 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
 
   const analyzePronunciation = useCallback(
     (currentTargetText: string, spokenText: string, sttConfidence: number) => {
-      const result = analyzeSpeech(currentTargetText, spokenText, sttConfidence);
+      const result = buildPronunciationAnalysis(currentTargetText, spokenText, sttConfidence);
 
       setPronunciationResult((prev) => ({
         ...prev,
-        transcript: spokenText,
+        transcript: result.transcript,
         overallScore: result.overallScore,
-        detailScores: {
-          phoneme: result.details.phoneme,
-          accentProxy: result.details.accent,
-          rhythmProxy: result.details.rhythm,
-          speed: result.details.speed,
-        },
+        detailScores: result.detailScores,
         wordsForDisplay: result.wordsForDisplay,
       }));
     },
@@ -170,10 +158,7 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
         transcript: "",
         overallScore: null,
         detailScores: null,
-        wordsForDisplay: currentCard.word
-          .split(/\s+/)
-          .filter(Boolean)
-          .map((w) => ({ text: w, color: "text-gray-300" })),
+        wordsForDisplay: createNeutralWordDisplay(currentCard.word),
         error: null,
       }));
       try {

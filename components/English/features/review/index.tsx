@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase/public";
 import { normalizeText, pickRandom, shuffleArray } from "@/lib/utils";
 import { VocabularyCard } from "@/types/vocabulary";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { QuestionRenderer } from "./QuestionRenderer";
 
 type SkillCode = "flashcard" | "listening" | "reading" | "speaking" | "writing";
 
@@ -37,41 +38,36 @@ type ActivityType = {
   skill_code: SkillCode;
 };
 
-type Question =
-  | {
+type QuestionBase = {
+  progress: ProgressRow;
+  activity: ActivityType;
+  prompt: string;
+  meta?: {
+    audioUrl?: string | null;
+    sentence?: string | null;
+  };
+};
+
+export type TQuestion =
+  | (QuestionBase & {
       type: "mcq";
-      progress: ProgressRow;
-      activity: ActivityType;
-      prompt: string;
       options: string[];
       correctAnswer: string;
-      meta?: {
-        audioUrl?: string | null;
-        sentence?: string | null;
-      };
-    }
-  | {
+    })
+  | (QuestionBase & {
       type: "typing";
-      progress: ProgressRow;
-      activity: ActivityType;
-      prompt: string;
       correctAnswer: string;
-      meta?: {
-        audioUrl?: string | null;
-        sentence?: string | null;
-      };
-    }
-  | {
+    })
+  | (QuestionBase & {
       type: "speaking";
-      progress: ProgressRow;
-      activity: ActivityType;
-      prompt: string;
-      correctAnswer: string;
-      meta?: {
-        audioUrl?: string | null;
-        sentence?: string | null;
-      };
-    };
+    });
+
+export type ReviewResult = {
+  isCorrect: boolean;
+  correctAnswer: string;
+  score?: number;
+  outcome?: "answered" | "completed";
+} | null;
 
 function buildFillBlankSentence(example: string, word: string) {
   if (!example || !word) return null;
@@ -115,12 +111,13 @@ function generateQuestion(
   progress: ProgressRow,
   activities: ActivityType[],
   vocabularies: VocabularyCard[]
-): Question | null {
+): TQuestion | null {
+  console.log("Progess :", progress);
+
   const vocab = progress.vocabulary;
   if (!vocab) return null;
 
   const skillActivities = activities.filter((a) => a.skill_code === progress.skill_code);
-
   if (!skillActivities.length) return null;
 
   const supportedActivities = skillActivities.filter((a) =>
@@ -134,6 +131,8 @@ function generateQuestion(
       "listen_repeat",
     ].includes(a.code)
   );
+
+  if (!supportedActivities.length) return null;
 
   const activity = pickRandom<ActivityType>(supportedActivities);
   if (!activity) return null;
@@ -153,7 +152,6 @@ function generateQuestion(
       ).slice(0, 3);
 
       const options = shuffleArray([vocab.translation, ...distractors]);
-
       if (options.length < 2) return null;
 
       return {
@@ -174,7 +172,6 @@ function generateQuestion(
       ).slice(0, 3);
 
       const options = shuffleArray([vocab.word, ...distractors]);
-
       if (options.length < 2) return null;
 
       return {
@@ -195,7 +192,6 @@ function generateQuestion(
       ).slice(0, 3);
 
       const options = shuffleArray([vocab.word, ...distractors]);
-
       if (options.length < 2) return null;
 
       return {
@@ -234,7 +230,6 @@ function generateQuestion(
         progress,
         activity,
         prompt: "Listen to the word and repeat it clearly:",
-        correctAnswer: vocab.word,
         meta: {
           audioUrl: vocab.audio_url,
           sentence: vocab.example,
@@ -270,7 +265,6 @@ function generateQuestion(
       ).slice(0, 3);
 
       const options = shuffleArray([vocab.translation, ...distractors]);
-
       if (options.length < 2) return null;
 
       return {
@@ -298,15 +292,12 @@ export function ReviewSession() {
   const [allVocabularies, setAllVocabularies] = useState<VocabularyCard[]>([]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  const [currentQuestion, setCurrentQuestion] = useState<TQuestion | null>(null);
   const [sessionComplete, setSessionComplete] = useState(false);
 
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [typedAnswer, setTypedAnswer] = useState("");
-  const [result, setResult] = useState<{
-    isCorrect: boolean;
-    correctAnswer: string;
-  } | null>(null);
+  const [result, setResult] = useState<ReviewResult>(null);
 
   const getNextValidQuestion = useCallback(
     (startIndex: number, progressList: ProgressRow[]) => {
@@ -326,7 +317,7 @@ export function ReviewSession() {
     [dueProgress.length, currentIndex]
   );
 
-  const loadReviewData = async () => {
+  const loadReviewData = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -370,6 +361,8 @@ export function ReviewSession() {
         return nextReviewAt <= now;
       });
 
+      console.log(dueOnly);
+
       setDueProgress(dueOnly);
       setAllActivities(activitiesData);
       setAllVocabularies(vocabData);
@@ -378,22 +371,17 @@ export function ReviewSession() {
       setResult(null);
       setSessionComplete(false);
 
-      console.log("dueOnly", dueOnly);
-
       if (dueOnly.length) {
-        const firstValid = dueOnly.reduce<{ index: number; question: Question } | null>(
+        const firstValid = dueOnly.reduce<{ index: number; question: TQuestion } | null>(
           (acc, item, index) => {
-            console.log("item", item, "acc", acc);
-
             if (acc) return acc;
             const question = generateQuestion(item, activitiesData, vocabData);
-            console.log("question", question);
+            console.log("Question ", question);
+
             return question ? { index, question } : null;
           },
           null
         );
-
-        console.log("firstValid", firstValid);
 
         if (firstValid) {
           setCurrentIndex(firstValid.index);
@@ -406,17 +394,6 @@ export function ReviewSession() {
         setCurrentIndex(0);
         setCurrentQuestion(null);
       }
-
-      console.log(
-        "Check data mapping:",
-        dueOnly.map((d) => ({
-          word: d.vocabulary?.word,
-          hasVocab: !!d.vocabulary,
-          hasTranslation: !!d.vocabulary?.translation,
-          hasAudio: !!d.vocabulary?.audio_url,
-          skill: d.skill_code,
-        }))
-      );
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Unable to load your review data. Please try again.";
@@ -424,14 +401,15 @@ export function ReviewSession() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     void loadReviewData();
-  }, []);
+  }, [loadReviewData]);
 
   const goToNextQuestion = useCallback(() => {
     const nextValid = getNextValidQuestion(currentIndex + 1, dueProgress);
+
     setSelectedOption(null);
     setTypedAnswer("");
     setResult(null);
@@ -450,15 +428,23 @@ export function ReviewSession() {
     if (!currentQuestion || submitting || result) return;
 
     let isCorrect = false;
+    let answerToShow = "";
+    let outcome: "answered" | "completed" = "answered";
+    let shouldAffectCounts = true;
 
     if (currentQuestion.type === "mcq") {
       if (!selectedOption) return;
       isCorrect = normalizeText(selectedOption) === normalizeText(currentQuestion.correctAnswer);
+      answerToShow = currentQuestion.correctAnswer;
     } else if (currentQuestion.type === "typing") {
       if (!typedAnswer.trim()) return;
       isCorrect = normalizeText(typedAnswer) === normalizeText(currentQuestion.correctAnswer);
+      answerToShow = currentQuestion.correctAnswer;
     } else if (currentQuestion.type === "speaking") {
       isCorrect = true;
+      answerToShow = "";
+      outcome = "completed";
+      shouldAffectCounts = false;
     }
 
     setSubmitting(true);
@@ -483,8 +469,10 @@ export function ReviewSession() {
         .update({
           last_reviewed_at: new Date().toISOString(),
           next_review_at: nextReviewAt,
-          correct_count: isCorrect ? progress.correct_count + 1 : progress.correct_count,
-          wrong_count: isCorrect ? progress.wrong_count : progress.wrong_count + 1,
+          correct_count:
+            shouldAffectCounts && isCorrect ? progress.correct_count + 1 : progress.correct_count,
+          wrong_count:
+            shouldAffectCounts && !isCorrect ? progress.wrong_count + 1 : progress.wrong_count,
         })
         .eq("id", progress.id);
 
@@ -492,7 +480,8 @@ export function ReviewSession() {
 
       setResult({
         isCorrect,
-        correctAnswer: currentQuestion.type === "mcq" ? currentQuestion.correctAnswer : "",
+        correctAnswer: answerToShow,
+        outcome,
       });
 
       setDueProgress((prev) =>
@@ -502,8 +491,10 @@ export function ReviewSession() {
                 ...item,
                 last_reviewed_at: new Date().toISOString(),
                 next_review_at: nextReviewAt,
-                correct_count: isCorrect ? item.correct_count + 1 : item.correct_count,
-                wrong_count: isCorrect ? item.wrong_count : item.wrong_count + 1,
+                correct_count:
+                  shouldAffectCounts && isCorrect ? item.correct_count + 1 : item.correct_count,
+                wrong_count:
+                  shouldAffectCounts && !isCorrect ? item.wrong_count + 1 : item.wrong_count,
               }
             : item
         )
@@ -525,12 +516,14 @@ export function ReviewSession() {
     );
   }
 
+  console.log(" Current", currentQuestion);
+
   if (error) {
     return (
       <div className="space-y-3 rounded-2xl border border-red-500/50 bg-slate-950 p-4 text-slate-100 shadow-sm">
         <p className="text-sm text-red-300">{error}</p>
         <button
-          onClick={loadReviewData}
+          onClick={() => void loadReviewData()}
           className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900 hover:bg-white"
         >
           Retry
@@ -551,7 +544,6 @@ export function ReviewSession() {
     );
   }
 
-  //  the session is truly finished
   if (sessionComplete) {
     return (
       <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-100 shadow-sm">
@@ -561,7 +553,7 @@ export function ReviewSession() {
         </p>
         <button
           type="button"
-          onClick={loadReviewData}
+          onClick={() => void loadReviewData()}
           className="mt-4 rounded-xl bg-slate-100 px-5 py-3 text-sm font-medium text-slate-900 hover:bg-white"
         >
           Start new session
@@ -570,7 +562,6 @@ export function ReviewSession() {
     );
   }
 
-  // No valid question can be generated from currently due rows
   if (!currentQuestion) {
     return (
       <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-100 shadow-sm">
@@ -581,7 +572,7 @@ export function ReviewSession() {
         </p>
         <button
           type="button"
-          onClick={loadReviewData}
+          onClick={() => void loadReviewData()}
           className="mt-4 rounded-xl bg-slate-100 px-5 py-3 text-sm font-medium text-slate-900 hover:bg-white"
         >
           Refresh list
@@ -590,119 +581,23 @@ export function ReviewSession() {
     );
   }
 
+  console.log(currentQuestion);
+
   return (
-    <div className="mx-auto max-w-2xl space-y-6 text-slate-100">
-      <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-5 shadow-sm">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-sm text-slate-400">
-              Question {currentIndex + 1} / {dueProgress.length}
-            </p>
-            <h2 className="text-xl font-semibold text-slate-50">Vocabulary review</h2>
-          </div>
-          <div className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-sm text-slate-200">
-            {remainingCount} words left
-          </div>
-        </div>
-      </div>
+    <div className="mx-auto max-w-full space-y-6 text-slate-100">
+      <div>
+        <QuestionRenderer
+          question={currentQuestion}
+          result={result}
+          submitting={submitting}
+          selectedOption={selectedOption}
+          typedAnswer={typedAnswer}
+          setSelectedOption={setSelectedOption}
+          setTypedAnswer={setTypedAnswer}
+          onSubmit={handleSubmit}
+        />
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-6 shadow-sm">
-        <h3 className="whitespace-pre-line text-lg font-medium text-slate-50">
-          {currentQuestion.prompt}
-        </h3>
-
-        {currentQuestion.meta?.sentence ? (
-          <div className="mt-4 rounded-xl bg-slate-900 p-4 text-base text-slate-100">
-            {currentQuestion.meta.sentence}
-          </div>
-        ) : null}
-
-        {currentQuestion.meta?.audioUrl ? (
-          <div className="mt-4">
-            <audio controls src={currentQuestion.meta.audioUrl} className="w-full" />
-          </div>
-        ) : null}
-
-        {currentQuestion.type === "mcq" ? (
-          <div className="mt-6 grid gap-3">
-            {currentQuestion.options.map((option) => {
-              const isSelected = selectedOption === option;
-              const showCorrect =
-                !!result && normalizeText(option) === normalizeText(currentQuestion.correctAnswer);
-              const showWrong =
-                !!result &&
-                isSelected &&
-                normalizeText(option) !== normalizeText(currentQuestion.correctAnswer);
-
-              return (
-                <button
-                  key={option}
-                  type="button"
-                  disabled={!!result}
-                  onClick={() => setSelectedOption(option)}
-                  className={[
-                    "rounded-xl border px-4 py-3 text-left text-sm transition",
-                    isSelected
-                      ? "border-slate-100 bg-slate-100/10"
-                      : "border-slate-700 bg-slate-900/60",
-                    showCorrect ? "border-emerald-400 bg-emerald-500/10" : "",
-                    showWrong ? "border-red-400 bg-red-500/10" : "",
-                  ].join(" ")}
-                >
-                  {option}
-                </button>
-              );
-            })}
-          </div>
-        ) : currentQuestion.type === "typing" ? (
-          <div className="mt-6">
-            <input
-              value={typedAnswer}
-              onChange={(e) => setTypedAnswer(e.target.value)}
-              disabled={!!result}
-              placeholder="Type your answer..."
-              className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-slate-100"
-            />
-          </div>
-        ) : (
-          <div className="mt-6 space-y-4 rounded-xl border border-slate-700 bg-slate-900/60 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-              Speaking practice
-            </p>
-            <p className="text-sm text-slate-200">
-              Read the sentence below out loud after listening to the audio.
-            </p>
-            <div className="rounded-lg border border-slate-600 bg-slate-950 p-4">
-              <p className="text-base leading-relaxed text-slate-100 break-words">
-                {currentQuestion.meta?.sentence || currentQuestion.progress.vocabulary?.word}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {!result ? (
-          <div className="mt-6">
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={
-                submitting ||
-                (currentQuestion.type === "mcq"
-                  ? !selectedOption
-                  : currentQuestion.type === "typing"
-                    ? !typedAnswer.trim()
-                    : false)
-              }
-              className="rounded-xl bg-slate-100 px-5 py-3 text-sm font-medium text-slate-900 transition hover:bg-white disabled:opacity-50"
-            >
-              {submitting
-                ? "Saving..."
-                : currentQuestion.type === "speaking"
-                  ? "I have practiced"
-                  : "Check answer"}
-            </button>
-          </div>
-        ) : (
+        {result ? (
           <div className="mt-6 space-y-4">
             <div
               className={[
@@ -712,9 +607,11 @@ export function ReviewSession() {
                   : "border border-red-400/60 bg-red-500/10 text-red-200",
               ].join(" ")}
             >
-              {result.isCorrect
-                ? "Correct!"
-                : `Not quite. The correct answer is: ${result.correctAnswer}`}
+              {result.outcome === "completed"
+                ? "Speaking practice completed."
+                : result.isCorrect
+                  ? "Correct!"
+                  : `Not quite. The correct answer is: ${result.correctAnswer}`}
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -728,17 +625,16 @@ export function ReviewSession() {
 
               <button
                 type="button"
-                onClick={loadReviewData}
+                onClick={() => void loadReviewData()}
                 className="rounded-xl border border-slate-600 px-5 py-3 text-sm text-slate-100 hover:border-slate-400"
               >
                 Refresh list
               </button>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
 
-      {/* Show word details only after a wrong answer to support learning without spoiling beforehand */}
       {!result || result.isCorrect
         ? null
         : (() => {
@@ -777,6 +673,19 @@ export function ReviewSession() {
               </div>
             );
           })()}
+      <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-5 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm text-slate-400">
+              Question {currentIndex + 1} / {dueProgress.length}
+            </p>
+            <h2 className="text-xl font-semibold text-slate-50">Vocabulary review</h2>
+          </div>
+          <div className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-sm text-slate-200">
+            {remainingCount} words left
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -112,8 +112,6 @@ function generateQuestion(
   activities: ActivityType[],
   vocabularies: VocabularyCard[]
 ): TQuestion | null {
-  console.log("Progess :", progress);
-
   const vocab = progress.vocabulary;
   if (!vocab) return null;
 
@@ -333,7 +331,7 @@ export function ReviewSession() {
             vocabulary:vocabularies (*) 
           `
           )
-          .lte("next_review_at", nowIso)
+          .or(`next_review_at.lte.${nowIso},next_review_at.is.null`)
           .order("next_review_at", { ascending: true })
           .limit(20),
 
@@ -360,8 +358,6 @@ export function ReviewSession() {
         if (Number.isNaN(nextReviewAt.getTime())) return false;
         return nextReviewAt <= now;
       });
-
-      console.log(dueOnly);
 
       setDueProgress(dueOnly);
       setAllActivities(activitiesData);
@@ -516,8 +512,6 @@ export function ReviewSession() {
     );
   }
 
-  console.log(" Current", currentQuestion);
-
   if (error) {
     return (
       <div className="space-y-3 rounded-2xl border border-red-500/50 bg-slate-950 p-4 text-slate-100 shadow-sm">
@@ -580,8 +574,6 @@ export function ReviewSession() {
       </div>
     );
   }
-
-  console.log(currentQuestion);
 
   return (
     <div className="mx-auto max-w-full space-y-6 text-slate-100">

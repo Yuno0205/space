@@ -2,6 +2,14 @@ import { dictionary } from "cmu-pronouncing-dictionary";
 
 type DictType = Record<string, string | string[]>;
 
+const normalizeToken = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // remove accent
+    .replace(/[^\w']/g, "")
+    .trim();
+
 /**
  * get phonemes from cmu dictionary
  */
@@ -48,8 +56,8 @@ export const levenshteinSimilarity = (strA: string, strB: string): number => {
  */
 export const analyzeSpeech = (targetText: string, spokenText: string, sttConfidence: number) => {
   const tgtWordsOriginal = targetText.split(/\s+/).filter(Boolean);
-  const tgtWordsLower = targetText.toLowerCase().split(/\s+/).filter(Boolean);
-  const spkWordsLower = spokenText.toLowerCase().split(/\s+/).filter(Boolean);
+  const tgtWordsLower = targetText.split(/\s+/).map(normalizeToken).filter(Boolean);
+  const spkWordsLower = spokenText.split(/\s+/).map(normalizeToken).filter(Boolean);
 
   let correctWordCount = 0;
 

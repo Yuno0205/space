@@ -8,9 +8,6 @@ import { Loader2, Volume2 } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
-/**
- * TYPES DEFINITIONS
- */
 interface Phoneme {
   id: number;
   symbol: string;

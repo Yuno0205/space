@@ -14,7 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { shuffleArray } from "@/lib/utils";
 import { VocabularyCard } from "@/types/vocabulary";
-import { ScoreCard } from "../ScoreCard";
+import { ScoreCard } from "../../Card/ScoreCard";
 
 export const ListeningPractice = ({ vocabularies }: { vocabularies: VocabularyCard[] }) => {
   const { speak, cancel, isSpeaking } = useSpeechSynthesis();

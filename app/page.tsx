@@ -2,7 +2,7 @@ import { AnimatedText } from "@/components/animations/animated-text";
 import { FadeIn } from "@/components/animations/fade-in";
 import { SimplifiedContact } from "@/components/Contact";
 import { ExploreCard } from "@/components/Card/explore-card";
-import { Footer } from "@/components/Footer/footer";
+import { Footer } from "@/components/layouts/Footer/footer";
 import { DashedHero } from "@/components/Hero/dashed-hero";
 import { MissionCard } from "@/components/Card/mission-card";
 import PowerBy from "@/components/PowerBy";

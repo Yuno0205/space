@@ -1,4 +1,4 @@
-import { ReviewSession } from "@/components/English/features/review-session";
+import { ReviewSession } from "@/components/English/features/review";
 
 export default function ReviewPage() {
   return (

@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { MainSidebar } from "@/components/Sidebar/main-sidebar";
 import { ThemeToggle } from "@/components/Theme/theme-toggle";
-import { UserDropdown } from "@/components/Header/user-dropdown";
+import { UserDropdown } from "@/components/layouts/Header/user-dropdown";
 import Breadcrumb from "@/components/BreadCrumb";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";

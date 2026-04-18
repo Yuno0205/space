@@ -2,10 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/lib/supabase/public";
-import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { useMemo, useState } from "react";
 
 export function LoginForm() {
+  const supabase = useMemo(() => createClient(), []);
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

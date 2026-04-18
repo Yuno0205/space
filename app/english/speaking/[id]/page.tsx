@@ -33,7 +33,7 @@ export default async function SpeakingPage({ params }: { params: Promise<{ id: s
   }
 
   return (
-    <main className="container max-w-3xl mx-auto py-10 px-4">
+    <main className="container max-w-full mx-auto py-10 px-4">
       <SpeakingPractice cards={data || []} slug={phoneme} />
     </main>
   );

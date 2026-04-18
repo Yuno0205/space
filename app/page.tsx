@@ -6,10 +6,12 @@ import { Footer } from "@/components/layouts/Footer/footer";
 import { DashedHero } from "@/components/Hero/dashed-hero";
 import { MissionCard } from "@/components/Card/mission-card";
 import PowerBy from "@/components/PowerBy";
-import { supabase } from "@/lib/supabase/public";
+import { createClient } from "@/lib/supabase/server";
 import Stats from "../components/Stats";
 
 export default async function Home() {
+  const supabase = await createClient();
+
   const { count } = await supabase
     .from("vocabularies")
     .select("*", { count: "exact", head: true })

@@ -35,8 +35,6 @@ export async function GET(request: Request) {
 
   //  Step 4: if not exists → create profile + stats
   if (!profile) {
-    console.log("Creating profile and stats");
-
     const { error: profileError } = await supabase.from("profiles").insert({
       id: user.id,
       email: user.email,

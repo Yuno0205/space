@@ -64,7 +64,7 @@ export function McqQuestion({
               </div>
             ) : null}
 
-            <div className="grid gap-3">
+            <div className="grid gap-3.5">
               {question.options.map((option) => {
                 const isSelected = selectedOption === option;
                 const showCorrect =
@@ -74,6 +74,14 @@ export function McqQuestion({
                   isSelected &&
                   normalizeText(option) !== normalizeText(question.correctAnswer);
 
+                const optionVisual = showCorrect
+                  ? "border-green-500 bg-green-50 font-semibold text-green-900 dark:border-green-600 dark:bg-green-950/20 dark:text-green-100"
+                  : showWrong
+                    ? "border-red-500 bg-red-50 font-semibold text-red-900 dark:border-red-600 dark:bg-red-950/20 dark:text-red-100"
+                    : isSelected
+                      ? "border-gray-700 bg-gray-900 text-white dark:border-gray-300 dark:bg-white dark:text-black"
+                      : "border-gray-300 bg-white text-gray-800 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-100 dark:hover:bg-gray-800/60";
+
                 return (
                   <button
                     key={option}
@@ -81,22 +89,16 @@ export function McqQuestion({
                     disabled={!!result}
                     onClick={() => setSelectedOption(option)}
                     className={[
-                      "flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left text-sm transition",
+                      "flex items-center justify-between gap-3 rounded-xl border px-5 py-4 text-left text-sm transition",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500/40",
-                      isSelected
-                        ? "border-gray-700 bg-gray-900 text-white dark:border-gray-300 dark:bg-white dark:text-black"
-                        : "border-gray-300 bg-white text-gray-800 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-100 dark:hover:bg-gray-800/60",
-                      showCorrect
-                        ? "border-emerald-400 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                        : "",
-                      showWrong ? "border-red-400 bg-red-500/10 text-red-700 dark:text-red-300" : "",
+                      optionVisual,
                     ].join(" ")}
                   >
                     <span>{option}</span>
                     {showCorrect ? (
-                      <CheckCircle2 className="h-4 w-4 shrink-0" />
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-green-700 dark:text-green-400" />
                     ) : showWrong ? (
-                      <XCircle className="h-4 w-4 shrink-0" />
+                      <XCircle className="h-4 w-4 shrink-0 text-red-700 dark:text-red-400" />
                     ) : (
                       <Circle className="h-4 w-4 shrink-0 opacity-40" />
                     )}
@@ -123,13 +125,6 @@ export function McqQuestion({
 
       {!result && submitting ? (
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Saving answer...</p>
-      ) : null}
-      {result ? (
-        <div className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-900/30 dark:text-gray-300">
-          {result.isCorrect
-            ? "Correct answer. Great work!"
-            : `Correct answer: ${result.correctAnswer}`}
-        </div>
       ) : null}
     </div>
   );

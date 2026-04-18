@@ -207,7 +207,7 @@ export function SpeakingQuestion({
                       key={`${wordData.text}-${index}`}
                       className={cn(
                         wordData.color,
-                        "rounded-md px-2 py-1 text-2xl font-semibold transition-colors md:text-3xl"
+                        "rounded-md px-2 py-1 text-2xl font-semibold transition-colors md:text-3xl text-gray-800 dark:text-gray-200"
                       )}
                     >
                       {wordData.text}

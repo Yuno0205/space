@@ -113,6 +113,7 @@ function generateQuestion(
   vocabularies: VocabularyCard[]
 ): TQuestion | null {
   const vocab = progress.vocabulary;
+
   if (!vocab) return null;
 
   const skillActivities = activities.filter((a) => a.skill_code === progress.skill_code);
@@ -138,6 +139,15 @@ function generateQuestion(
   const sameLevelVocabs = vocabularies.filter(
     (v) => v.id !== vocab.id && (!!v.level ? v.level === vocab.level : true)
   );
+
+  console.log(
+    "Map level",
+    vocabularies.map((w) => {
+      return w.level;
+    })
+  );
+
+  console.log("Detractor", sameLevelVocabs);
 
   switch (activity.code) {
     case "mcq_meaning": {
@@ -322,7 +332,7 @@ export function ReviewSession() {
     try {
       const nowIso = new Date().toISOString();
 
-      const [progressRes, activitiesRes, vocabRes] = await Promise.all([
+      const [progressRes, activitiesRes] = await Promise.all([
         supabase
           .from("user_vocab_progress")
           .select(
@@ -339,17 +349,12 @@ export function ReviewSession() {
           .from("activity_types")
           .select("id, code, name, skill_code")
           .order("created_at", { ascending: true }),
-
-        supabase.from("vocabularies").select("*").limit(10),
       ]);
 
       if (progressRes.error) throw progressRes.error;
       if (activitiesRes.error) throw activitiesRes.error;
-      if (vocabRes.error) throw vocabRes.error;
 
       const progressData = (progressRes.data ?? []) as unknown as ProgressRow[];
-      const activitiesData = (activitiesRes.data ?? []) as ActivityType[];
-      const vocabData = (vocabRes.data ?? []) as VocabularyCard[];
 
       const now = new Date();
       const dueOnly = progressData.filter((item) => {
@@ -358,6 +363,25 @@ export function ReviewSession() {
         if (Number.isNaN(nextReviewAt.getTime())) return false;
         return nextReviewAt <= now;
       });
+
+      const dueLevels = [
+        ...new Set(
+          dueOnly
+            .map((row) => row.vocabulary?.level)
+            .filter((lv): lv is string => typeof lv === "string" && lv.trim().length > 0)
+        ),
+      ];
+
+      let vocabQuery = supabase.from("vocabularies").select("*");
+      if (dueLevels.length > 0) {
+        vocabQuery = vocabQuery.in("level", dueLevels);
+      }
+      const vocabRes = await vocabQuery.limit(120);
+
+      if (vocabRes.error) throw vocabRes.error;
+
+      const activitiesData = (activitiesRes.data ?? []) as ActivityType[];
+      const vocabData = (vocabRes.data ?? []) as VocabularyCard[];
 
       setDueProgress(dueOnly);
       setAllActivities(activitiesData);
@@ -506,7 +530,7 @@ export function ReviewSession() {
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4 text-sm text-slate-200 shadow-sm">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
         Loading your review session...
       </div>
     );
@@ -514,11 +538,12 @@ export function ReviewSession() {
 
   if (error) {
     return (
-      <div className="space-y-3 rounded-2xl border border-red-500/50 bg-slate-950 p-4 text-slate-100 shadow-sm">
-        <p className="text-sm text-red-300">{error}</p>
+      <div className="space-y-3 rounded-2xl border border-red-200 bg-red-50/80 p-4 shadow-sm dark:border-red-500/40 dark:bg-slate-950 dark:shadow-none">
+        <p className="text-sm font-medium text-red-800 dark:text-red-200">{error}</p>
         <button
+          type="button"
           onClick={() => void loadReviewData()}
-          className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900 hover:bg-white"
+          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
         >
           Retry
         </button>
@@ -528,9 +553,11 @@ export function ReviewSession() {
 
   if (!dueProgress.length) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-100 shadow-sm">
-        <h2 className="text-xl font-semibold">No vocabulary is due for review</h2>
-        <p className="mt-2 text-sm text-slate-300">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
+          No vocabulary is due for review
+        </h2>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
           You don&apos;t have any words scheduled for review right now. Learn some new words or come
           back when your next review is due.
         </p>
@@ -540,15 +567,15 @@ export function ReviewSession() {
 
   if (sessionComplete) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-100 shadow-sm">
-        <h2 className="text-xl font-semibold">Session complete! 🎉</h2>
-        <p className="mt-2 text-sm text-slate-300">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Session complete! 🎉</h2>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
           You have reviewed all {dueProgress.length} words.
         </p>
         <button
           type="button"
           onClick={() => void loadReviewData()}
-          className="mt-4 rounded-xl bg-slate-100 px-5 py-3 text-sm font-medium text-slate-900 hover:bg-white"
+          className="mt-4 rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
         >
           Start new session
         </button>
@@ -558,16 +585,18 @@ export function ReviewSession() {
 
   if (!currentQuestion) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-100 shadow-sm">
-        <h2 className="text-xl font-semibold">No valid review question is available</h2>
-        <p className="mt-2 text-sm text-slate-300">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
+          No valid review question is available
+        </h2>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
           Your due words are missing required data for the current activity types. Please refresh
           after updating vocabulary details.
         </p>
         <button
           type="button"
           onClick={() => void loadReviewData()}
-          className="mt-4 rounded-xl bg-slate-100 px-5 py-3 text-sm font-medium text-slate-900 hover:bg-white"
+          className="mt-4 rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
         >
           Refresh list
         </button>
@@ -576,7 +605,7 @@ export function ReviewSession() {
   }
 
   return (
-    <div className="mx-auto max-w-full space-y-6 text-slate-100">
+    <div className="mx-auto max-w-full space-y-6 text-slate-900 dark:text-slate-100">
       <div>
         <QuestionRenderer
           question={currentQuestion}
@@ -593,10 +622,10 @@ export function ReviewSession() {
           <div className="mt-6 space-y-4">
             <div
               className={[
-                "rounded-xl p-4 text-sm",
+                "rounded-xl border-2 p-4 text-sm font-medium",
                 result.isCorrect
-                  ? "border border-emerald-400/60 bg-emerald-500/10 text-emerald-200"
-                  : "border border-red-400/60 bg-red-500/10 text-red-200",
+                  ? "border-emerald-500 bg-emerald-50 text-emerald-900 dark:border-emerald-400/60 dark:bg-emerald-500/10 dark:text-emerald-100"
+                  : "border-red-500 bg-red-50 text-red-900 dark:border-red-600 dark:bg-red-950/20 dark:text-red-100",
               ].join(" ")}
             >
               {result.outcome === "completed"
@@ -610,7 +639,7 @@ export function ReviewSession() {
               <button
                 type="button"
                 onClick={goToNextQuestion}
-                className="rounded-xl bg-slate-100 px-5 py-3 text-sm font-medium text-slate-900 transition hover:bg-white"
+                className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
               >
                 {currentIndex + 1 >= dueProgress.length ? "Finish session" : "Next question"}
               </button>
@@ -618,7 +647,7 @@ export function ReviewSession() {
               <button
                 type="button"
                 onClick={() => void loadReviewData()}
-                className="rounded-xl border border-slate-600 px-5 py-3 text-sm text-slate-100 hover:border-slate-400"
+                className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-900 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900/40 dark:text-slate-100 dark:shadow-none dark:hover:border-slate-500 dark:hover:bg-slate-800/60"
               >
                 Refresh list
               </button>
@@ -634,30 +663,31 @@ export function ReviewSession() {
             if (!vocab) return null;
 
             return (
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-5 text-sm text-slate-100 shadow-sm">
-                <h4 className="text-sm font-semibold text-slate-50">Word details</h4>
-                <div className="mt-3 space-y-1 text-slate-200">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-800 shadow-sm dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-100">
+                <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-50">Word details</h4>
+                <div className="mt-3 space-y-1 text-slate-700 dark:text-slate-200">
                   <p>
-                    <span className="font-medium text-slate-100">Word:</span> {vocab.word}
+                    <span className="font-medium text-slate-900 dark:text-slate-100">Word:</span>{" "}
+                    {vocab.word}
                     {vocab.phonetic ? (
-                      <span className="ml-2 text-slate-400">/{vocab.phonetic}/</span>
+                      <span className="ml-2 text-slate-500 dark:text-slate-400">/{vocab.phonetic}/</span>
                     ) : null}
                   </p>
                   {vocab.translation ? (
                     <p>
-                      <span className="font-medium text-slate-100">Translation:</span>{" "}
+                      <span className="font-medium text-slate-900 dark:text-slate-100">Translation:</span>{" "}
                       {vocab.translation}
                     </p>
                   ) : null}
                   {vocab.definition ? (
                     <p>
-                      <span className="font-medium text-slate-100">Definition:</span>{" "}
+                      <span className="font-medium text-slate-900 dark:text-slate-100">Definition:</span>{" "}
                       {vocab.definition}
                     </p>
                   ) : null}
                   {vocab.example ? (
                     <p>
-                      <span className="font-medium text-slate-100">Example:</span>{" "}
+                      <span className="font-medium text-slate-900 dark:text-slate-100">Example:</span>{" "}
                       <span className="italic">{vocab.example}</span>
                     </p>
                   ) : null}
@@ -665,15 +695,15 @@ export function ReviewSession() {
               </div>
             );
           })()}
-      <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-5 shadow-sm">
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950/80">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               Question {currentIndex + 1} / {dueProgress.length}
             </p>
-            <h2 className="text-xl font-semibold text-slate-50">Vocabulary review</h2>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Vocabulary review</h2>
           </div>
-          <div className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-sm text-slate-200">
+          <div className="rounded-full border border-slate-300 bg-white px-3 py-1 text-sm font-medium text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:shadow-none">
             {remainingCount} words left
           </div>
         </div>

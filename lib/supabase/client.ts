@@ -1,12 +1,16 @@
 import { createBrowserClient } from "@supabase/ssr";
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
-  throw new Error("Missing environment variables");
+function getEnv(name: "NEXT_PUBLIC_SUPABASE_URL" | "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing environment variable for: ${name}`);
+  }
+  return value;
 }
 
 export function createClient() {
   return createBrowserClient(
-    String(process.env.NEXT_PUBLIC_SUPABASE_URL),
-    String(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
+    getEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    getEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY")
   );
 }

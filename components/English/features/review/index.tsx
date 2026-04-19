@@ -451,7 +451,7 @@ export function ReviewSession() {
       isCorrect = normalizeText(typedAnswer) === normalizeText(currentQuestion.correctAnswer);
       answerToShow = currentQuestion.correctAnswer;
     } else if (currentQuestion.type === "speaking") {
-      isCorrect = true;
+      isCorrect = false;
       answerToShow = "";
       outcome = "completed";
       shouldAffectCounts = false;
@@ -517,6 +517,10 @@ export function ReviewSession() {
       setSubmitting(false);
     }
   }, [currentIndex, currentQuestion, result, selectedOption, submitting, supabase, typedAnswer]);
+
+  useEffect(() => {
+    console.log("result", result);
+  }, [result]);
 
   if (loading) {
     return (
@@ -602,6 +606,7 @@ export function ReviewSession() {
         <QuestionRenderer
           question={currentQuestion}
           result={result}
+          setResult={setResult}
           submitting={submitting}
           selectedOption={selectedOption}
           typedAnswer={typedAnswer}
@@ -620,8 +625,8 @@ export function ReviewSession() {
                   : "border-red-500 bg-red-50 text-red-900 dark:border-red-600 dark:bg-red-950/20 dark:text-red-100",
               ].join(" ")}
             >
-              {result.outcome === "completed"
-                ? "Speaking practice completed."
+              {result.outcome === "completed" && result.score && result.score >= 70
+                ? "You pass this exam with " + result.score + "."
                 : result.isCorrect
                   ? "Correct!"
                   : `Not quite. The correct answer is: ${result.correctAnswer}`}

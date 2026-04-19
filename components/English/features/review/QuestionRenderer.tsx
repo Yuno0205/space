@@ -8,6 +8,7 @@ import { TypingQuestion } from "./TypingQuestion";
 type QuestionRendererProps = {
   question: TQuestion;
   result: ReviewResult;
+  setResult: (data: ReviewResult) => void;
   submitting: boolean;
   selectedOption: string | null;
   typedAnswer: string;
@@ -25,6 +26,7 @@ export function QuestionRenderer({
   setSelectedOption,
   setTypedAnswer,
   onSubmit,
+  setResult,
 }: QuestionRendererProps) {
   switch (question.type) {
     case "mcq":
@@ -55,7 +57,7 @@ export function QuestionRenderer({
       return (
         <SpeakingQuestion
           question={question}
-          result={result}
+          setResult={setResult as (a: unknown) => void}
           submitting={submitting}
           onSubmit={onSubmit}
         />

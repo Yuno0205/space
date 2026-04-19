@@ -16,7 +16,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { buildPronunciationAnalysis, createNeutralWordDisplay, type WordDisplay } from "@/lib/pronunciation-analysis";
+import {
+  buildPronunciationAnalysis,
+  createNeutralWordDisplay,
+  type WordDisplay,
+} from "@/lib/pronunciation-analysis";
 import { Progress } from "@/components/ui/progress";
 import { VocabularyCard } from "@/types/vocabulary";
 import { updateCompletedWords, updateProficiency } from "@/utils/Supabase/action";

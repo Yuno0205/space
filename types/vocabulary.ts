@@ -3,7 +3,7 @@ interface Proficiently {
   speaking: boolean;
   listening: boolean;
   writing: boolean;
-  [key: string]: boolean; // Nếu bạn muốn cho phép thêm các kỹ năng khác động
+  [key: string]: boolean;
 }
 
 export type VocabularyCard = {

@@ -1,5 +1,6 @@
 "use client";
 
+import { Dispatch, SetStateAction } from "react";
 import { ReviewResult, TQuestion } from ".";
 import { McqQuestion } from "./McqQuestion";
 import { SpeakingQuestion } from "./SpeakingQuestion";
@@ -8,7 +9,7 @@ import { TypingQuestion } from "./TypingQuestion";
 type QuestionRendererProps = {
   question: TQuestion;
   result: ReviewResult;
-  setResult: (data: ReviewResult) => void;
+  setResult: Dispatch<SetStateAction<ReviewResult>>;
   submitting: boolean;
   selectedOption: string | null;
   typedAnswer: string;
@@ -57,7 +58,7 @@ export function QuestionRenderer({
       return (
         <SpeakingQuestion
           question={question}
-          setResult={setResult as (a: unknown) => void}
+          setResult={setResult}
           submitting={submitting}
           onSubmit={onSubmit}
         />

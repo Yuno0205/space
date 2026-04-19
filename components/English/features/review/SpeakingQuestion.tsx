@@ -8,13 +8,9 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { AlertTriangle, Mic, RefreshCw } from "lucide-react";
 import { phonemize } from "phonemize";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { initialPronunciationResultState, PronunciationResultState } from "../speaking-practice";
-
-type SpeakingResult = {
-  isCorrect: boolean;
-  correctAnswer: string;
-} | null;
+import { ReviewResult } from ".";
 
 type SpeakingQuestionProps = {
   question: {
@@ -28,7 +24,7 @@ type SpeakingQuestionProps = {
 
   submitting: boolean;
   onSubmit: () => void;
-  setResult: (data: unknown) => void;
+  setResult: Dispatch<SetStateAction<ReviewResult>>;
 };
 
 export function SpeakingQuestion({
@@ -42,10 +38,6 @@ export function SpeakingQuestion({
   );
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const isSubmitted = useRef(false);
-  const sentence = useMemo(
-    () => pronunciationResult.wordsForDisplay.map((word) => word.text).join(" "),
-    [pronunciationResult.wordsForDisplay]
-  );
 
   const targetText = useMemo(
     () => question.meta?.sentence?.trim() || question.prompt.trim(),
@@ -79,6 +71,7 @@ export function SpeakingQuestion({
 
   useEffect(() => {
     resetWordDisplay();
+    isSubmitted.current = false;
   }, [resetWordDisplay]);
 
   useEffect(() => {
@@ -129,7 +122,7 @@ export function SpeakingQuestion({
   }, [analyzePronunciation]);
 
   useEffect(() => {
-    if (!submitting && pronunciationResult.transcript) {
+    if (!submitting && pronunciationResult.transcript && !isSubmitted.current) {
       isSubmitted.current = true;
       onSubmit();
     }
@@ -157,7 +150,9 @@ export function SpeakingQuestion({
   };
 
   const resetPractice = () => {
+    isSubmitted.current = false;
     resetWordDisplay();
+    setResult(null);
   };
 
   const getScoreColor = (score: number | null): string => {
@@ -178,19 +173,15 @@ export function SpeakingQuestion({
   };
 
   useEffect(() => {
-    setResult((prev: SpeakingResult) => {
-      if (!isSubmitted.current) {
-        return prev;
-      }
-      const cloned = {
-        ...prev,
-        correctAnswer: "",
-        isCorrect: !!pronunciationResult.overallScore && pronunciationResult.overallScore >= 70,
-      };
-      console.log("result", cloned);
-      return cloned;
+    if (!isSubmitted.current) return;
+    const score = pronunciationResult.overallScore ?? 0;
+    setResult({
+      correctAnswer: "",
+      isCorrect: score >= 70,
+      score,
+      outcome: "completed",
     });
-  }, [pronunciationResult, setResult]);
+  }, [pronunciationResult.overallScore, setResult]);
 
   return (
     <div className="space-y-6 bg-white p-2 text-black sm:p-4 dark:bg-transparent dark:text-white">
@@ -242,7 +233,7 @@ export function SpeakingQuestion({
               </div>
 
               <div className="flex justify-center">
-                <p className="text-gray-500 dark:text-gray-400 text-xl">{phonemize(sentence)}</p>
+                <p className="text-gray-500 dark:text-gray-400 text-xl">{phonemize(targetText)}</p>
               </div>
 
               <div className="flex justify-center">

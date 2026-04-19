@@ -2,25 +2,13 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { normalizeText, pickRandom, shuffleArray } from "@/lib/utils";
+import { ActivityType, SkillCode } from "@/types/revise";
 import { VocabularyCard } from "@/types/vocabulary";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { QuestionRenderer } from "./QuestionRenderer";
 
-type SkillCode = "flashcard" | "listening" | "reading" | "speaking" | "writing";
-
-type ActivityCode =
-  | "mcq_meaning"
-  | "mcq_word"
-  | "match_word_meaning"
-  | "listen_choose"
-  | "listen_type"
-  | "listen_repeat"
-  | "fill_blank"
-  | "context_mcq";
-
-type ProgressRow = {
+type TProgress = {
   id: string;
-  vocabulary_id: string;
   skill_code: SkillCode;
   last_reviewed_at: string | null;
   next_review_at: string | null;
@@ -31,15 +19,8 @@ type ProgressRow = {
   vocabulary?: VocabularyCard | null;
 };
 
-type ActivityType = {
-  id: string;
-  code: ActivityCode;
-  name: string;
-  skill_code: SkillCode;
-};
-
 type QuestionBase = {
-  progress: ProgressRow;
+  progress: TProgress;
   activity: ActivityType;
   prompt: string;
   meta?: {
@@ -108,7 +89,7 @@ function computeNextReviewDate(correctCountBeforeUpdate: number, isCorrect: bool
 }
 
 function generateQuestion(
-  progress: ProgressRow,
+  progress: TProgress,
   activities: ActivityType[],
   vocabularies: VocabularyCard[]
 ): TQuestion | null {
@@ -287,7 +268,7 @@ export function ReviewSession() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [dueProgress, setDueProgress] = useState<ProgressRow[]>([]);
+  const [dueProgress, setDueProgress] = useState<TProgress[]>([]);
   const [allActivities, setAllActivities] = useState<ActivityType[]>([]);
   const [allVocabularies, setAllVocabularies] = useState<VocabularyCard[]>([]);
 
@@ -300,7 +281,7 @@ export function ReviewSession() {
   const [result, setResult] = useState<ReviewResult>(null);
 
   const getNextValidQuestion = useCallback(
-    (startIndex: number, progressList: ProgressRow[]) => {
+    (startIndex: number, progressList: TProgress[]) => {
       for (let i = startIndex; i < progressList.length; i += 1) {
         const question = generateQuestion(progressList[i], allActivities, allVocabularies);
         if (question) {
@@ -346,7 +327,7 @@ export function ReviewSession() {
       if (progressRes.error) throw progressRes.error;
       if (activitiesRes.error) throw activitiesRes.error;
 
-      const progressData = (progressRes.data ?? []) as unknown as ProgressRow[];
+      const progressData = (progressRes.data ?? []) as unknown as TProgress[];
 
       const now = new Date();
       const dueOnly = progressData.filter((item) => {
@@ -464,7 +445,7 @@ export function ReviewSession() {
       const progress = currentQuestion.progress;
 
       const attemptInsert = await supabase.from("review_attempts").insert({
-        vocabulary_id: progress.vocabulary_id,
+        vocabulary_id: progress.vocabulary?.id,
         skill_code: progress.skill_code,
         activity_type_id: currentQuestion.activity.id,
         is_correct: isCorrect,
@@ -488,11 +469,13 @@ export function ReviewSession() {
 
       if (progressUpdate.error) throw progressUpdate.error;
 
-      setResult({
-        isCorrect,
-        correctAnswer: answerToShow,
-        outcome,
-      });
+      if (currentQuestion.type !== "speaking") {
+        setResult({
+          isCorrect,
+          correctAnswer: answerToShow,
+          outcome,
+        });
+      }
 
       setDueProgress((prev) =>
         prev.map((item, index) =>
@@ -517,10 +500,6 @@ export function ReviewSession() {
       setSubmitting(false);
     }
   }, [currentIndex, currentQuestion, result, selectedOption, submitting, supabase, typedAnswer]);
-
-  useEffect(() => {
-    console.log("result", result);
-  }, [result]);
 
   if (loading) {
     return (
@@ -626,7 +605,7 @@ export function ReviewSession() {
               ].join(" ")}
             >
               {result.outcome === "completed" && result.score && result.score >= 70
-                ? "You pass this exam with " + result.score + "."
+                ? "Congratulation! You pass this exam with score: " + result.score + "."
                 : result.isCorrect
                   ? "Correct!"
                   : `Not quite. The correct answer is: ${result.correctAnswer}`}

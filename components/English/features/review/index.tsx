@@ -1,6 +1,6 @@
 "use client";
 
-import { supabase } from "@/lib/supabase/public";
+import { createClient } from "@/lib/supabase/client";
 import { normalizeText, pickRandom, shuffleArray } from "@/lib/utils";
 import { VocabularyCard } from "@/types/vocabulary";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -139,15 +139,6 @@ function generateQuestion(
   const sameLevelVocabs = vocabularies.filter(
     (v) => v.id !== vocab.id && (!!v.level ? v.level === vocab.level : true)
   );
-
-  console.log(
-    "Map level",
-    vocabularies.map((w) => {
-      return w.level;
-    })
-  );
-
-  console.log("Detractor", sameLevelVocabs);
 
   switch (activity.code) {
     case "mcq_meaning": {
@@ -291,6 +282,7 @@ function generateQuestion(
 }
 
 export function ReviewSession() {
+  const supabase = useMemo(() => createClient(), []);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -396,8 +388,6 @@ export function ReviewSession() {
           (acc, item, index) => {
             if (acc) return acc;
             const question = generateQuestion(item, activitiesData, vocabData);
-            console.log("Question ", question);
-
             return question ? { index, question } : null;
           },
           null
@@ -421,7 +411,7 @@ export function ReviewSession() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     void loadReviewData();
@@ -526,7 +516,7 @@ export function ReviewSession() {
     } finally {
       setSubmitting(false);
     }
-  }, [currentIndex, currentQuestion, result, selectedOption, submitting, typedAnswer]);
+  }, [currentIndex, currentQuestion, result, selectedOption, submitting, supabase, typedAnswer]);
 
   if (loading) {
     return (
@@ -568,7 +558,9 @@ export function ReviewSession() {
   if (sessionComplete) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100">
-        <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Session complete! 🎉</h2>
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
+          Session complete! 🎉
+        </h2>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
           You have reviewed all {dueProgress.length} words.
         </p>
@@ -664,30 +656,40 @@ export function ReviewSession() {
 
             return (
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-800 shadow-sm dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-100">
-                <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-50">Word details</h4>
+                <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+                  Word details
+                </h4>
                 <div className="mt-3 space-y-1 text-slate-700 dark:text-slate-200">
                   <p>
                     <span className="font-medium text-slate-900 dark:text-slate-100">Word:</span>{" "}
                     {vocab.word}
                     {vocab.phonetic ? (
-                      <span className="ml-2 text-slate-500 dark:text-slate-400">/{vocab.phonetic}/</span>
+                      <span className="ml-2 text-slate-500 dark:text-slate-400">
+                        /{vocab.phonetic}/
+                      </span>
                     ) : null}
                   </p>
                   {vocab.translation ? (
                     <p>
-                      <span className="font-medium text-slate-900 dark:text-slate-100">Translation:</span>{" "}
+                      <span className="font-medium text-slate-900 dark:text-slate-100">
+                        Translation:
+                      </span>{" "}
                       {vocab.translation}
                     </p>
                   ) : null}
                   {vocab.definition ? (
                     <p>
-                      <span className="font-medium text-slate-900 dark:text-slate-100">Definition:</span>{" "}
+                      <span className="font-medium text-slate-900 dark:text-slate-100">
+                        Definition:
+                      </span>{" "}
                       {vocab.definition}
                     </p>
                   ) : null}
                   {vocab.example ? (
                     <p>
-                      <span className="font-medium text-slate-900 dark:text-slate-100">Example:</span>{" "}
+                      <span className="font-medium text-slate-900 dark:text-slate-100">
+                        Example:
+                      </span>{" "}
                       <span className="italic">{vocab.example}</span>
                     </p>
                   ) : null}
@@ -701,7 +703,9 @@ export function ReviewSession() {
             <p className="text-sm text-slate-500 dark:text-slate-400">
               Question {currentIndex + 1} / {dueProgress.length}
             </p>
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Vocabulary review</h2>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
+              Vocabulary review
+            </h2>
           </div>
           <div className="rounded-full border border-slate-300 bg-white px-3 py-1 text-sm font-medium text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:shadow-none">
             {remainingCount} words left

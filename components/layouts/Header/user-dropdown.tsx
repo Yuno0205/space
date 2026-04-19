@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bell, ChevronDown, LogOut, Settings, User } from "lucide-react";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 import {
   DropdownMenu,
@@ -14,12 +15,67 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { createClient } from "@/lib/supabase/client";
 
 export function UserDropdown() {
+  const supabase = useMemo(() => createClient(), []);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [notificationCount, setNotificationCount] = useState(3);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const isLoggedIn = Boolean(user);
 
   const clearNotifications = () => {
     setNotificationCount(0);
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    supabase.auth.getUser().then(({ data, error }) => {
+      if (!isMounted) return;
+      if (error) {
+        setUser(null);
+        return;
+      }
+      setUser(data.user ?? null);
+    });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, [supabase]);
+
+  const signInWithGoogle = async () => {
+    try {
+      setIsSigningIn(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        },
+      });
+
+      if (error) throw error;
+    } finally {
+      setIsSigningIn(false);
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      setIsSigningOut(true);
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    } finally {
+      setIsSigningOut(false);
+    }
   };
 
   return (
@@ -73,35 +129,51 @@ export function UserDropdown() {
       </DropdownMenu>
 
       {/* User Menu */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="flex items-center gap-2 pl-2 pr-1">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src="/assets/images/placeholder.svg?height=32&width=32" alt="User" />
-              <AvatarFallback>US</AvatarFallback>
-            </Avatar>
+      {isLoggedIn ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="flex items-center gap-2 pl-2 pr-1">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={user?.user_metadata?.avatar_url} alt="User" />
+                <AvatarFallback>{(user?.email?.[0] ?? "U").toUpperCase()}</AvatarFallback>
+              </Avatar>
 
-            <ChevronDown className="h-4 w-4 opacity-50" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <User className="mr-2 h-4 w-4" />
-            <span>Profile</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <LogOut className="mr-2 h-4 w-4" />
-            <span>Log out</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+              <ChevronDown className="h-4 w-4 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel className="flex flex-col">
+              <span>My Account</span>
+              {user?.email ? (
+                <span className="text-xs text-muted-foreground">{user.email}</span>
+              ) : null}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <User className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={signOut} disabled={isSigningOut}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>{isSigningOut ? "Logging out..." : "Log out"}</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : (
+        <Button
+          variant="ghost"
+          className="flex items-center gap-2 pl-2 pr-1"
+          onClick={signInWithGoogle}
+          disabled={isSigningIn}
+        >
+          {isSigningIn ? "Signing in..." : "Login with Google"}
+        </Button>
+      )}
     </div>
   );
 }

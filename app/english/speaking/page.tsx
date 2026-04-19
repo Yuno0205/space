@@ -3,10 +3,10 @@
 import { FadeIn } from "@/components/animations/fade-in";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { supabase } from "@/lib/supabase/public";
+import { createClient } from "@/lib/supabase/client";
 import { Loader2, Volume2 } from "lucide-react";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 interface Phoneme {
   id: number;
@@ -57,7 +57,7 @@ const PhonemeCard = ({ phoneme }: { phoneme: Phoneme }) => {
         </div>
       </Link>
 
-      {/* Audio button sits OUTSIDE the Link, absolutely positioned */}
+      {/* Audio button  */}
       <Button
         variant="ghost"
         size="icon"
@@ -71,10 +71,10 @@ const PhonemeCard = ({ phoneme }: { phoneme: Phoneme }) => {
   );
 };
 
-/**
- * MAIN PAGE: Speaking System Dashboard
- */
+//MAIN PAGE: Speaking System Dashboard
+
 export default function SpeakingPage() {
+  const supabase = useMemo(() => createClient(), []);
   const [phonemes, setPhonemes] = useState<GroupedPhonemes>({
     monophthongs: [],
     diphthongs: [],
@@ -83,14 +83,9 @@ export default function SpeakingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchAndGroupPhonemes();
-  }, []);
+  //Fetch phonemes from Supabase and group them by type
 
-  /**
-   * Fetch phonemes from Supabase and group them by type
-   */
-  async function fetchAndGroupPhonemes() {
+  const fetchAndGroupPhonemes = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -119,7 +114,11 @@ export default function SpeakingPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [supabase]);
+
+  useEffect(() => {
+    fetchAndGroupPhonemes();
+  }, [fetchAndGroupPhonemes]);
 
   if (error) {
     return (
@@ -169,9 +168,8 @@ export default function SpeakingPage() {
   );
 }
 
-/**
- * HELPER: Section Wrapper
- */
+//HELPER: Section Wrapper
+
 function PhonemeSection({
   title,
 

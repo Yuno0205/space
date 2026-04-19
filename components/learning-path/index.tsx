@@ -1,11 +1,11 @@
 "use client";
 
 import { FadeIn } from "@/components/animations/fade-in";
-import { supabase } from "@/lib/supabase/public";
 import { LessonWithProgress, Level } from "@/types/lesson";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "./styles/style.scss";
 import { LevelSection } from "./LevelSection";
+import { createClient } from "@/lib/supabase/client";
 
 const LEVELS_PER_PAGE = 1;
 
@@ -21,8 +21,14 @@ export function InfinityScrollLearningPath() {
   const [currentPage, setCurrentPage] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
+  const isFetchingRef = useRef(false);
+  const supabase = createClient();
+
   const fetchData = useCallback(
     async (page: number) => {
+      if (isFetchingRef.current) return;
+
+      isFetchingRef.current = true;
       setLoading(true);
       setError(null);
 
@@ -31,12 +37,12 @@ export function InfinityScrollLearningPath() {
           .from("levels")
           .select(
             `
-            id, name, description,
-            lessons:lessons_with_progress(
-              id, letter, name, description,
-              learned_words, total_words, progress
-            )
-          `
+          id, name, description,
+          lessons:lessons_with_progress(
+            id, letter, name, description,
+            learned_words, total_words, progress
+          )
+        `
           )
           .order("name", { ascending: true })
           .order("letter", { foreignTable: "lessons_with_progress", ascending: true })
@@ -44,40 +50,43 @@ export function InfinityScrollLearningPath() {
 
         if (queryError) throw queryError;
 
-        if (fetchedData && fetchedData.length > 0) {
-          // Reformat data to match LevelWithLessons structure
-          const newLevelsWithLessons = fetchedData.map((d) => ({
-            level: { id: d.id, name: d.name, description: d.description },
-            lessons: d.lessons || [],
-          }));
-
-          setLevelsData((prev) =>
-            page === 0 ? newLevelsWithLessons : [...prev, ...newLevelsWithLessons]
-          );
-          setHasMore(fetchedData.length === LEVELS_PER_PAGE);
-          setCurrentPage(page + 1);
-        } else {
+        if (!fetchedData || fetchedData.length === 0) {
           setHasMore(false);
+          return;
         }
+
+        const newLevelsWithLessons: LevelWithLessons[] = fetchedData.map((d) => ({
+          level: {
+            id: d.id,
+            name: d.name,
+            description: d.description,
+          },
+          lessons: d.lessons || [],
+        }));
+
+        setLevelsData((prev) =>
+          page === 0 ? newLevelsWithLessons : [...prev, ...newLevelsWithLessons]
+        );
+        setHasMore(fetchedData.length === LEVELS_PER_PAGE);
+        setCurrentPage(page + 1);
       } catch (err) {
         console.error("Error fetching data:", err);
         setError("Error loading levels");
       } finally {
+        isFetchingRef.current = false;
         setLoading(false);
       }
     },
-
-    []
+    [supabase]
   );
 
   const loadNext = useCallback(() => {
-    if (!loading && hasMore) {
-      fetchData(currentPage);
-    }
-  }, [currentPage, loading, hasMore, fetchData]);
+    if (!hasMore) return;
+    void fetchData(currentPage);
+  }, [currentPage, hasMore, fetchData]);
 
   useEffect(() => {
-    fetchData(0);
+    void fetchData(0);
   }, [fetchData]);
 
   if (error && levelsData.length === 0) {
@@ -99,7 +108,7 @@ export function InfinityScrollLearningPath() {
 
       {loading && (
         <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white" />
         </div>
       )}
 

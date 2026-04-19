@@ -1,5 +1,5 @@
 import { VocabularyPractice } from "@/components/English/features/vocabulary-practice";
-import { supabase } from "@/lib/supabase/public";
+import { createClient } from "@/lib/supabase/server";
 import { VocabularyCard } from "@/types/vocabulary";
 import { PostgrestError } from "@supabase/supabase-js";
 import { notFound } from "next/navigation";
@@ -15,16 +15,17 @@ export default async function VocabularyPage({
   const lesId = Number(lessonId);
 
   if (isNaN(lvlId) || isNaN(lesId)) {
-    return notFound();
+    notFound();
   }
 
-  // Step 1: Fetch vocabulary_id array, embedding lessons(level_id) for filtering
+  const supabase = await createClient();
+
   const { data, error } = await supabase
     .from("lesson_vocabularies")
     .select(
       `
       vocabulary_id,
-      lessons ( level_id )
+      lessons!inner ( level_id )
     `
     )
     .eq("lesson_id", lesId)

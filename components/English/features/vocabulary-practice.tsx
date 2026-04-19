@@ -14,11 +14,12 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { ArrowRight, BookText, Check, Volume2, X } from "lucide-react";
 import { useState } from "react";
-import { supabase } from "@/lib/supabase/public";
+import { createClient } from "@/lib/supabase/client";
 import { VocabularyCard } from "@/types/vocabulary";
 import { Badge } from "@/components/ui/badge";
 
 export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyCard[] }) {
+  const supabase = createClient();
   const [cards] = useState<VocabularyCard[]>(vocabularies);
 
   const [currentCardIndex, setCurrentCardIndex] = useState(0);

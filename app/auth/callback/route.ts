@@ -6,6 +6,8 @@ export async function GET(request: Request) {
 
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/dashboard";
+  const nextUrl = new URL(next, origin);
+  const redirectUrl = nextUrl.origin === origin ? nextUrl : new URL("/dashboard", origin);
 
   if (!code) {
     return NextResponse.redirect(`${origin}/login`);
@@ -52,5 +54,5 @@ export async function GET(request: Request) {
   }
 
   //  Step 5: redirect to app
-  return NextResponse.redirect(`${origin}${next}`);
+  return NextResponse.redirect(redirectUrl);
 }

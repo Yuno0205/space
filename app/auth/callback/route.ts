@@ -32,27 +32,31 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login`);
   }
 
-  //  Step 3: check profile exists
-  const { data: profile } = await supabase.from("profiles").select("id").eq("id", user.id).single();
-
-  //  Step 4: if not exists → create profile + stats
-  if (!profile) {
-    const { error: profileError } = await supabase.from("profiles").insert({
+  const { error: profileError } = await supabase.from("profiles").upsert(
+    {
       id: user.id,
       email: user.email,
       display_name: user.user_metadata?.full_name,
       avatar_url: user.user_metadata?.avatar_url,
-    });
-
-    const { error: statsError } = await supabase.from("user_stats").insert({
-      user_id: user.id,
-    });
-
-    if (profileError || statsError) {
-      console.error("Init user error:", profileError || statsError);
+    },
+    {
+      onConflict: "id",
     }
+  );
+
+  const { error: statsError } = await supabase.from("user_stats").upsert(
+    {
+      user_id: user.id,
+    },
+    {
+      onConflict: "user_id",
+      ignoreDuplicates: true,
+    }
+  );
+
+  if (profileError || statsError) {
+    console.error("Init user error:", profileError || statsError);
   }
 
-  //  Step 5: redirect to app
   return NextResponse.redirect(redirectUrl);
 }

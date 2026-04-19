@@ -26,8 +26,6 @@ export function UserDropdown() {
 
   const isLoggedIn = Boolean(user);
 
-  console.log("user", user);
-
   const clearNotifications = () => {
     setNotificationCount(0);
   };

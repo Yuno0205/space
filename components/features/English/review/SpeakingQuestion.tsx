@@ -13,6 +13,7 @@ import {
   PronunciationResultState,
 } from "../practice/speaking-practice";
 import { ReviewResult } from ".";
+import { phonemize } from "phonemize";
 
 type SpeakingQuestionProps = {
   question: {
@@ -234,9 +235,9 @@ export function SpeakingQuestion({
                 </div>
               </div>
 
-              {/* <div className="flex justify-center">
+              <div className="flex justify-center">
                 <p className="text-gray-500 dark:text-gray-400 text-xl">{phonemize(targetText)}</p>
-              </div> */}
+              </div>
 
               <div className="flex justify-center">
                 <motion.div

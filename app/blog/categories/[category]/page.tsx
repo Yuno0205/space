@@ -1,5 +1,5 @@
 import { FadeIn } from "@/components/animations/fade-in";
-import { BlogList } from "@/components/blog/blog-list";
+import { BlogList } from "@/components/features/blog/blog-list";
 
 export default async function CategoryPage({ params }: { params: Promise<{ category: string }> }) {
   // await params trước khi destructure

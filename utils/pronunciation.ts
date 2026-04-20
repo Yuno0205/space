@@ -1,14 +1,7 @@
 import { dictionary } from "cmu-pronouncing-dictionary";
+import { normalizeToken } from ".";
 
 type DictType = Record<string, string | string[]>;
-
-const normalizeToken = (value: string) =>
-  value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // remove accent
-    .replace(/[^\w']/g, "")
-    .trim();
 
 /**
  * get phonemes from cmu dictionary

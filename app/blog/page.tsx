@@ -1,5 +1,5 @@
 import { FadeIn } from "@/components/animations/fade-in";
-import { BlogList } from "@/components/blog/blog-list";
+import { BlogList } from "@/components/features/blog/blog-list";
 import { fetchPosts } from "@/lib/wordpress/wp";
 import { IWordpressPost } from "@/types/post";
 

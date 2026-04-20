@@ -1,4 +1,4 @@
-import { VocabularyPractice } from "@/components/English/features/vocabulary-practice";
+import { VocabularyPractice } from "@/components/features/English/practice/vocabulary-practice";
 import { createClient } from "@/lib/supabase/server";
 import { VocabularyCard } from "@/types/vocabulary";
 import { PostgrestError } from "@supabase/supabase-js";

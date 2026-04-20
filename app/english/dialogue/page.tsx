@@ -1,4 +1,4 @@
-import ChatWrapper from "@/components/Hume/ChatWrapper";
+import ChatWrapper from "@/components/features/Hume/ChatWrapper";
 import { getHumeAccessToken } from "@/utils/HumeAi/getHumeAccessToken";
 import { notFound } from "next/navigation";
 

@@ -1,4 +1,4 @@
-import SpeakingPractice from "@/components/English/features/speaking-practice";
+import SpeakingPractice from "@/components/features/English/practice/speaking-practice";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function SpeakingPage({ params }: { params: Promise<{ id: string }> }) {

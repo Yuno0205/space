@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 
-const Chat = dynamic(() => import("@/components/Hume/Chat"), {
+const Chat = dynamic(() => import("@/components/features/Hume/Chat"), {
   ssr: false,
 });
 

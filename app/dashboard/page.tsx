@@ -1,7 +1,7 @@
-import { LearningProgress } from "@/components/Dashboard/learning-progress";
-import { PomodoroTimer } from "@/components/Dashboard/pomodoro-timer";
-import { ResourceCollection } from "@/components/Dashboard/resource-collection";
-import { TaskManager } from "@/components/Dashboard/task-manager";
+import { LearningProgress } from "@/components/features/Dashboard/learning-progress";
+import { PomodoroTimer } from "@/components/features/Dashboard/pomodoro-timer";
+import { ResourceCollection } from "@/components/features/Dashboard/resource-collection";
+import { TaskManager } from "@/components/features/Dashboard/task-manager";
 
 export default function DashboardPage() {
   return (

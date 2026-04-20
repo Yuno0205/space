@@ -8,7 +8,10 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { AlertTriangle, Mic, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { initialPronunciationResultState, PronunciationResultState } from "../speaking-practice";
+import {
+  initialPronunciationResultState,
+  PronunciationResultState,
+} from "../practice/speaking-practice";
 
 type SpeakingQuestionProps = {
   question: {

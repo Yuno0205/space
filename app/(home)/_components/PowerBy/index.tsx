@@ -1,6 +1,6 @@
 import React from "react";
 import "./style.scss";
-import { Card } from "../ui/card";
+import { Card } from "../../../../components/ui/card";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";

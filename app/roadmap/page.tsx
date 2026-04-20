@@ -1,4 +1,4 @@
-import { InfinityScrollLearningPath } from "@/components/learning-path";
+import { InfinityScrollLearningPath } from "@/components/features/learning-path";
 
 export const revalidate = 3600;
 

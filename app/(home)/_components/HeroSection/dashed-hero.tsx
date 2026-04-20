@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { ReactTyped } from "react-typed";
 import { Orbitron } from "next/font/google";
 import "./style.scss";
-import ComicButton from "../ComicButton";
+import ComicButton from "../../../../components/custom/ComicButton";
 import { cn } from "@/lib/utils";
 
 const orbitron = Orbitron({

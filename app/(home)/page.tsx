@@ -1,13 +1,13 @@
 import { AnimatedText } from "@/components/animations/animated-text";
 import { FadeIn } from "@/components/animations/fade-in";
-import { SimplifiedContact } from "@/components/Contact";
-import { ExploreCard } from "@/components/Card/explore-card";
+import { SimplifiedContact } from "@/app/(home)/_components/Contact";
+import { DashedHero } from "@/app/(home)/_components/HeroSection/dashed-hero";
 import { Footer } from "@/components/layouts/Footer/footer";
-import { DashedHero } from "@/components/Hero/dashed-hero";
-import { MissionCard } from "@/components/Card/mission-card";
-import PowerBy from "@/components/PowerBy";
+import PowerBy from "@/app/(home)/_components/PowerBy";
+import { ExploreCard } from "@/components/shared/Card/explore-card";
+import { MissionCard } from "@/components/shared/Card/mission-card";
 import { createClient } from "@/lib/supabase/server";
-import Stats from "../components/Stats";
+import Stats from "./_components/Stats";
 
 export default async function Home() {
   const supabase = await createClient();

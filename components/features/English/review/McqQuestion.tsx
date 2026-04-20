@@ -2,7 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { normalizeText } from "@/lib/utils";
+import { normalizeToken } from "@/utils";
+
 import { motion } from "framer-motion";
 import { CheckCircle2, Circle, XCircle } from "lucide-react";
 
@@ -68,11 +69,11 @@ export function McqQuestion({
               {question.options.map((option) => {
                 const isSelected = selectedOption === option;
                 const showCorrect =
-                  !!result && normalizeText(option) === normalizeText(question.correctAnswer);
+                  !!result && normalizeToken(option) === normalizeToken(question.correctAnswer);
                 const showWrong =
                   !!result &&
                   isSelected &&
-                  normalizeText(option) !== normalizeText(question.correctAnswer);
+                  normalizeToken(option) !== normalizeToken(question.correctAnswer);
 
                 const optionVisual = showCorrect
                   ? "border-green-500 bg-green-50 font-semibold text-green-900 dark:border-green-600 dark:bg-green-950/20 dark:text-green-100"

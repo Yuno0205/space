@@ -12,9 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Progress } from "@/components/ui/progress";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
-import { shuffleArray } from "@/lib/utils";
 import { VocabularyCard } from "@/types/vocabulary";
 import { ScoreCard } from "../../../shared/Card/ScoreCard";
+import { shuffleArray } from "@/utils";
 
 export const ListeningPractice = ({ vocabularies }: { vocabularies: VocabularyCard[] }) => {
   const { speak, cancel, isSpeaking } = useSpeechSynthesis();

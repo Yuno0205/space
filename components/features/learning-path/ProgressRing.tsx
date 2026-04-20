@@ -1,5 +1,5 @@
 import type React from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils";
 
 // Định nghĩa kiểu cho props của component
 interface ProgressRingArcProps {

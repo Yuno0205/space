@@ -1,7 +1,7 @@
 import { useVoice } from "@humeai/voice-react";
 import { Mic, MicOff, Phone } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils";
 import { Button } from "../../ui/button";
 import { Toggle } from "../../ui/toggle";
 import { useCallback, useState, useRef } from "react"; // Added useState and useRef

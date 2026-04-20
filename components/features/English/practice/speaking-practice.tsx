@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils";
 import { motion } from "framer-motion";
 import { AlertTriangle, ArrowRight, CheckCircle, Mic, RefreshCw, Volume2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -16,7 +16,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { buildPronunciationAnalysis, createNeutralWordDisplay, type WordDisplay } from "@/lib/pronunciation-analysis";
+import {
+  buildPronunciationAnalysis,
+  createNeutralWordDisplay,
+  type WordDisplay,
+} from "@/lib/pronunciation-analysis";
 import { Progress } from "@/components/ui/progress";
 import { VocabularyCard } from "@/types/vocabulary";
 import { updateCompletedWords, updateProficiency } from "@/utils/Supabase/action";

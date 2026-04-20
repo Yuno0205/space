@@ -1,7 +1,7 @@
 import { AnimatedText } from "@/components/animations/animated-text";
 import { FadeIn } from "@/components/animations/fade-in";
 import { SimplifiedContact } from "@/app/(home)/_components/Contact";
-import { DashedHero } from "@/app/(home)/_components/HeroSection/dashed-hero";
+import { DashedHero } from "@/app/(home)/_components/HeroSection";
 import { Footer } from "@/components/layouts/Footer/footer";
 import PowerBy from "@/app/(home)/_components/PowerBy";
 import { ExploreCard } from "@/components/shared/Card/explore-card";
@@ -32,7 +32,6 @@ export default async function Home() {
 
   return (
     <div className="relative min-h-screen bg-center dark:bg-[url('/assets/images/stars_bg.jpg')] bg-none">
-      {/* Hero Section */}
       <DashedHero
         title="Welcome to Space v1.0.0 - Initiate your learning warp drive today"
         description={
@@ -42,11 +41,8 @@ export default async function Home() {
         primaryButtonText="Visit the English planet"
         secondaryButtonText="Explore the Next.js universe"
       />
-      {/* Stats Section */}
       <Stats />
-      {/* Power by section */}
       <PowerBy />
-      {/* Explore Section */}
       <section className="relative py-16 px-4">
         <div className="container mx-auto max-w-5xl">
           <AnimatedText delay={0.1}>

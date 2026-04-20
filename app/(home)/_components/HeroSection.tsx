@@ -6,8 +6,8 @@ import type { ReactNode } from "react";
 import { ReactTyped } from "react-typed";
 import { Orbitron } from "next/font/google";
 import "./style.scss";
-import ComicButton from "../../../../components/custom/ComicButton";
-import { cn } from "@/lib/utils";
+import ComicButton from "../../../components/custom/ComicButton";
+import { cn } from "@/utils";
 
 const orbitron = Orbitron({
   subsets: ["latin"],

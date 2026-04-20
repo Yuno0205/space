@@ -5,7 +5,7 @@ import "./globals.css";
 
 import { ThemeProvider } from "@/components/shared/Theme/theme-provider";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { MainSidebar } from "@/components/layouts/Sidebar/main-sidebar";
 import { ThemeToggle } from "@/components/shared/Theme/theme-toggle";

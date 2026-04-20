@@ -2,7 +2,7 @@
 "use client";
 
 import { Button, ButtonProps } from "@/components/ui/button"; // Import ButtonProps
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils";
 import { motion } from "framer-motion";
 import { Inbox, LucideIcon, PackageOpen, PlusCircle, SearchX } from "lucide-react"; // Thêm các icon bạn có thể muốn dùng
 import React from "react";

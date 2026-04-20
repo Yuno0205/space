@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils";
 import { BookText, Cpu, Headphones, Mic } from "lucide-react";
 import { Orbitron } from "next/font/google";
 import Link from "next/link";

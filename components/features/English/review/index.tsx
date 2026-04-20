@@ -1,7 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { normalizeText, pickRandom, shuffleArray } from "@/lib/utils";
+import { normalizeToken, pickRandom, shuffleArray } from "@/utils";
 import { VocabularyCard } from "@/types/vocabulary";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { QuestionRenderer } from "./QuestionRenderer";
@@ -444,11 +444,11 @@ export function ReviewSession() {
 
     if (currentQuestion.type === "mcq") {
       if (!selectedOption) return;
-      isCorrect = normalizeText(selectedOption) === normalizeText(currentQuestion.correctAnswer);
+      isCorrect = normalizeToken(selectedOption) === normalizeToken(currentQuestion.correctAnswer);
       answerToShow = currentQuestion.correctAnswer;
     } else if (currentQuestion.type === "typing") {
       if (!typedAnswer.trim()) return;
-      isCorrect = normalizeText(typedAnswer) === normalizeText(currentQuestion.correctAnswer);
+      isCorrect = normalizeToken(typedAnswer) === normalizeToken(currentQuestion.correctAnswer);
       answerToShow = currentQuestion.correctAnswer;
     } else if (currentQuestion.type === "speaking") {
       isCorrect = true;

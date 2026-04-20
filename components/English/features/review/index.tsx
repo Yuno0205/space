@@ -604,7 +604,7 @@ export function ReviewSession() {
                   : "border-red-500 bg-red-50 text-red-900 dark:border-red-600 dark:bg-red-950/20 dark:text-red-100",
               ].join(" ")}
             >
-              {result.outcome === "completed" && result.score && result.score >= 70
+              {result.outcome === "completed" && (result.score ?? 0) >= 70
                 ? "Congratulation! You pass this exam with score: " + result.score + "."
                 : result.isCorrect
                   ? "Correct!"

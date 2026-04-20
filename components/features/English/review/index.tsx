@@ -1,15 +1,11 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-<<<<<<< HEAD:components/English/features/review/index.tsx
-import { normalizeText, pickRandom, shuffleArray } from "@/lib/utils";
-import { ActivityType, SkillCode } from "@/types/revise";
-=======
 import { normalizeToken, pickRandom, shuffleArray } from "@/utils";
->>>>>>> main:components/features/English/review/index.tsx
 import { VocabularyCard } from "@/types/vocabulary";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { QuestionRenderer } from "./QuestionRenderer";
+import { ActivityType, SkillCode } from "@/types/revise";
 
 type TProgress = {
   id: string;

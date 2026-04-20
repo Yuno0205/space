@@ -1,5 +1,5 @@
 import { FadeIn } from "@/components/animations/fade-in";
-import { MissionCard } from "@/components/Card/mission-card";
+import { MissionCard } from "@/components/shared/Card/mission-card";
 
 export default function MissionsPage() {
   return (

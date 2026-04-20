@@ -5,7 +5,7 @@ import { LottieComponentProps } from "lottie-react";
 import { motion, Variants } from "framer-motion";
 import notFoundAnimationData from "@/public/animations/not-found.json";
 import { Orbitron } from "next/font/google";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils";
 import dynamic from "next/dynamic";
 
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });

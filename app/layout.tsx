@@ -3,14 +3,14 @@ import { Inter } from "next/font/google";
 import type React from "react";
 import "./globals.css";
 
-import { ThemeProvider } from "@/components/Theme/theme-provider";
+import { ThemeProvider } from "@/components/shared/Theme/theme-provider";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { MainSidebar } from "@/components/Sidebar/main-sidebar";
-import { ThemeToggle } from "@/components/Theme/theme-toggle";
+import { MainSidebar } from "@/components/layouts/Sidebar/main-sidebar";
+import { ThemeToggle } from "@/components/shared/Theme/theme-toggle";
 import { UserDropdown } from "@/components/layouts/Header/user-dropdown";
-import Breadcrumb from "@/components/BreadCrumb";
+import Breadcrumb from "@/components/shared/BreadCrumb";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 

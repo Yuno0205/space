@@ -1,4 +1,4 @@
-import LoadingAnimation from "@/components/Fallback/loading-animation";
+import LoadingAnimation from "@/components/shared/Fallback/loading-animation";
 
 export default async function Loading() {
   return (

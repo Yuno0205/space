@@ -4,15 +4,15 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { buildPronunciationAnalysis, createNeutralWordDisplay } from "@/lib/pronunciation-analysis";
-import { cn } from "@/utils";
+import { cn, sentenceToIPA } from "@/utils";
 import { motion } from "framer-motion";
 import { AlertTriangle, Mic, RefreshCw } from "lucide-react";
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ReviewResult } from ".";
 import {
   initialPronunciationResultState,
   PronunciationResultState,
 } from "../practice/speaking-practice";
-import { ReviewResult } from ".";
 
 type SpeakingQuestionProps = {
   question: {
@@ -234,9 +234,11 @@ export function SpeakingQuestion({
                 </div>
               </div>
 
-              {/* <div className="flex justify-center">
-                <p className="text-gray-500 dark:text-gray-400 text-xl">{targetText}</p>
-              </div> */}
+              <div className="flex justify-center">
+                <p className="text-gray-500 dark:text-gray-400 text-xl">
+                  {sentenceToIPA(targetText)}
+                </p>
+              </div>
 
               <div className="flex justify-center">
                 <motion.div

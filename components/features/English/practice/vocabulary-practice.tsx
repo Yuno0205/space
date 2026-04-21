@@ -1,5 +1,7 @@
 "use client";
 
+import { SharedProgressCard } from "@/components/shared/Progress";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,15 +11,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { createClient } from "@/lib/supabase/client";
+import { VocabularyCard } from "@/types/vocabulary";
 import { cn } from "@/utils";
 import { motion } from "framer-motion";
 import { ArrowRight, BookText, Check, Volume2, X } from "lucide-react";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { VocabularyCard } from "@/types/vocabulary";
-import { Badge } from "@/components/ui/badge";
-import { SharedProgressCard } from "@/components/shared/Progress";
 
 export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyCard[] }) {
   const supabase = createClient();

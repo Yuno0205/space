@@ -22,6 +22,7 @@ import {
   type WordDisplay,
 } from "@/lib/pronunciation-analysis";
 import { Progress } from "@/components/ui/progress";
+import { SharedProgressCard } from "@/components/shared/Progress";
 import { VocabularyCard } from "@/types/vocabulary";
 import { updateCompletedWords, updateProficiency } from "@/utils/Supabase/action";
 
@@ -588,25 +589,23 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
         transition={{ duration: 0.3, delay: 0.1 }}
         className="bg-white dark:bg-white/5 shadow-xl rounded-xl transition-colors duration-150 ease-in-out"
       >
-        <Card className="border-gray-200 dark:border-gray-700 bg-transparent transition-colors duration-150 ease-in-out">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-gray-800 dark:text-white transition-colors duration-150 ease-in-out">
-              Learning Progress
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Progress
-              value={progress}
-              className="h-2 bg-gray-200 dark:bg-gray-700 [&>div]:bg-gray-800 dark:[&>div]:bg-gray-200 transition-colors duration-150 ease-in-out"
-            />
-            <div className="flex justify-between mt-2 text-sm text-gray-600 dark:text-gray-400 transition-colors duration-150 ease-in-out">
+        <SharedProgressCard
+          title="Learning Progress"
+          value={progress}
+          cardClassName="border-gray-200 dark:border-gray-700 bg-transparent transition-colors duration-150 ease-in-out"
+          headerClassName="pb-3"
+          titleClassName="text-gray-800 dark:text-white transition-colors duration-150 ease-in-out"
+          progressClassName="h-2 bg-gray-200 dark:bg-gray-700 [&>div]:bg-gray-800 dark:[&>div]:bg-gray-200 transition-colors duration-150 ease-in-out"
+          statsClassName="flex justify-between mt-2 text-sm text-gray-600 dark:text-gray-400 transition-colors duration-150 ease-in-out"
+          stats={
+            <>
               <div>
                 Current Word: {cards.length > 0 ? currentCardIndex + 1 : 0}/{cards.length}
               </div>
               <div>Completed: {Math.round(progress)}%</div>
-            </div>
-          </CardContent>
-        </Card>
+            </>
+          }
+        />
       </motion.div>
     </div>
   );

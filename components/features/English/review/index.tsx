@@ -6,6 +6,7 @@ import { VocabularyCard } from "@/types/vocabulary";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { QuestionRenderer } from "./QuestionRenderer";
 import { ActivityType, SkillCode } from "@/types/revise";
+import { SharedProgressCard } from "@/components/shared/Progress";
 
 type TProgress = {
   id: string;
@@ -297,6 +298,11 @@ export function ReviewSession() {
     () => Math.max(dueProgress.length - currentIndex, 0),
     [dueProgress.length, currentIndex]
   );
+
+  const sessionProgressValue = useMemo(() => {
+    if (!dueProgress.length) return 0;
+    return ((currentIndex + 1) / dueProgress.length) * 100;
+  }, [currentIndex, dueProgress.length]);
 
   const loadReviewData = useCallback(async () => {
     setLoading(true);
@@ -690,21 +696,23 @@ export function ReviewSession() {
               </div>
             );
           })()}
-      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950/80">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Question {currentIndex + 1} / {dueProgress.length}
-            </p>
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
-              Vocabulary review
-            </h2>
-          </div>
-          <div className="rounded-full border border-slate-300 bg-white px-3 py-1 text-sm font-medium text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:shadow-none">
-            {remainingCount} words left
-          </div>
-        </div>
-      </div>
+      <SharedProgressCard
+        title="Learning Progress"
+        value={sessionProgressValue}
+        cardClassName="border-gray-200 dark:border-gray-700 bg-transparent transition-colors duration-150 ease-in-out"
+        headerClassName="pb-3"
+        titleClassName="text-gray-800 dark:text-white transition-colors duration-150 ease-in-out"
+        progressClassName="h-2 bg-gray-200 dark:bg-gray-700 [&>div]:bg-gray-800 dark:[&>div]:bg-gray-200 transition-colors duration-150 ease-in-out"
+        statsClassName="flex justify-between mt-2 text-sm text-gray-600 dark:text-gray-400 transition-colors duration-150 ease-in-out"
+        stats={
+          <>
+            <div>
+              Current Word: {currentIndex + 1} / {dueProgress.length}
+            </div>
+            <div>Remaining: {Math.round(remainingCount)}</div>
+          </>
+        }
+      />
     </div>
   );
 }

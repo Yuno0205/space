@@ -17,6 +17,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { VocabularyCard } from "@/types/vocabulary";
 import { Badge } from "@/components/ui/badge";
+import { SharedProgressCard } from "@/components/shared/Progress";
 
 export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyCard[] }) {
   const supabase = createClient();
@@ -268,19 +269,20 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.2 }}
       >
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Progress value={progress} className="h-2" />
-            <div className="flex flex-col sm:flex-row justify-between mt-2 text-sm text-gray-400">
+        <SharedProgressCard
+          title="Progress"
+          value={progress}
+          headerClassName="pb-3"
+          progressClassName="h-2"
+          statsClassName="flex flex-col sm:flex-row justify-between mt-2 text-sm text-gray-400"
+          stats={
+            <>
               <div>Known: {knownWords.length}</div>
               <div>Unknown: {unknownWords.length}</div>
               <div>Remaining: {cards.length > 0 ? cards.length - currentCardIndex - 1 : 0}</div>
-            </div>
-          </CardContent>
-        </Card>
+            </>
+          }
+        />
       </motion.div>
     </div>
   );

@@ -604,8 +604,17 @@ export function ReviewSession() {
                   : "border-red-500 bg-red-50 text-red-900 dark:border-red-600 dark:bg-red-950/20 dark:text-red-100",
               ].join(" ")}
             >
-              {result.outcome === "completed" && (result.score ?? 0) >= 70
-                ? "Congratulation! You pass this exam with score: " + result.score + "."
+              {result.outcome === "completed"
+                ? (() => {
+                    const score = result.score ?? 0;
+                    if (score >= 70) {
+                      return `Congratulations! You passed with a score of ${score}.`;
+                    } else if (score >= 50) {
+                      return `Good effort! Your score is ${score}. You need 70 to pass — keep practising!`;
+                    } else {
+                      return `Your score is ${score}. Don't give up — try again to improve your pronunciation!`;
+                    }
+                  })()
                 : result.isCorrect
                   ? "Correct!"
                   : `Not quite. The correct answer is: ${result.correctAnswer}`}

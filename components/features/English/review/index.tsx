@@ -5,22 +5,11 @@ import { normalizeToken, pickRandom, shuffleArray } from "@/utils";
 import { VocabularyCard } from "@/types/vocabulary";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { QuestionRenderer } from "./QuestionRenderer";
+import { ActivityType, SkillCode } from "@/types/revise";
+import { SharedProgressCard } from "@/components/shared/Progress";
 
-type SkillCode = "flashcard" | "listening" | "reading" | "speaking" | "writing";
-
-type ActivityCode =
-  | "mcq_meaning"
-  | "mcq_word"
-  | "match_word_meaning"
-  | "listen_choose"
-  | "listen_type"
-  | "listen_repeat"
-  | "fill_blank"
-  | "context_mcq";
-
-type ProgressRow = {
+type TProgress = {
   id: string;
-  vocabulary_id: string;
   skill_code: SkillCode;
   last_reviewed_at: string | null;
   next_review_at: string | null;
@@ -31,15 +20,8 @@ type ProgressRow = {
   vocabulary?: VocabularyCard | null;
 };
 
-type ActivityType = {
-  id: string;
-  code: ActivityCode;
-  name: string;
-  skill_code: SkillCode;
-};
-
 type QuestionBase = {
-  progress: ProgressRow;
+  progress: TProgress;
   activity: ActivityType;
   prompt: string;
   meta?: {
@@ -108,7 +90,7 @@ function computeNextReviewDate(correctCountBeforeUpdate: number, isCorrect: bool
 }
 
 function generateQuestion(
-  progress: ProgressRow,
+  progress: TProgress,
   activities: ActivityType[],
   vocabularies: VocabularyCard[]
 ): TQuestion | null {
@@ -287,7 +269,7 @@ export function ReviewSession() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [dueProgress, setDueProgress] = useState<ProgressRow[]>([]);
+  const [dueProgress, setDueProgress] = useState<TProgress[]>([]);
   const [allActivities, setAllActivities] = useState<ActivityType[]>([]);
   const [allVocabularies, setAllVocabularies] = useState<VocabularyCard[]>([]);
 
@@ -300,7 +282,7 @@ export function ReviewSession() {
   const [result, setResult] = useState<ReviewResult>(null);
 
   const getNextValidQuestion = useCallback(
-    (startIndex: number, progressList: ProgressRow[]) => {
+    (startIndex: number, progressList: TProgress[]) => {
       for (let i = startIndex; i < progressList.length; i += 1) {
         const question = generateQuestion(progressList[i], allActivities, allVocabularies);
         if (question) {
@@ -316,6 +298,11 @@ export function ReviewSession() {
     () => Math.max(dueProgress.length - currentIndex, 0),
     [dueProgress.length, currentIndex]
   );
+
+  const sessionProgressValue = useMemo(() => {
+    if (!dueProgress.length) return 0;
+    return ((currentIndex + 1) / dueProgress.length) * 100;
+  }, [currentIndex, dueProgress.length]);
 
   const loadReviewData = useCallback(async () => {
     setLoading(true);
@@ -346,7 +333,7 @@ export function ReviewSession() {
       if (progressRes.error) throw progressRes.error;
       if (activitiesRes.error) throw activitiesRes.error;
 
-      const progressData = (progressRes.data ?? []) as unknown as ProgressRow[];
+      const progressData = (progressRes.data ?? []) as unknown as TProgress[];
 
       const now = new Date();
       const dueOnly = progressData.filter((item) => {
@@ -451,7 +438,7 @@ export function ReviewSession() {
       isCorrect = normalizeToken(typedAnswer) === normalizeToken(currentQuestion.correctAnswer);
       answerToShow = currentQuestion.correctAnswer;
     } else if (currentQuestion.type === "speaking") {
-      isCorrect = true;
+      isCorrect = false;
       answerToShow = "";
       outcome = "completed";
       shouldAffectCounts = false;
@@ -464,7 +451,7 @@ export function ReviewSession() {
       const progress = currentQuestion.progress;
 
       const attemptInsert = await supabase.from("review_attempts").insert({
-        vocabulary_id: progress.vocabulary_id,
+        vocabulary_id: progress.vocabulary?.id,
         skill_code: progress.skill_code,
         activity_type_id: currentQuestion.activity.id,
         is_correct: isCorrect,
@@ -488,11 +475,13 @@ export function ReviewSession() {
 
       if (progressUpdate.error) throw progressUpdate.error;
 
-      setResult({
-        isCorrect,
-        correctAnswer: answerToShow,
-        outcome,
-      });
+      if (currentQuestion.type !== "speaking") {
+        setResult({
+          isCorrect,
+          correctAnswer: answerToShow,
+          outcome,
+        });
+      }
 
       setDueProgress((prev) =>
         prev.map((item, index) =>
@@ -602,6 +591,7 @@ export function ReviewSession() {
         <QuestionRenderer
           question={currentQuestion}
           result={result}
+          setResult={setResult}
           submitting={submitting}
           selectedOption={selectedOption}
           typedAnswer={typedAnswer}
@@ -621,7 +611,16 @@ export function ReviewSession() {
               ].join(" ")}
             >
               {result.outcome === "completed"
-                ? "Speaking practice completed."
+                ? (() => {
+                    const score = result.score ?? 0;
+                    if (score >= 70) {
+                      return `Congratulations! You passed with a score of ${score}.`;
+                    } else if (score >= 50) {
+                      return `Good effort! Your score is ${score}. You need 70 to pass — keep practising!`;
+                    } else {
+                      return `Your score is ${score}. Don't give up — try again to improve your pronunciation!`;
+                    }
+                  })()
                 : result.isCorrect
                   ? "Correct!"
                   : `Not quite. The correct answer is: ${result.correctAnswer}`}
@@ -697,21 +696,23 @@ export function ReviewSession() {
               </div>
             );
           })()}
-      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950/80">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Question {currentIndex + 1} / {dueProgress.length}
-            </p>
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
-              Vocabulary review
-            </h2>
-          </div>
-          <div className="rounded-full border border-slate-300 bg-white px-3 py-1 text-sm font-medium text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:shadow-none">
-            {remainingCount} words left
-          </div>
-        </div>
-      </div>
+      <SharedProgressCard
+        title="Learning Progress"
+        value={sessionProgressValue}
+        cardClassName="border-gray-200 dark:border-gray-700 bg-transparent transition-colors duration-150 ease-in-out"
+        headerClassName="pb-3"
+        titleClassName="text-gray-800 dark:text-white transition-colors duration-150 ease-in-out"
+        progressClassName="h-2 bg-gray-200 dark:bg-gray-700 [&>div]:bg-gray-800 dark:[&>div]:bg-gray-200 transition-colors duration-150 ease-in-out"
+        statsClassName="flex justify-between mt-2 text-sm text-gray-600 dark:text-gray-400 transition-colors duration-150 ease-in-out"
+        stats={
+          <>
+            <div>
+              Current Word: {currentIndex + 1} / {dueProgress.length}
+            </div>
+            <div>Remaining: {Math.round(remainingCount)}</div>
+          </>
+        }
+      />
     </div>
   );
 }

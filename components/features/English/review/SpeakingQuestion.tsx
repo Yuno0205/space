@@ -4,10 +4,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { buildPronunciationAnalysis, createNeutralWordDisplay } from "@/lib/pronunciation-analysis";
-import { cn } from "@/utils";
+import { cn, sentenceToIPA } from "@/utils";
 import { motion } from "framer-motion";
 import { AlertTriangle, Mic, RefreshCw } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ReviewResult } from ".";
 import {
   initialPronunciationResultState,
   PronunciationResultState,
@@ -22,24 +23,23 @@ type SpeakingQuestionProps = {
       sentence?: string | null;
     };
   };
-  result: {
-    isCorrect: boolean;
-    correctAnswer: string;
-  } | null;
+
   submitting: boolean;
   onSubmit: () => void;
+  setResult: Dispatch<SetStateAction<ReviewResult>>;
 };
 
 export function SpeakingQuestion({
   question,
-  result,
   submitting,
   onSubmit,
+  setResult,
 }: SpeakingQuestionProps) {
   const [pronunciationResult, setPronunciationResult] = useState<PronunciationResultState>(
     initialPronunciationResultState
   );
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const isSubmitted = useRef(false);
 
   const targetText = useMemo(
     () => question.meta?.sentence?.trim() || question.prompt.trim(),
@@ -73,6 +73,7 @@ export function SpeakingQuestion({
 
   useEffect(() => {
     resetWordDisplay();
+    isSubmitted.current = false;
   }, [resetWordDisplay]);
 
   useEffect(() => {
@@ -123,10 +124,11 @@ export function SpeakingQuestion({
   }, [analyzePronunciation]);
 
   useEffect(() => {
-    if (!result && !submitting && pronunciationResult.transcript) {
+    if (!submitting && pronunciationResult.transcript && !isSubmitted.current) {
+      isSubmitted.current = true;
       onSubmit();
     }
-  }, [onSubmit, pronunciationResult.transcript, result, submitting]);
+  }, [onSubmit, pronunciationResult.transcript, submitting]);
 
   const startListening = () => {
     if (recognitionRef.current && !pronunciationResult.isListening) {
@@ -150,7 +152,9 @@ export function SpeakingQuestion({
   };
 
   const resetPractice = () => {
+    isSubmitted.current = false;
     resetWordDisplay();
+    setResult(null);
   };
 
   const getScoreColor = (score: number | null): string => {
@@ -169,6 +173,17 @@ export function SpeakingQuestion({
     if (score >= 60) return "Pretty good. Try one more time.";
     return "Needs improvement. Try again.";
   };
+
+  useEffect(() => {
+    if (!isSubmitted.current) return;
+    const score = pronunciationResult.overallScore ?? 0;
+    setResult({
+      correctAnswer: "",
+      isCorrect: score >= 70,
+      score,
+      outcome: "completed",
+    });
+  }, [pronunciationResult.overallScore, setResult]);
 
   return (
     <div className="space-y-6 bg-white p-2 text-black sm:p-4 dark:bg-transparent dark:text-white">
@@ -193,7 +208,7 @@ export function SpeakingQuestion({
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center">
                 <Mic className="mr-2 h-5 w-5" />
-                Sentence Speaking Practice
+                Speaking
               </div>
             </CardTitle>
             <CardDescription className="text-gray-500 dark:text-gray-400">
@@ -201,8 +216,8 @@ export function SpeakingQuestion({
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="pt-6">
-            <div className="relative flex flex-col items-center justify-center space-y-6">
+          <CardContent className="pt-6 ">
+            <div className="relative flex flex-col items-center justify-center space-y-6 min-h-[300px]">
               <div className="w-full text-center">
                 <div className="flex min-h-[4em] flex-wrap items-center justify-center gap-x-2 gap-y-2">
                   {pronunciationResult.wordsForDisplay.map((wordData, index) => (
@@ -217,6 +232,12 @@ export function SpeakingQuestion({
                     </span>
                   ))}
                 </div>
+              </div>
+
+              <div className="flex justify-center">
+                <p className="text-gray-500 dark:text-gray-400 text-xl">
+                  {sentenceToIPA(targetText)}
+                </p>
               </div>
 
               <div className="flex justify-center">
@@ -307,7 +328,7 @@ export function SpeakingQuestion({
         </Card>
       </motion.div>
 
-      {!result && submitting ? (
+      {submitting ? (
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Saving speaking result...</p>
       ) : null}
     </div>

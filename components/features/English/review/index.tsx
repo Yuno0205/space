@@ -352,13 +352,22 @@ export function ReviewSession() {
         ),
       ];
 
+      const mapWordType = [
+        ...new Set(
+          dueOnly.map((item) => {
+            return item.vocabulary?.word_type;
+          })
+        ),
+      ];
+      console.log(mapWordType);
+
       let vocabData: VocabularyCard[] = [];
 
       if (dueLevels.length > 0) {
         const { data, error } = await supabase.rpc("rollDistractor", {
           p_levels: dueLevels,
-          p_limit: 120,
-          p_exclude_word_types: [],
+          p_limit: 10,
+          p_exclude_word_types: mapWordType,
         });
 
         if (error) throw error;

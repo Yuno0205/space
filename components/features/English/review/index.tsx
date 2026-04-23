@@ -334,6 +334,7 @@ export function ReviewSession() {
       if (activitiesRes.error) throw activitiesRes.error;
 
       const progressData = (progressRes.data ?? []) as unknown as TProgress[];
+      const activitiesData = (activitiesRes.data ?? []) as ActivityType[];
 
       const now = new Date();
       const dueOnly = progressData.filter((item) => {
@@ -351,16 +352,18 @@ export function ReviewSession() {
         ),
       ];
 
-      let vocabQuery = supabase.from("vocabularies").select("*");
+      let vocabData: VocabularyCard[] = [];
+
       if (dueLevels.length > 0) {
-        vocabQuery = vocabQuery.in("level", dueLevels);
+        const { data, error } = await supabase.rpc("rollDistractor", {
+          p_levels: dueLevels,
+          p_limit: 120,
+          p_exclude_word_types: [],
+        });
+
+        if (error) throw error;
+        vocabData = (data ?? []) as VocabularyCard[];
       }
-      const vocabRes = await vocabQuery.limit(120);
-
-      if (vocabRes.error) throw vocabRes.error;
-
-      const activitiesData = (activitiesRes.data ?? []) as ActivityType[];
-      const vocabData = (vocabRes.data ?? []) as VocabularyCard[];
 
       setDueProgress(dueOnly);
       setAllActivities(activitiesData);

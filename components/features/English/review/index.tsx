@@ -355,12 +355,12 @@ export function ReviewSession() {
         ),
       ];
 
-      //Map all wordtype in list of words
+      // Unique word_types present in the due list
       const mapWordType = [
         ...new Set(
-          dueOnly.map((row) => {
-            return row.vocabulary?.word_type;
-          })
+          dueOnly
+            .map((row) => row.vocabulary?.word_type)
+            .filter((wt): wt is string => typeof wt === "string" && wt.trim().length > 0)
         ),
       ];
 

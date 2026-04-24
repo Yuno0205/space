@@ -333,10 +333,12 @@ export function ReviewSession() {
       if (progressRes.error) throw progressRes.error;
       if (activitiesRes.error) throw activitiesRes.error;
 
-      const progressData = (progressRes.data ?? []) as unknown as TProgress[];
+      const progressData = (progressRes.data ?? []) as TProgress[];
       const activitiesData = (activitiesRes.data ?? []) as ActivityType[];
 
       const now = new Date();
+
+      //Get all list of words due date to review
       const dueOnly = progressData.filter((item) => {
         if (!item.next_review_at) return true;
         const nextReviewAt = new Date(item.next_review_at);
@@ -344,6 +346,7 @@ export function ReviewSession() {
         return nextReviewAt <= now;
       });
 
+      //Map all level have in list of words has to review
       const dueLevels = [
         ...new Set(
           dueOnly
@@ -352,18 +355,19 @@ export function ReviewSession() {
         ),
       ];
 
+      //Map all wordtype in list of words
       const mapWordType = [
         ...new Set(
-          dueOnly.map((item) => {
-            return item.vocabulary?.word_type;
+          dueOnly.map((row) => {
+            return row.vocabulary?.word_type;
           })
         ),
       ];
-      console.log(mapWordType);
 
       let vocabData: VocabularyCard[] = [];
 
-      if (dueLevels.length > 0) {
+      // Base on map of level and word_type to random array of distractor ( to MQC questions)
+      if (dueLevels.length > 0 && mapWordType.length > 0) {
         const { data, error } = await supabase.rpc("rollDistractor", {
           p_levels: dueLevels,
           p_limit: 10,
@@ -371,7 +375,7 @@ export function ReviewSession() {
         });
 
         if (error) throw error;
-        vocabData = (data ?? []) as VocabularyCard[];
+        vocabData = data;
       }
 
       setDueProgress(dueOnly);

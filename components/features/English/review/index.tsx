@@ -333,9 +333,12 @@ export function ReviewSession() {
       if (progressRes.error) throw progressRes.error;
       if (activitiesRes.error) throw activitiesRes.error;
 
-      const progressData = (progressRes.data ?? []) as unknown as TProgress[];
+      const progressData = (progressRes.data ?? []) as TProgress[];
+      const activitiesData = (activitiesRes.data ?? []) as ActivityType[];
 
       const now = new Date();
+
+      //Get all list of words due date to review
       const dueOnly = progressData.filter((item) => {
         if (!item.next_review_at) return true;
         const nextReviewAt = new Date(item.next_review_at);
@@ -343,6 +346,7 @@ export function ReviewSession() {
         return nextReviewAt <= now;
       });
 
+      //Map all level have in list of words has to review
       const dueLevels = [
         ...new Set(
           dueOnly
@@ -351,16 +355,28 @@ export function ReviewSession() {
         ),
       ];
 
-      let vocabQuery = supabase.from("vocabularies").select("*");
-      if (dueLevels.length > 0) {
-        vocabQuery = vocabQuery.in("level", dueLevels);
+      // Unique word_types present in the due list
+      const mapWordType = [
+        ...new Set(
+          dueOnly
+            .map((row) => row.vocabulary?.word_type)
+            .filter((wt): wt is string => typeof wt === "string" && wt.trim().length > 0)
+        ),
+      ];
+
+      let vocabData: VocabularyCard[] = [];
+
+      // Base on map of level and word_type to random array of distractor ( to MQC questions)
+      if (dueLevels.length > 0 && mapWordType.length > 0) {
+        const { data, error } = await supabase.rpc("rollDistractor", {
+          p_levels: dueLevels,
+          p_limit: 10,
+          p_exclude_word_types: mapWordType,
+        });
+
+        if (error) throw error;
+        vocabData = (data ?? []) as VocabularyCard[];
       }
-      const vocabRes = await vocabQuery.limit(120);
-
-      if (vocabRes.error) throw vocabRes.error;
-
-      const activitiesData = (activitiesRes.data ?? []) as ActivityType[];
-      const vocabData = (vocabRes.data ?? []) as VocabularyCard[];
 
       setDueProgress(dueOnly);
       setAllActivities(activitiesData);

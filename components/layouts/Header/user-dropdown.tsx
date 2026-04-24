@@ -25,6 +25,11 @@ export function UserDropdown() {
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const isLoggedIn = Boolean(user);
+  const appOrigin = useMemo(() => {
+    const fromEnv = process.env.NEXT_PUBLIC_APP_URL?.trim();
+    if (fromEnv) return new URL(fromEnv).origin;
+    return window.location.origin;
+  }, []);
 
   const clearNotifications = () => {
     setNotificationCount(0);
@@ -55,10 +60,11 @@ export function UserDropdown() {
   const signInWithGoogle = async () => {
     try {
       setIsSigningIn(true);
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+          redirectTo: `${appOrigin}/auth/callback?next=/dashboard`,
         },
       });
 

@@ -375,7 +375,7 @@ export function ReviewSession() {
         });
 
         if (error) throw error;
-        vocabData = data;
+        vocabData = (data ?? []) as VocabularyCard[];
       }
 
       setDueProgress(dueOnly);

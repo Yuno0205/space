@@ -56,12 +56,13 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const { error: upsertError } = await supabase.from("review_queue").upsert(
+    const { error: upsertError } = await supabase.from("user_vocab_progress").upsert(
       {
-        vocab_id: card.id,
-        next_review: tomorrow.toISOString().split("T")[0], // Định dạng YYYY-MM-DD
+        vocabulary_id: card.id,
+        next_review_at: tomorrow.toISOString().split("T")[0], // Định dạng YYYY-MM-DD
+        skill_code: "flashcard",
       },
-      { onConflict: "vocab_id" }
+      { onConflict: "id" }
     );
 
     if (upsertError) {

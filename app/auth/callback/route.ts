@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
+  console.log(request);
+
   const url = new URL(request.url);
   const { searchParams, origin } = url;
 
@@ -18,6 +20,8 @@ export async function GET(request: Request) {
 
   //  Step 1: exchange code → session
   const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+  console.log(error);
 
   if (error) {
     console.error("Auth error:", error.message);

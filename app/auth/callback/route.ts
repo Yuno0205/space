@@ -33,6 +33,7 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login`);
   }
 
+  // Use upsert to create user if not exist
   const { error: profileError } = await supabase.from("profiles").upsert(
     {
       id: user.id,
@@ -45,6 +46,7 @@ export async function GET(request: Request) {
     }
   );
 
+  // upsert user stats
   const { error: statsError } = await supabase.from("user_stats").upsert(
     {
       user_id: user.id,

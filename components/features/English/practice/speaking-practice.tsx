@@ -57,7 +57,7 @@ export const initialPronunciationResultState: PronunciationResultState = {
   isListening: false,
 };
 
-export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeProps) {
+export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) {
   const supabase = createClient();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [showDefinition, setShowDefinition] = useState(false);
@@ -242,9 +242,6 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
     ) {
       try {
         await updateProficiency(currentCard.id, "speaking", true);
-        // This line below exist error , please check again
-        //Slug = letter are not available in the present ( change by id )  make func can work properly
-        // await updateCompletedWords(slug);
         setIsMarkedMastered(true);
 
         const tomorrow = new Date();

@@ -242,7 +242,6 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
     ) {
       try {
         await updateProficiency(currentCard.id, "speaking", true);
-        setIsMarkedMastered(true);
 
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
@@ -258,7 +257,10 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
 
         if (upsertError) {
           console.error("Error adding to review queue:", upsertError);
+          throw upsertError;
         }
+
+        setIsMarkedMastered(true);
       } catch (dbError) {
         console.error("Error updating Supabase:", dbError);
         setPronunciationResult((prev) => ({

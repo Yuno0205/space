@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { AlertTriangle, ArrowRight, CheckCircle, Mic, RefreshCw, Volume2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { SharedProgressCard } from "@/components/shared/Progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,15 +17,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import {
   buildPronunciationAnalysis,
   createNeutralWordDisplay,
   type WordDisplay,
 } from "@/lib/pronunciation-analysis";
-import { Progress } from "@/components/ui/progress";
-import { SharedProgressCard } from "@/components/shared/Progress";
+import { createClient } from "@/lib/supabase/client";
 import { VocabularyCard } from "@/types/vocabulary";
-import { updateCompletedWords, updateProficiency } from "@/utils/Supabase/action";
+import { updateProficiency } from "@/utils/Supabase/action";
 
 interface DetailScores {
   phoneme: number;
@@ -56,12 +57,12 @@ export const initialPronunciationResultState: PronunciationResultState = {
   isListening: false,
 };
 
-export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeProps) {
+export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) {
+  const supabase = createClient();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [showDefinition, setShowDefinition] = useState(false);
   const [isMarkedMastered, setIsMarkedMastered] = useState(false);
 
-  // Gộp các state liên quan đến kết quả phát âm
   const [pronunciationResult, setPronunciationResult] = useState<PronunciationResultState>(
     initialPronunciationResultState
   );
@@ -206,7 +207,6 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
   const handleNextCard = () => {
     if (currentCardIndex < cards.length - 1) {
       setCurrentCardIndex(currentCardIndex + 1);
-      // Việc reset state sẽ được xử lý bởi useEffect [currentCard.id]
     }
   };
 
@@ -234,7 +234,43 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
     return "text-red-500";
   };
 
-  // Bỏ isLoading vì không còn phụ thuộc vào usePronunciationStore
+  const handleMasteredWord = async () => {
+    if (
+      pronunciationResult.overallScore !== null &&
+      pronunciationResult.overallScore >= 85 &&
+      !isMarkedMastered
+    ) {
+      try {
+        await updateProficiency(currentCard.id, "speaking", true);
+
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const { error: upsertError } = await supabase.from("user_vocab_progress").upsert(
+          {
+            vocabulary_id: currentCard.id,
+            next_review_at: tomorrow.toISOString().split("T")[0], // YYYY-MM-DD format
+            skill_code: "speaking",
+          },
+          { onConflict: "id" }
+        );
+
+        if (upsertError) {
+          console.error("Error adding to review queue:", upsertError);
+          throw upsertError;
+        }
+
+        setIsMarkedMastered(true);
+      } catch (dbError) {
+        console.error("Error updating Supabase:", dbError);
+        setPronunciationResult((prev) => ({
+          ...prev,
+          error: "Failed to save mastery status.",
+        }));
+      }
+    }
+  };
+
   if (cards.length === 0) {
     return (
       <Card className="text-center p-6 bg-gray-800 text-white">
@@ -481,25 +517,7 @@ export default function SpeakingPractice({ cards = [], slug }: SpeakingPracticeP
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={async () => {
-                                if (
-                                  pronunciationResult.overallScore !== null &&
-                                  pronunciationResult.overallScore >= 85 &&
-                                  !isMarkedMastered
-                                ) {
-                                  try {
-                                    await updateProficiency(currentCard.id, "speaking", true);
-                                    await updateCompletedWords(slug);
-                                    setIsMarkedMastered(true);
-                                  } catch (dbError) {
-                                    console.error("Error updating Supabase:", dbError);
-                                    setPronunciationResult((prev) => ({
-                                      ...prev,
-                                      error: "Failed to save mastery status.",
-                                    }));
-                                  }
-                                }
-                              }}
+                              onClick={() => handleMasteredWord()}
                               className={cn(
                                 "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors duration-150 ease-in-out",
                                 isMarkedMastered

@@ -43,9 +43,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
   const currentCard = cards[currentCardIndex];
   const progress = cards.length > 0 ? ((currentCardIndex + 1) / cards.length) * 100 : 0;
 
-  // HÀM ĐÃ ĐƯỢC CẬP NHẬT (PHIÊN BẢN KHÔNG CẦN AUTH)
   async function handleKnown(card: VocabularyCard) {
-    // Cập nhật is_learned = true trong bảng vocabularies
     const { error: updateError } = await supabase
       .from("vocabularies")
       .update({ is_learned: true })
@@ -55,17 +53,17 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
       console.error("Error updating vocabulary:", updateError);
     }
 
-    // Thêm từ vào hàng đợi ôn tập (review_queue) với lịch ôn là ngày mai
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const { error: upsertError } = await supabase.from("review_queue").upsert(
+    const { error: upsertError } = await supabase.from("user_vocab_progress").upsert(
       {
-        vocab_id: card.id,
-        next_review: tomorrow.toISOString().split("T")[0], // Định dạng YYYY-MM-DD
+        vocabulary_id: card.id,
+        next_review_at: tomorrow.toISOString().split("T")[0], // Định dạng YYYY-MM-DD
+        skill_code: "flashcard",
       },
-      { onConflict: "vocab_id" }
-    ); // Nếu đã tồn tại, không làm gì cả
+      { onConflict: "id" }
+    );
 
     if (upsertError) {
       console.error("Error adding to review queue:", upsertError);

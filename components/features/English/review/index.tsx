@@ -346,6 +346,8 @@ export function ReviewSession() {
         return nextReviewAt <= now;
       });
 
+      console.log(dueOnly);
+
       //Map all level have in list of words has to review
       const dueLevels = [
         ...new Set(
@@ -368,15 +370,17 @@ export function ReviewSession() {
 
       // Base on map of level and word_type to random array of distractor ( to MQC questions)
       if (dueLevels.length > 0 && mapWordType.length > 0) {
-        const { data, error } = await supabase.rpc("rollDistractor", {
+        const { data, error } = await supabase.rpc("roll_distractor", {
           p_levels: dueLevels,
           p_limit: 10,
-          p_exclude_word_types: mapWordType,
+          p_include_word_types: mapWordType,
         });
 
         if (error) throw error;
         vocabData = (data ?? []) as VocabularyCard[];
       }
+
+      console.log(vocabData, mapWordType);
 
       setDueProgress(dueOnly);
       setAllActivities(activitiesData);

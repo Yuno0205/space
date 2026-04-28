@@ -345,8 +345,6 @@ export function ReviewSession() {
         return nextReviewAt <= now;
       });
 
-      console.log(dueOnly);
-
       //Map all level have in list of words has to review
       const dueLevels = [
         ...new Set(

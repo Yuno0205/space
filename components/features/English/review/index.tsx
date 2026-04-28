@@ -204,7 +204,7 @@ function generateQuestion(
     }
 
     case "listen_repeat": {
-      if (!vocab.audio_url) return null;
+      if (!vocab.example) return null;
 
       return {
         type: "speaking",
@@ -212,7 +212,6 @@ function generateQuestion(
         activity,
         prompt: "Listen to the word and repeat it clearly:",
         meta: {
-          audioUrl: vocab.audio_url,
           sentence: vocab.example,
         },
       };
@@ -380,8 +379,6 @@ export function ReviewSession() {
         vocabData = (data ?? []) as VocabularyCard[];
       }
 
-      console.log(vocabData, mapWordType);
-
       setDueProgress(dueOnly);
       setAllActivities(activitiesData);
       setAllVocabularies(vocabData);
@@ -399,6 +396,8 @@ export function ReviewSession() {
           },
           null
         );
+
+        console.log(dueOnly);
 
         if (firstValid) {
           setCurrentIndex(firstValid.index);

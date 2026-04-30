@@ -204,7 +204,7 @@ function generateQuestion(
     }
 
     case "listen_repeat": {
-      if (!vocab.audio_url) return null;
+      if (!vocab.example) return null;
 
       return {
         type: "speaking",
@@ -212,7 +212,6 @@ function generateQuestion(
         activity,
         prompt: "Listen to the word and repeat it clearly:",
         meta: {
-          audioUrl: vocab.audio_url,
           sentence: vocab.example,
         },
       };
@@ -368,10 +367,10 @@ export function ReviewSession() {
 
       // Base on map of level and word_type to random array of distractor ( to MQC questions)
       if (dueLevels.length > 0 && mapWordType.length > 0) {
-        const { data, error } = await supabase.rpc("rollDistractor", {
+        const { data, error } = await supabase.rpc("roll_distractor", {
           p_levels: dueLevels,
           p_limit: 10,
-          p_exclude_word_types: mapWordType,
+          p_include_word_types: mapWordType,
         });
 
         if (error) throw error;
@@ -395,6 +394,8 @@ export function ReviewSession() {
           },
           null
         );
+
+        console.log(dueOnly);
 
         if (firstValid) {
           setCurrentIndex(firstValid.index);

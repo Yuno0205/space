@@ -18,19 +18,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import {
-  buildPronunciationAnalysis,
-  createNeutralWordDisplay,
-  type WordDisplay,
-} from "@/lib/pronunciation-analysis";
+import { createNeutralWordDisplay, type WordDisplay } from "@/lib/pronunciation-analysis";
 import { createClient } from "@/lib/supabase/client";
 import { VocabularyCard } from "@/types/vocabulary";
 import { updateProficiency } from "@/utils/Supabase/action";
+import { analyzeSpeech } from "@/utils/pronunciation";
 
 interface DetailScores {
   phoneme: number;
-  accentProxy: number;
-  rhythmProxy: number;
+  accent: number;
+  rhythm: number;
   speed: number;
 }
 
@@ -81,28 +78,15 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
   };
   const progress = cards.length > 0 ? ((currentCardIndex + 1) / cards.length) * 100 : 0;
 
-  const resetPronunciationState = useCallback(() => {
-    setPronunciationResult({
-      ...initialPronunciationResultState,
-      wordsForDisplay: createNeutralWordDisplay(currentCard.word),
-    });
-    setShowDefinition(false);
-    setIsMarkedMastered(false);
-  }, [currentCard.word]);
-
-  useEffect(() => {
-    resetPronunciationState();
-  }, [currentCard.id, resetPronunciationState]);
-
   const analyzePronunciation = useCallback(
     (currentTargetText: string, spokenText: string, sttConfidence: number) => {
-      const result = buildPronunciationAnalysis(currentTargetText, spokenText, sttConfidence);
+      const result = analyzeSpeech(currentTargetText, spokenText, sttConfidence);
 
       setPronunciationResult((prev) => ({
         ...prev,
-        transcript: result.transcript,
+        transcript: spokenText,
         overallScore: result.overallScore,
-        detailScores: result.detailScores,
+        detailScores: result.details,
         wordsForDisplay: result.wordsForDisplay,
       }));
     },
@@ -209,6 +193,19 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
       setCurrentCardIndex(currentCardIndex + 1);
     }
   };
+
+  const resetPronunciationState = useCallback(() => {
+    setPronunciationResult({
+      ...initialPronunciationResultState,
+      wordsForDisplay: createNeutralWordDisplay(currentCard.word),
+    });
+    setShowDefinition(false);
+    setIsMarkedMastered(false);
+  }, [currentCard.word]);
+
+  useEffect(() => {
+    resetPronunciationState();
+  }, [currentCard.id, resetPronunciationState]);
 
   const resetCurrentCardPractice = () => {
     resetPronunciationState();
@@ -453,15 +450,13 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                               <div className="flex justify-between text-sm mb-1 text-gray-700 dark:text-gray-300">
                                 <span>Accent:</span>
                                 <span
-                                  className={getScoreColor(
-                                    pronunciationResult.detailScores.accentProxy
-                                  )}
+                                  className={getScoreColor(pronunciationResult.detailScores.accent)}
                                 >
-                                  {pronunciationResult.detailScores.accentProxy}%
+                                  {pronunciationResult.detailScores.accent}%
                                 </span>
                               </div>
                               <Progress
-                                value={pronunciationResult.detailScores.accentProxy}
+                                value={pronunciationResult.detailScores.accent}
                                 className="h-2 bg-gray-300 dark:bg-gray-600 [&>div]:bg-teal-500"
                               />
                             </div>
@@ -469,15 +464,13 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                               <div className="flex justify-between text-sm mb-1 text-gray-700 dark:text-gray-300">
                                 <span>Rhythm:</span>
                                 <span
-                                  className={getScoreColor(
-                                    pronunciationResult.detailScores.rhythmProxy
-                                  )}
+                                  className={getScoreColor(pronunciationResult.detailScores.rhythm)}
                                 >
-                                  {pronunciationResult.detailScores.rhythmProxy}%
+                                  {pronunciationResult.detailScores.rhythm}%
                                 </span>
                               </div>
                               <Progress
-                                value={pronunciationResult.detailScores.rhythmProxy}
+                                value={pronunciationResult.detailScores.rhythm}
                                 className="h-2 bg-gray-300 dark:bg-gray-600 [&>div]:bg-indigo-500"
                               />
                             </div>

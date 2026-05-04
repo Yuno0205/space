@@ -3,8 +3,9 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { buildPronunciationAnalysis, createNeutralWordDisplay } from "@/lib/pronunciation-analysis";
+import { createNeutralWordDisplay } from "@/lib/pronunciation-analysis";
 import { cn, sentenceToIPA } from "@/utils";
+import { analyzeSpeech } from "@/utils/pronunciation";
 import { motion } from "framer-motion";
 import { AlertTriangle, Mic, RefreshCw } from "lucide-react";
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -59,12 +60,12 @@ export function SpeakingQuestion({
 
   const analyzePronunciation = useCallback(
     (spokenText: string, sttConfidence: number) => {
-      const analyzed = buildPronunciationAnalysis(targetText, spokenText, sttConfidence);
+      const analyzed = analyzeSpeech(targetText, spokenText, sttConfidence);
       setPronunciationResult((prev) => ({
         ...prev,
-        transcript: analyzed.transcript,
+        transcript: spokenText,
         overallScore: analyzed.overallScore,
-        detailScores: analyzed.detailScores,
+        detailScores: analyzed.details,
         wordsForDisplay: analyzed.wordsForDisplay,
       }));
     },

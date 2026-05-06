@@ -28,7 +28,7 @@ interface DetailScores {
   phoneme: number;
   accent: number;
   rhythm: number;
-  speed: number;
+  completeness: number;
 }
 
 interface SpeakingPracticeProps {
@@ -478,13 +478,15 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                               <div className="flex justify-between text-sm mb-1 text-gray-700 dark:text-gray-300">
                                 <span>Speed/Coverage:</span>
                                 <span
-                                  className={getScoreColor(pronunciationResult.detailScores.speed)}
+                                  className={getScoreColor(
+                                    pronunciationResult.detailScores.completeness
+                                  )}
                                 >
-                                  {pronunciationResult.detailScores.speed}%
+                                  {pronunciationResult.detailScores.completeness}%
                                 </span>
                               </div>
                               <Progress
-                                value={pronunciationResult.detailScores.speed}
+                                value={pronunciationResult.detailScores.completeness}
                                 className="h-2 bg-gray-300 dark:bg-gray-600 [&>div]:bg-purple-500"
                               />
                             </div>

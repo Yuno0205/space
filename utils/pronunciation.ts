@@ -52,29 +52,36 @@ export const analyzeSpeech = (targetText: string, spokenText: string, sttConfide
   const tgtWordsLower = targetText.split(/\s+/).map(normalizeToken).filter(Boolean);
   const spkWordsLower = spokenText.split(/\s+/).map(normalizeToken).filter(Boolean);
 
-  let correctWordCount = 0;
+  // let correctWordCount = 0;
 
   // 1. analyze word color display
+  let wordMatchScoreSum = 0;
+
   const wordsForDisplay = tgtWordsOriginal.map((originalTargetWord, i) => {
     const targetWordLower = tgtWordsLower[i];
     const spokenWordLower = spkWordsLower[i] || "";
 
     if (spokenWordLower === targetWordLower) {
-      correctWordCount++;
+      wordMatchScoreSum += 1;
       return { text: originalTargetWord, color: "text-green-500" };
-    } else if (spokenWordLower) {
-      const similarity = levenshteinSimilarity(spokenWordLower, targetWordLower);
-      return {
-        text: originalTargetWord,
-        color: similarity >= 0.7 ? "text-yellow-500" : "text-red-500",
-      };
     }
+
+    if (spokenWordLower) {
+      const similarity = levenshteinSimilarity(spokenWordLower, targetWordLower);
+
+      if (similarity >= 0.7) {
+        wordMatchScoreSum += similarity;
+        return { text: originalTargetWord, color: "text-yellow-500" };
+      }
+
+      return { text: originalTargetWord, color: "text-red-500" };
+    }
+
     return { text: originalTargetWord, color: "text-red-500" };
   });
 
-  // 2. calculate component scores
   const wordScore =
-    tgtWordsLower.length > 0 ? Math.round((correctWordCount / tgtWordsLower.length) * 100) : 0;
+    tgtWordsLower.length > 0 ? Math.round((wordMatchScoreSum / tgtWordsLower.length) * 100) : 0;
 
   let phonemeMatchSum = 0;
   let wordsWithPhonemesCount = 0;
@@ -91,7 +98,7 @@ export const analyzeSpeech = (targetText: string, spokenText: string, sttConfide
         : 0;
 
       if (targetWord === currentSpokenWord && currentSpokenWord !== "") {
-        phonemeMatchSum += wordPhonemeSim * (sttConfidence > 0 ? sttConfidence : 0.1);
+        phonemeMatchSum += 1;
       } else {
         phonemeMatchSum += wordPhonemeSim;
       }
@@ -111,21 +118,21 @@ export const analyzeSpeech = (targetText: string, spokenText: string, sttConfide
   );
   const rhythmScore = Math.max(0, wordScore - 10);
 
-  let speedScore = 100;
+  let completenessScore = 100;
   if (tgtWordsLower.length > 0) {
     const rate = spkWordsLower.length / tgtWordsLower.length;
-    speedScore =
+    completenessScore =
       rate < 0.7
         ? Math.round(100 * rate * rate)
         : rate > 1.3
           ? Math.round(100 - (rate - 1.3) * 150)
           : 100;
   }
-  speedScore = Math.max(0, Math.min(100, speedScore));
+  completenessScore = Math.max(0, Math.min(100, completenessScore));
 
   // 3. total final score
   const overallScore = Math.round(
-    phonemeScore * 0.5 + accentScore * 0.2 + rhythmScore * 0.1 + speedScore * 0.2
+    phonemeScore * 0.5 + accentScore * 0.2 + rhythmScore * 0.1 + completenessScore * 0.2
   );
 
   return {
@@ -135,7 +142,7 @@ export const analyzeSpeech = (targetText: string, spokenText: string, sttConfide
       phoneme: phonemeScore,
       accent: accentScore,
       rhythm: rhythmScore,
-      speed: speedScore,
+      completeness: completenessScore,
     },
   };
 };

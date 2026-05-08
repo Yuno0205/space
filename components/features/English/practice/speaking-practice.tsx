@@ -18,12 +18,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { createNeutralWordDisplay } from "@/lib/pronunciation-analysis";
 import { createClient } from "@/lib/supabase/client";
-import { DetailScores, PronunciationResultState } from "@/types/pronunciation";
+import { PronunciationResultState } from "@/types/pronunciation";
 import { VocabularyCard } from "@/types/vocabulary";
 import { updateProficiency } from "@/utils/Supabase/action";
-import { analyzeSpeech } from "@/utils/pronunciation";
+import { analyzeSpeech, createNeutralWordDisplay } from "@/utils/pronunciation";
 
 interface SpeakingPracticeProps {
   cards?: VocabularyCard[];
@@ -71,7 +70,7 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
         ...prev,
         transcript: spokenText,
         overallScore: result.overallScore,
-        detailScores: result.details as unknown as DetailScores | null,
+        detailScores: result.details,
         wordsForDisplay: result.wordsForDisplay,
       }));
     },

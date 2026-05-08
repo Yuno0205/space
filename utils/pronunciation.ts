@@ -1,5 +1,6 @@
 import { dictionary } from "cmu-pronouncing-dictionary";
 import { normalizeToken } from ".";
+import { WordDisplay } from "@/types/pronunciation";
 
 type DictType = Record<string, string | string[]>;
 
@@ -145,3 +146,9 @@ export const analyzeSpeech = (targetText: string, spokenText: string, sttConfide
     },
   };
 };
+
+export const createNeutralWordDisplay = (targetText: string): WordDisplay[] =>
+  targetText
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => ({ text: word, color: "text-gray-300" }));

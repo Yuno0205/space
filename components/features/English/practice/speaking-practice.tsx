@@ -465,7 +465,7 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                             </div>
                             <div>
                               <div className="flex justify-between text-sm mb-1 text-gray-700 dark:text-gray-300">
-                                <span>Speed/Coverage:</span>
+                                <span>Completeness:</span>
                                 <span
                                   className={getScoreColor(
                                     pronunciationResult.detailScores.completeness

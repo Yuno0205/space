@@ -18,31 +18,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { createNeutralWordDisplay, type WordDisplay } from "@/lib/pronunciation-analysis";
 import { createClient } from "@/lib/supabase/client";
+import { PronunciationResultState } from "@/types/pronunciation";
 import { VocabularyCard } from "@/types/vocabulary";
 import { updateProficiency } from "@/utils/Supabase/action";
-import { analyzeSpeech } from "@/utils/pronunciation";
-
-interface DetailScores {
-  phoneme: number;
-  accent: number;
-  rhythm: number;
-  speed: number;
-}
+import { analyzeSpeech, createNeutralWordDisplay } from "@/utils/pronunciation";
 
 interface SpeakingPracticeProps {
   cards?: VocabularyCard[];
   slug: string;
-}
-
-export interface PronunciationResultState {
-  wordsForDisplay: WordDisplay[];
-  transcript: string;
-  overallScore: number | null;
-  detailScores: DetailScores | null;
-  error: string | null;
-  isListening: boolean;
 }
 
 export const initialPronunciationResultState: PronunciationResultState = {
@@ -82,7 +66,7 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
     (currentTargetText: string, spokenText: string, sttConfidence: number) => {
       const result = analyzeSpeech(currentTargetText, spokenText, sttConfidence);
 
-      setPronunciationResult((prev) => ({
+      setPronunciationResult((prev: PronunciationResultState) => ({
         ...prev,
         transcript: spokenText,
         overallScore: result.overallScore,
@@ -290,7 +274,7 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
       )}
 
       <motion.div
-        key={currentCard.id} // Key để re-render khi từ thay đổi
+        key={currentCard.id}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -432,59 +416,65 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                           <div className="space-y-3 mb-4">
                             <div>
                               <div className="flex justify-between text-sm mb-1 text-gray-700 dark:text-gray-300">
-                                <span>Phoneme:</span>
+                                <span>Accuracy:</span>
                                 <span
                                   className={getScoreColor(
-                                    pronunciationResult.detailScores.phoneme
+                                    pronunciationResult.detailScores.accuracy
                                   )}
                                 >
-                                  {pronunciationResult.detailScores.phoneme}%
+                                  {pronunciationResult.detailScores.accuracy}%
                                 </span>
                               </div>
                               <Progress
-                                value={pronunciationResult.detailScores.phoneme}
+                                value={pronunciationResult.detailScores.accuracy}
                                 className="h-2 bg-gray-300 dark:bg-gray-600 [&>div]:bg-sky-500"
                               />
                             </div>
                             <div>
                               <div className="flex justify-between text-sm mb-1 text-gray-700 dark:text-gray-300">
-                                <span>Accent:</span>
+                                <span>Pronunciation:</span>
                                 <span
-                                  className={getScoreColor(pronunciationResult.detailScores.accent)}
+                                  className={getScoreColor(
+                                    pronunciationResult.detailScores.pronunciation
+                                  )}
                                 >
-                                  {pronunciationResult.detailScores.accent}%
+                                  {pronunciationResult.detailScores.pronunciation}%
                                 </span>
                               </div>
                               <Progress
-                                value={pronunciationResult.detailScores.accent}
+                                value={pronunciationResult.detailScores.pronunciation}
                                 className="h-2 bg-gray-300 dark:bg-gray-600 [&>div]:bg-teal-500"
                               />
                             </div>
                             <div>
                               <div className="flex justify-between text-sm mb-1 text-gray-700 dark:text-gray-300">
-                                <span>Rhythm:</span>
+                                <span>Confidence:</span>
                                 <span
-                                  className={getScoreColor(pronunciationResult.detailScores.rhythm)}
+                                  className={getScoreColor(
+                                    pronunciationResult.detailScores.confidence
+                                  )}
                                 >
-                                  {pronunciationResult.detailScores.rhythm}%
+                                  {pronunciationResult.detailScores.confidence}%
                                 </span>
                               </div>
                               <Progress
-                                value={pronunciationResult.detailScores.rhythm}
+                                value={pronunciationResult.detailScores.confidence}
                                 className="h-2 bg-gray-300 dark:bg-gray-600 [&>div]:bg-indigo-500"
                               />
                             </div>
                             <div>
                               <div className="flex justify-between text-sm mb-1 text-gray-700 dark:text-gray-300">
-                                <span>Speed/Coverage:</span>
+                                <span>Completeness:</span>
                                 <span
-                                  className={getScoreColor(pronunciationResult.detailScores.speed)}
+                                  className={getScoreColor(
+                                    pronunciationResult.detailScores.completeness
+                                  )}
                                 >
-                                  {pronunciationResult.detailScores.speed}%
+                                  {pronunciationResult.detailScores.completeness}%
                                 </span>
                               </div>
                               <Progress
-                                value={pronunciationResult.detailScores.speed}
+                                value={pronunciationResult.detailScores.completeness}
                                 className="h-2 bg-gray-300 dark:bg-gray-600 [&>div]:bg-purple-500"
                               />
                             </div>

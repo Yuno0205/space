@@ -3,17 +3,14 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { createNeutralWordDisplay } from "@/lib/pronunciation-analysis";
 import { cn, sentenceToIPA } from "@/utils";
-import { analyzeSpeech } from "@/utils/pronunciation";
+import { analyzeSpeech, createNeutralWordDisplay } from "@/utils/pronunciation";
 import { motion } from "framer-motion";
 import { AlertTriangle, Mic, RefreshCw } from "lucide-react";
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ReviewResult } from ".";
-import {
-  initialPronunciationResultState,
-  PronunciationResultState,
-} from "../practice/speaking-practice";
+import { initialPronunciationResultState } from "../practice/speaking-practice";
+import { DetailScores, PronunciationResultState } from "@/types/pronunciation";
 
 type SpeakingQuestionProps = {
   question: {
@@ -48,7 +45,7 @@ export function SpeakingQuestion({
   );
 
   const resetWordDisplay = useCallback(() => {
-    setPronunciationResult((prev) => ({
+    setPronunciationResult((prev: PronunciationResultState) => ({
       ...prev,
       transcript: "",
       overallScore: null,
@@ -61,11 +58,11 @@ export function SpeakingQuestion({
   const analyzePronunciation = useCallback(
     (spokenText: string, sttConfidence: number) => {
       const analyzed = analyzeSpeech(targetText, spokenText, sttConfidence);
-      setPronunciationResult((prev) => ({
+      setPronunciationResult((prev: PronunciationResultState) => ({
         ...prev,
         transcript: spokenText,
         overallScore: analyzed.overallScore,
-        detailScores: analyzed.details,
+        detailScores: analyzed.details as unknown as DetailScores | null,
         wordsForDisplay: analyzed.wordsForDisplay,
       }));
     },

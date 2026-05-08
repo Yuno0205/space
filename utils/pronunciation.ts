@@ -1,5 +1,6 @@
 import { dictionary } from "cmu-pronouncing-dictionary";
 import { normalizeToken } from ".";
+import { WordDisplay } from "@/types/pronunciation";
 
 type DictType = Record<string, string | string[]>;
 
@@ -25,6 +26,7 @@ export const getPhonemes = (word: string): string => {
 export const levenshteinSimilarity = (strA: string, strB: string): number => {
   const a = strA.toLowerCase();
   const b = strB.toLowerCase();
+
   if (!a.length && !b.length) return 1;
   if (!a.length || !b.length) return 0;
 
@@ -48,94 +50,105 @@ export const levenshteinSimilarity = (strA: string, strB: string): number => {
  * main engine: analyze speech and return detailed scores
  */
 export const analyzeSpeech = (targetText: string, spokenText: string, sttConfidence: number) => {
+  // 1. Split + normalize
   const tgtWordsOriginal = targetText.split(/\s+/).filter(Boolean);
   const tgtWordsLower = targetText.split(/\s+/).map(normalizeToken).filter(Boolean);
   const spkWordsLower = spokenText.split(/\s+/).map(normalizeToken).filter(Boolean);
 
-  let correctWordCount = 0;
+  let accuracyScoreSum = 0;
+  let matchedWordCount = 0;
 
-  // 1. analyze word color display
+  // 2. Accuracy + display color
   const wordsForDisplay = tgtWordsOriginal.map((originalTargetWord, i) => {
-    const targetWordLower = tgtWordsLower[i];
-    const spokenWordLower = spkWordsLower[i] || "";
+    const targetWord = tgtWordsLower[i];
+    const spokenWord = spkWordsLower[i] || "";
 
-    if (spokenWordLower === targetWordLower) {
-      correctWordCount++;
+    if (spokenWord === targetWord) {
+      accuracyScoreSum += 1;
+      matchedWordCount += 1;
+
       return { text: originalTargetWord, color: "text-green-500" };
-    } else if (spokenWordLower) {
-      const similarity = levenshteinSimilarity(spokenWordLower, targetWordLower);
-      return {
-        text: originalTargetWord,
-        color: similarity >= 0.7 ? "text-yellow-500" : "text-red-500",
-      };
     }
+
+    if (spokenWord) {
+      const similarity = levenshteinSimilarity(spokenWord, targetWord);
+
+      if (similarity >= 0.7) {
+        matchedWordCount += 1;
+
+        return { text: originalTargetWord, color: "text-yellow-500" };
+      }
+      accuracyScoreSum += similarity;
+    }
+
     return { text: originalTargetWord, color: "text-red-500" };
   });
 
-  // 2. calculate component scores
-  const wordScore =
-    tgtWordsLower.length > 0 ? Math.round((correctWordCount / tgtWordsLower.length) * 100) : 0;
+  const accuracyScore =
+    tgtWordsLower.length > 0 ? Math.round((accuracyScoreSum / tgtWordsLower.length) * 100) : 0;
 
-  let phonemeMatchSum = 0;
+  // 3. Pronunciation score using phonemes
+  let pronunciationScoreSum = 0;
   let wordsWithPhonemesCount = 0;
 
   tgtWordsLower.forEach((targetWord, i) => {
-    const currentSpokenWord = spkWordsLower[i] || "";
+    const spokenWord = spkWordsLower[i] || "";
+
     const targetPhonemes = getPhonemes(targetWord);
+    if (!targetPhonemes) return;
 
-    if (targetPhonemes) {
-      wordsWithPhonemesCount++;
-      const spokenPhonemes = getPhonemes(currentSpokenWord);
-      const wordPhonemeSim = spokenPhonemes
-        ? levenshteinSimilarity(targetPhonemes, spokenPhonemes)
-        : 0;
+    wordsWithPhonemesCount += 1;
 
-      if (targetWord === currentSpokenWord && currentSpokenWord !== "") {
-        phonemeMatchSum += wordPhonemeSim * (sttConfidence > 0 ? sttConfidence : 0.1);
-      } else {
-        phonemeMatchSum += wordPhonemeSim;
-      }
+    if (targetWord === spokenWord && spokenWord !== "") {
+      pronunciationScoreSum += 1;
+      return;
     }
+
+    const spokenPhonemes = getPhonemes(spokenWord);
+
+    const phonemeSimilarity = spokenPhonemes
+      ? levenshteinSimilarity(targetPhonemes, spokenPhonemes)
+      : 0;
+
+    pronunciationScoreSum += phonemeSimilarity;
   });
 
-  const phonemeScore =
+  const pronunciationScore =
     wordsWithPhonemesCount > 0
-      ? Math.round((phonemeMatchSum / wordsWithPhonemesCount) * 100)
+      ? Math.round((pronunciationScoreSum / wordsWithPhonemesCount) * 100)
       : spkWordsLower.length === 0
         ? 0
         : 50;
 
-  const accentScore = Math.min(
-    100,
-    Math.max(0, phonemeScore + Math.round(15 * (sttConfidence || 0.5) - 5))
-  );
-  const rhythmScore = Math.max(0, wordScore - 10);
+  // 4. Completeness = how many target words are covered
+  const completenessScore =
+    tgtWordsLower.length > 0 ? Math.round((matchedWordCount / tgtWordsLower.length) * 100) : 0;
 
-  let speedScore = 100;
-  if (tgtWordsLower.length > 0) {
-    const rate = spkWordsLower.length / tgtWordsLower.length;
-    speedScore =
-      rate < 0.7
-        ? Math.round(100 * rate * rate)
-        : rate > 1.3
-          ? Math.round(100 - (rate - 1.3) * 150)
-          : 100;
-  }
-  speedScore = Math.max(0, Math.min(100, speedScore));
+  // 5. Confidence from STT
+  const confidenceScore = Math.round((sttConfidence ?? 0.5) * 100);
 
-  // 3. total final score
+  // 6. Final score
   const overallScore = Math.round(
-    phonemeScore * 0.5 + accentScore * 0.2 + rhythmScore * 0.1 + speedScore * 0.2
+    accuracyScore * 0.35 +
+      pronunciationScore * 0.35 +
+      completenessScore * 0.2 +
+      confidenceScore * 0.1
   );
 
   return {
     overallScore,
     wordsForDisplay,
     details: {
-      phoneme: phonemeScore,
-      accent: accentScore,
-      rhythm: rhythmScore,
-      speed: speedScore,
+      accuracy: accuracyScore,
+      pronunciation: pronunciationScore,
+      completeness: completenessScore,
+      confidence: confidenceScore,
     },
   };
 };
+
+export const createNeutralWordDisplay = (targetText: string): WordDisplay[] =>
+  targetText
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => ({ text: word, color: "text-gray-300" }));

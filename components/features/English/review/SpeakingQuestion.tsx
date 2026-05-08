@@ -3,9 +3,8 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { createNeutralWordDisplay } from "@/lib/pronunciation-analysis";
 import { cn, sentenceToIPA } from "@/utils";
-import { analyzeSpeech } from "@/utils/pronunciation";
+import { analyzeSpeech, createNeutralWordDisplay } from "@/utils/pronunciation";
 import { motion } from "framer-motion";
 import { AlertTriangle, Mic, RefreshCw } from "lucide-react";
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";

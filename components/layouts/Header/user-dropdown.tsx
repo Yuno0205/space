@@ -84,6 +84,8 @@ export function UserDropdown() {
     }
   };
 
+  console.log(user);
+
   return (
     <div className="flex items-center gap-2">
       {/* Notifications */}

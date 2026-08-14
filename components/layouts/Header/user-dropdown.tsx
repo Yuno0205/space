@@ -17,9 +17,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
 
-export function UserDropdown() {
+type UserDropdownProps = {
+  initialUser: SupabaseUser | null;
+};
+
+export function UserDropdown({ initialUser }: UserDropdownProps) {
   const supabase = useMemo(() => createClient(), []);
-  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(initialUser);
   const [notificationCount, setNotificationCount] = useState(3);
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -36,23 +40,15 @@ export function UserDropdown() {
   };
 
   useEffect(() => {
-    let isMounted = true;
+    setUser(initialUser);
+  }, [initialUser]);
 
-    supabase.auth.getUser().then(({ data, error }) => {
-      if (!isMounted) return;
-      if (error) {
-        setUser(null);
-        return;
-      }
-      setUser(data.user ?? null);
-    });
-
+  useEffect(() => {
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
 
     return () => {
-      isMounted = false;
       subscription.subscription.unsubscribe();
     };
   }, [supabase]);
@@ -149,7 +145,7 @@ export function UserDropdown() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel className="flex flex-col">
-              <span>{user?.user_metadata?.full_name}</span>
+              <span>{user?.user_metadata?.full_name || user?.email || "My Account"}</span>
               {user?.email ? (
                 <span className="text-xs text-muted-foreground">{user.email}</span>
               ) : null}

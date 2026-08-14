@@ -13,6 +13,8 @@ import { UserDropdown } from "@/components/layouts/Header/user-dropdown";
 import Breadcrumb from "@/components/shared/BreadCrumb";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,7 +26,30 @@ export const metadata: Metadata = {
 
 export const revalidate = 86400;
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient();
+  // Get user from auth
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Not login yet
+  if (!user) {
+    redirect("/login");
+  }
+
+  // Get user profile
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("onboarding_completed_at")
+    .eq("id", user.id)
+    .single();
+
+  // Not onboarded yet
+  if (!profile?.onboarding_completed_at) {
+    redirect("/onboarding");
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={cn(inter.className, "min-h-screen bg-background text-foreground")}>
@@ -39,7 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <div className="flex-1" />
 
                 <ThemeToggle />
-                <UserDropdown />
+                <UserDropdown initialUser={user} />
               </header>
               <main className="flex-grow container mx-auto px-4 py-8">
                 <Breadcrumb className="mb-4" />

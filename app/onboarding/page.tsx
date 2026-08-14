@@ -64,7 +64,7 @@ function OptionButton({
   );
 }
 
-export default function CuisineSelector() {
+export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedLevel, setSelectedLevel] = useState("");
   const [selectedWords, setSelectedWords] = useState("");

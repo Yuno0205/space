@@ -172,8 +172,8 @@ export function UserDropdown() {
         </DropdownMenu>
       ) : (
         <Button
-          variant="ghost"
-          className="flex items-center gap-2 pl-2 pr-1"
+          variant="outline"
+          className="flex items-center gap-4 px-6 py-4 rounded-full mx-4"
           onClick={signInWithGoogle}
           disabled={isSigningIn}
         >

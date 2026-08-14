@@ -16,6 +16,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
+import { redirect } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type UserDropdownProps = {
   initialUser: SupabaseUser | null;
@@ -25,15 +27,9 @@ export function UserDropdown({ initialUser }: UserDropdownProps) {
   const supabase = useMemo(() => createClient(), []);
   const [user, setUser] = useState<SupabaseUser | null>(initialUser);
   const [notificationCount, setNotificationCount] = useState(3);
-  const [isSigningIn, setIsSigningIn] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const isLoggedIn = Boolean(user);
-  const appOrigin = useMemo(() => {
-    const fromEnv = process.env.NEXT_PUBLIC_APP_URL?.trim();
-    if (fromEnv) return new URL(fromEnv).origin;
-    return window.location.origin;
-  }, []);
 
   const clearNotifications = () => {
     setNotificationCount(0);
@@ -53,27 +49,12 @@ export function UserDropdown({ initialUser }: UserDropdownProps) {
     };
   }, [supabase]);
 
-  const signInWithGoogle = async () => {
-    try {
-      setIsSigningIn(true);
-
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${appOrigin}/auth/callback?next=/dashboard`,
-        },
-      });
-
-      if (error) throw error;
-    } finally {
-      setIsSigningIn(false);
-    }
-  };
-
   const signOut = async () => {
     try {
       setIsSigningOut(true);
       const { error } = await supabase.auth.signOut();
+      redirect("/");
+
       if (error) throw error;
     } finally {
       setIsSigningOut(false);
@@ -167,14 +148,7 @@ export function UserDropdown({ initialUser }: UserDropdownProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
-        <Button
-          variant="outline"
-          className="flex items-center gap-4 px-6 py-4 rounded-full mx-4"
-          onClick={signInWithGoogle}
-          disabled={isSigningIn}
-        >
-          {isSigningIn ? "Signing in..." : "Login with Google"}
-        </Button>
+        <Skeleton className="rounded" />
       )}
     </div>
   );

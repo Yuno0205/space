@@ -7,10 +7,14 @@ import PowerBy from "@/app/(home)/_components/PowerBy";
 import { ExploreCard } from "@/components/shared/Card/explore-card";
 import { MissionCard } from "@/components/shared/Card/mission-card";
 import { createClient } from "@/lib/supabase/server";
-import Stats from "./_components/Stats";
+import Stats from "./(home)/_components/Stats";
 
 export default async function Home() {
   const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const { count } = await supabase
     .from("vocabularies")
@@ -37,9 +41,7 @@ export default async function Home() {
         description={
           <>Where I learn, code, and grow — each star a new concept, each orbit a breakthrough.</>
         }
-        primaryButtonHref="/english/dialogue"
-        primaryButtonText="Visit the English planet"
-        secondaryButtonText="Explore the Next.js universe"
+        user={user}
       />
       <Stats />
       <PowerBy />

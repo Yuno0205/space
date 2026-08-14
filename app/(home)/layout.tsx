@@ -19,7 +19,7 @@ export default async function HomeLayout({ children }: { children: React.ReactNo
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect("/");
   }
 
   // Check onboarding

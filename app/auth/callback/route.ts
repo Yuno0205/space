@@ -13,7 +13,7 @@ export async function GET(request: Request) {
   const redirectUrl = nextUrl.origin === origin ? nextUrl : new URL("/dashboard", origin);
 
   if (!code) {
-    return NextResponse.redirect(`${origin}/login`);
+    return NextResponse.redirect(`${origin}/`);
   }
 
   const supabase = await createClient();
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
   if (exchangeError) {
     console.error("Auth error:", exchangeError.message);
 
-    return NextResponse.redirect(`${origin}/login?error=auth_failed`);
+    return NextResponse.redirect(`${origin}/?error=auth_failed`);
   }
 
   // 2. Get authenticated user
@@ -34,7 +34,7 @@ export async function GET(request: Request) {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return NextResponse.redirect(`${origin}/login`);
+    return NextResponse.redirect(`${origin}/`);
   }
 
   // 3. Create/update profile and return onboarding state
@@ -57,7 +57,7 @@ export async function GET(request: Request) {
   if (profileError || !profile) {
     console.error("Profile init error:", profileError?.message);
 
-    return NextResponse.redirect(`${origin}/login?error=profile_failed`);
+    return NextResponse.redirect(`${origin}/?error=profile_failed`);
   }
 
   // 4. Initialize stats

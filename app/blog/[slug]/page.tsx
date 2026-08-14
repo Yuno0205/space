@@ -1,4 +1,4 @@
-import { BlogPost } from "@/components/features/Blog/blog-post";
+import { BlogPost } from "@/components/features/blog/blog-post";
 
 import { fetchPostBySlug } from "@/lib/wordpress/wp";
 import "./styles/blog.scss";

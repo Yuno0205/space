@@ -149,7 +149,7 @@ export function UserDropdown() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel className="flex flex-col">
-              <span>My Account</span>
+              <span>{user?.user_metadata?.full_name}</span>
               {user?.email ? (
                 <span className="text-xs text-muted-foreground">{user.email}</span>
               ) : null}

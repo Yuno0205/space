@@ -58,9 +58,9 @@ function OptionButton({
         <span className="text-sm text-muted-foreground">{option.description}</span>
       </span>
       <span
-        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${isSelected ? "border-foreground bg-foreground" : "border-muted-foreground"}`}
+        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${isSelected ? "border-foreground bg-foreground" : "border-muted-foreground"}`}
       >
-        {isSelected && <Check className="h-3 w-3 text-white" strokeWidth={2.5} />}
+        {isSelected && <Check className="h-3 w-3 text-background" strokeWidth={2.5} />}
       </span>
     </motion.button>
   );
@@ -76,7 +76,7 @@ export default function OnboardingForm() {
   const totalSteps = 3;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const canProceed =
     currentStep === 1
@@ -101,40 +101,42 @@ export default function OnboardingForm() {
     setIsSubmitting(true);
     setErrorMessage("");
 
-    const supabase = createClient();
+    try {
+      const supabase = createClient();
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-    if (userError || !user) {
-      setErrorMessage("Unable to verify your account.");
+      if (userError || !user) {
+        throw new Error("Unable to verify your account.");
+      }
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({
+          proficiency_level: selectedLevel,
+          daily_new_words_goal: Number(selectedWords),
+          daily_minutes_goal: Number(selectedMinutes),
+          onboarding_completed_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      router.replace("/dashboard");
+    } catch (error) {
+      console.error("Onboarding submit error:", error);
+
+      setErrorMessage(
+        error instanceof Error ? error.message : "Something went wrong. Please try again."
+      );
+    } finally {
       setIsSubmitting(false);
-      return;
     }
-
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        proficiency_level: selectedLevel,
-        daily_new_words_goal: Number(selectedWords),
-        daily_minutes_goal: Number(selectedMinutes),
-        onboarding_completed_at: new Date().toISOString(),
-      })
-      .eq("id", user.id);
-
-    if (error) {
-      console.error("Onboarding update error:", error);
-
-      setErrorMessage("Something went wrong. Please try again.");
-
-      setIsSubmitting(false);
-      return;
-    }
-
-    router.replace("/dashboard");
-    router.refresh();
   };
 
   const stepContent = [
@@ -155,6 +157,11 @@ export default function OnboardingForm() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-5 py-8 text-foreground sm:p-8">
+      {errorMessage && (
+        <p role="alert" className="mt-4 text-sm text-destructive">
+          {errorMessage}
+        </p>
+      )}
       <div className="w-full max-w-[540px]">
         <header className="mb-10">
           <div className="mb-3 flex items-center justify-between">
@@ -233,7 +240,7 @@ export default function OnboardingForm() {
               disabled={!canProceed || isSubmitting}
               className={`flex items-center gap-2 rounded-full px-6 py-3 font-medium transition-all ${canProceed ? "bg-primary text-primary-foreground hover:bg-primary/90" : "cursor-not-allowed bg-zinc-800 text-zinc-600"}`}
             >
-              {isSubmitting ? "Saving" : "Start learning"} <Check className="h-4 w-4" />
+              {isSubmitting ? "Saving..." : "Start learning"} <Check className="h-4 w-4" />
             </button>
           )}
         </div>

@@ -23,11 +23,17 @@ export default async function HomeLayout({ children }: { children: React.ReactNo
   }
 
   // Check onboarding
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("onboarding_completed_at")
     .eq("id", user.id)
     .single();
+
+  if (profileError) {
+    console.error("Failed to fetch profile:", profileError);
+
+    throw new Error("Unable to load user profile");
+  }
 
   if (!profile?.onboarding_completed_at) {
     redirect("/onboarding");

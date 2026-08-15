@@ -10,8 +10,15 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Profile } from "@/types/user";
 
-export default function DailyGoals() {
+export default function DailyGoals({ profile }: { profile: Profile }) {
+  const learnedMinutes = 10;
+  const learnedWords = 10;
+
+  const minutesPercent = Math.min((learnedMinutes / profile.daily_minutes_goal!) * 100, 100);
+
+  const wordsPercent = Math.min((learnedWords / profile.daily_new_words_goal!) * 100, 100);
   return (
     <main className="flex items-center justify-center bg-background  font-sans text-foreground">
       <Popover>
@@ -42,19 +49,21 @@ export default function DailyGoals() {
 
           <div className="flex flex-col gap-3 p-4">
             <GoalRow
-              completed
+              completed={minutesPercent >= 100}
               icon={<Clock3 aria-hidden="true" />}
               title="Study time"
-              value="15 min / day"
-              progress="15 min completed"
-              percent={100}
+              value={`${profile.daily_minutes_goal} min / day`}
+              progress={`${learnedMinutes} min completed`}
+              percent={Math.round(minutesPercent)}
             />
+
             <GoalRow
+              completed={wordsPercent >= 100}
               icon={<BookOpen aria-hidden="true" />}
               title="New words"
-              value="20 words"
-              progress="12 words learned"
-              percent={60}
+              value={`${profile.daily_new_words_goal} words / day`}
+              progress={`${learnedWords} words learned`}
+              percent={Math.round(wordsPercent)}
             />
           </div>
         </PopoverContent>

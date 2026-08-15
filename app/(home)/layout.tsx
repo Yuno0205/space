@@ -40,6 +40,8 @@ export default async function HomeLayout({ children }: { children: React.ReactNo
     redirect("/onboarding");
   }
 
+  const userData = { ...user, proficiency_level: profile.proficiency_level };
+
   return (
     <SidebarProvider defaultOpen={true}>
       <MainSidebar />
@@ -51,11 +53,11 @@ export default async function HomeLayout({ children }: { children: React.ReactNo
           </div>
 
           <div className="flex-1" />
-          <DailyGoals />
+          <DailyGoals profile={profile} />
 
           <ThemeToggle />
 
-          <UserDropdown initialUser={user} />
+          <UserDropdown initialUser={userData} />
         </header>
 
         <main className="container mx-auto flex-grow px-4 py-8">

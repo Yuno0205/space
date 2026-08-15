@@ -38,15 +38,12 @@ export function DashedHero({ title, description, user }: DashedHeroProps) {
   const supabase = useMemo(() => createClient(), []);
   const [isSigningIn, setIsSigningIn] = useState(false);
 
-  const appOrigin = useMemo(() => {
-    const fromEnv = process.env.NEXT_PUBLIC_APP_URL?.trim();
-    if (fromEnv) return new URL(fromEnv).origin;
-    return window.location.origin;
-  }, []);
-
   const signInWithGoogle = async () => {
     try {
       setIsSigningIn(true);
+
+      const fromEnv = process.env.NEXT_PUBLIC_APP_URL?.trim();
+      const appOrigin = fromEnv ? new URL(fromEnv).origin : window.location.origin;
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",

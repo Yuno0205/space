@@ -9,6 +9,7 @@ import { MainSidebar } from "@/components/layouts/Sidebar/main-sidebar";
 import { ThemeToggle } from "@/components/shared/Theme/theme-toggle";
 import { UserDropdown } from "@/components/layouts/Header/user-dropdown";
 import Breadcrumb from "@/components/shared/BreadCrumb";
+import DailyGoals from "@/components/layouts/Header/daily-goals";
 
 export default async function HomeLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -25,7 +26,7 @@ export default async function HomeLayout({ children }: { children: React.ReactNo
   // Check onboarding
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("onboarding_completed_at")
+    .select("*")
     .eq("id", user.id)
     .single();
 
@@ -50,6 +51,7 @@ export default async function HomeLayout({ children }: { children: React.ReactNo
           </div>
 
           <div className="flex-1" />
+          <DailyGoals />
 
           <ThemeToggle />
 

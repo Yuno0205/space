@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type UserDropdownProps = {
@@ -28,6 +28,7 @@ export function UserDropdown({ initialUser }: UserDropdownProps) {
   const [user, setUser] = useState<SupabaseUser | null>(initialUser);
   const [notificationCount, setNotificationCount] = useState(3);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const router = useRouter();
 
   const isLoggedIn = Boolean(user);
 
@@ -53,13 +54,21 @@ export function UserDropdown({ initialUser }: UserDropdownProps) {
     try {
       setIsSigningOut(true);
       const { error } = await supabase.auth.signOut();
-      redirect("/");
-
       if (error) throw error;
+      router.replace("/");
     } finally {
       setIsSigningOut(false);
     }
   };
+
+  // const levelStyles: Record<string, string> = {
+  //   Beginner:
+  //     "border-green-500 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-300",
+  //   Intermediate:
+  //     "border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300",
+  //   Advanced:
+  //     "border-purple-500 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950 dark:text-purple-300",
+  // };
 
   return (
     <div className="flex items-center gap-2">
@@ -125,11 +134,20 @@ export function UserDropdown({ initialUser }: UserDropdownProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel className="flex flex-col">
+            <DropdownMenuLabel className="flex flex-col gap-2">
               <span>{user?.user_metadata?.full_name || user?.email || "My Account"}</span>
               {user?.email ? (
                 <span className="text-xs text-muted-foreground">{user.email}</span>
               ) : null}
+              {/* <Badge variant="outline" className={cn("w-fit", levelStyles[level])}>
+                {level}
+              </Badge> */}
+              <Badge
+                variant="outline"
+                className="w-fit border-green-500 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-300"
+              >
+                Beginner
+              </Badge>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>

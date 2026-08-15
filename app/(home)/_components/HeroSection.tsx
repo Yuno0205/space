@@ -1,13 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Link from "next/link";
-import type { ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { ReactTyped } from "react-typed";
 import { Orbitron } from "next/font/google";
 import "./style.scss";
-import ComicButton from "../../../components/custom/ComicButton";
 import { cn } from "@/utils";
+import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
+import Link from "next/link";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -17,32 +19,45 @@ const orbitron = Orbitron({
 interface DashedHeroProps {
   title: ReactNode;
   description: ReactNode;
-  primaryButtonText?: string;
-  primaryButtonHref?: string;
-  secondaryButtonText?: string;
-  secondaryButtonHref?: string;
-  commandText?: string;
+  user: SupabaseUser | null;
 }
 
 type TechStackType = Record<string, string>;
 
 const TechStack: TechStackType[] = [
-  { "Next.js": "text-white" }, // Màu trắng cho Next.js
-  { React: "text-[#61DAFB]" }, // Màu xanh đặc trưng cho React
-  { "Tailwind CSS": "text-sky-400" }, // Màu xanh dương sáng cho Tailwind CSS
-  { TypeScript: "text-[#3178C6]" }, // Màu xanh lam đậm cho TypeScript
-  { Supabase: "text-[#3ECF8E]" }, // Màu xanh lá cây cho Supabase
-  { WordPress: "text-[#21759B]" }, // Màu xanh nước biển cho WordPress
-  { "Framer Motion": "text-[#0055FF]" }, // Màu xanh dương cho Framer Motion
+  { "Next.js": "text-white" },
+  { React: "text-[#61DAFB]" },
+  { "Tailwind CSS": "text-sky-400" },
+  { TypeScript: "text-[#3178C6]" },
+  { Supabase: "text-[#3ECF8E]" },
+  { WordPress: "text-[#21759B]" },
+  { "Framer Motion": "text-[#0055FF]" },
 ];
 
-export function DashedHero({
-  title,
-  description,
-  primaryButtonText = "Get Started",
-  primaryButtonHref = "#",
-  secondaryButtonText,
-}: DashedHeroProps) {
+export function DashedHero({ title, description, user }: DashedHeroProps) {
+  const supabase = useMemo(() => createClient(), []);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+
+  const signInWithGoogle = async () => {
+    try {
+      setIsSigningIn(true);
+
+      const fromEnv = process.env.NEXT_PUBLIC_APP_URL?.trim();
+      const appOrigin = fromEnv ? new URL(fromEnv).origin : window.location.origin;
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${appOrigin}/auth/callback?next=/dashboard`,
+        },
+      });
+
+      if (error) throw error;
+    } finally {
+      setIsSigningIn(false);
+    }
+  };
+
   return (
     <div className="relative w-full py-24 px-4">
       {/* Dashed border container */}
@@ -121,14 +136,52 @@ export function DashedHero({
               transition={{ duration: 0.5, delay: 0.4 }}
               className="flex flex-col sm:flex-row justify-center gap-4 mb-12"
             >
-              <Link
-                href={primaryButtonHref}
-                className="inline-flex items-center justify-center rounded-md bg-white px-8 py-3 text-base font-medium text-black transition-colors hover:bg-gray-200"
-              >
-                {primaryButtonText}
-              </Link>
+              {user ? (
+                <Button
+                  variant={"outline"}
+                  className="mx-4 flex h-12 w-full items-center justify-center gap-3 rounded-xl border-border bg-background px-6 text-md font-medium shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-muted hover:shadow-md active:translate-y-0 disabled:translate-y-0"
+                >
+                  <Link href="/dashboard">Go to Dashboard?</Link>
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="mx-4 flex h-12 w-full items-center justify-center gap-3 rounded-xl border-border bg-background px-6 text-md font-medium shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-muted hover:shadow-md active:translate-y-0 disabled:translate-y-0"
+                  onClick={signInWithGoogle}
+                  disabled={isSigningIn}
+                >
+                  {isSigningIn ? (
+                    <>
+                      <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      <span>Signing in...</span>
+                    </>
+                  ) : (
+                    <>
+                      {/* Google icon */}
+                      <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true">
+                        <path
+                          fill="#4285F4"
+                          d="M21.35 12.23c0-.68-.06-1.36-.18-2H12v3.79h5.24a4.48 4.48 0 0 1-1.94 2.94v2.45h3.14c1.84-1.69 2.91-4.18 2.91-7.18Z"
+                        />
+                        <path
+                          fill="#34A853"
+                          d="M12 21.64c2.63 0 4.84-.87 6.45-2.36l-3.14-2.45c-.87.58-1.98.92-3.31.92-2.54 0-4.7-1.72-5.47-4.03H3.29v2.53A9.74 9.74 0 0 0 12 21.64Z"
+                        />
+                        <path
+                          fill="#FBBC05"
+                          d="M6.53 13.72a5.85 5.85 0 0 1 0-3.44V7.75H3.29a9.77 9.77 0 0 0 0 8.5l3.24-2.53Z"
+                        />
+                        <path
+                          fill="#EA4335"
+                          d="M12 6.25c1.43 0 2.71.49 3.72 1.45l2.79-2.79C16.84 3.3 14.63 2.36 12 2.36a9.74 9.74 0 0 0-8.71 5.39l3.24 2.53C7.3 7.97 9.46 6.25 12 6.25Z"
+                        />
+                      </svg>
 
-              {secondaryButtonText && <ComicButton />}
+                      <span>Kick-start your journey with Google</span>
+                    </>
+                  )}
+                </Button>
+              )}
             </motion.div>
           </div>
         </div>

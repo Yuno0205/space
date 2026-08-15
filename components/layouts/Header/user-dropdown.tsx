@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Bell, ChevronDown, LogOut, Settings, User } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -16,72 +16,58 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Profile } from "@/types/user";
+import { cn } from "@/utils";
 
-export function UserDropdown() {
+type UserDropdownProps = {
+  initialUser: SupabaseUser & Pick<Profile, "proficiency_level">;
+};
+
+export function UserDropdown({ initialUser }: UserDropdownProps) {
   const supabase = useMemo(() => createClient(), []);
-  const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [notificationCount, setNotificationCount] = useState(3);
-  const [isSigningIn, setIsSigningIn] = useState(false);
-  const [isSigningOut, setIsSigningOut] = useState(false);
 
-  const isLoggedIn = Boolean(user);
-  const appOrigin = useMemo(() => {
-    const fromEnv = process.env.NEXT_PUBLIC_APP_URL?.trim();
-    if (fromEnv) return new URL(fromEnv).origin;
-    return window.location.origin;
-  }, []);
+  const [notificationCount, setNotificationCount] = useState(3);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const router = useRouter();
 
   const clearNotifications = () => {
     setNotificationCount(0);
   };
 
-  useEffect(() => {
-    let isMounted = true;
+  // useEffect(() => {
+  //   setUser(initialUser);
+  // }, [initialUser]);
 
-    supabase.auth.getUser().then(({ data, error }) => {
-      if (!isMounted) return;
-      if (error) {
-        setUser(null);
-        return;
-      }
-      setUser(data.user ?? null);
-    });
+  // useEffect(() => {
+  //   const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+  //     setUser(session?.user ?? null);
+  //   });
 
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => {
-      isMounted = false;
-      subscription.subscription.unsubscribe();
-    };
-  }, [supabase]);
-
-  const signInWithGoogle = async () => {
-    try {
-      setIsSigningIn(true);
-
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${appOrigin}/auth/callback?next=/dashboard`,
-        },
-      });
-
-      if (error) throw error;
-    } finally {
-      setIsSigningIn(false);
-    }
-  };
+  //   return () => {
+  //     subscription.subscription.unsubscribe();
+  //   };
+  // }, [supabase]);
 
   const signOut = async () => {
     try {
       setIsSigningOut(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      router.replace("/");
     } finally {
       setIsSigningOut(false);
     }
+  };
+
+  const levelStyles: Record<string, string> = {
+    beginner:
+      "border-green-500 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-300",
+    intermediate:
+      "border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300",
+    advanced:
+      "border-purple-500 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950 dark:text-purple-300",
   };
 
   return (
@@ -135,24 +121,38 @@ export function UserDropdown() {
       </DropdownMenu>
 
       {/* User Menu */}
-      {isLoggedIn ? (
+      {initialUser ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2 pl-2 pr-1">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.user_metadata?.avatar_url} alt="User" />
-                <AvatarFallback>{(user?.email?.[0] ?? "U").toUpperCase()}</AvatarFallback>
+                <AvatarImage src={initialUser?.user_metadata?.avatar_url} alt="User" />
+                <AvatarFallback>{(initialUser?.email?.[0] ?? "U").toUpperCase()}</AvatarFallback>
               </Avatar>
 
               <ChevronDown className="h-4 w-4 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel className="flex flex-col">
-              <span>My Account</span>
-              {user?.email ? (
-                <span className="text-xs text-muted-foreground">{user.email}</span>
+            <DropdownMenuLabel className="flex flex-col gap-2">
+              <span>
+                {initialUser?.user_metadata?.full_name || initialUser?.email || "My Account"}
+              </span>
+              {initialUser?.email ? (
+                <span className="text-xs text-muted-foreground">{initialUser.email}</span>
               ) : null}
+
+              <Badge
+                variant="outline"
+                className={cn(
+                  "w-fit capitalize",
+                  levelStyles[
+                    initialUser.proficiency_level ? initialUser.proficiency_level : "Newbie"
+                  ]
+                )}
+              >
+                {initialUser.proficiency_level || "Newbie"}
+              </Badge>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
@@ -171,14 +171,7 @@ export function UserDropdown() {
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
-        <Button
-          variant="ghost"
-          className="flex items-center gap-2 pl-2 pr-1"
-          onClick={signInWithGoogle}
-          disabled={isSigningIn}
-        >
-          {isSigningIn ? "Signing in..." : "Login with Google"}
-        </Button>
+        <Skeleton className="rounded" />
       )}
     </div>
   );

@@ -7,46 +7,60 @@ export async function GET(request: Request) {
 
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/dashboard";
+
   const nextUrl = new URL(next, origin);
+
   const redirectUrl = nextUrl.origin === origin ? nextUrl : new URL("/dashboard", origin);
 
   if (!code) {
-    return NextResponse.redirect(`${origin}/login`);
+    return NextResponse.redirect(`${origin}/`);
   }
 
   const supabase = await createClient();
 
-  //  Step 1: exchange code → session
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  // 1. Exchange OAuth code → session
+  const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
-  if (error) {
-    console.error("Auth error:", error.message);
-    return NextResponse.redirect(`${origin}/login?error=auth_failed`);
+  if (exchangeError) {
+    console.error("Auth error:", exchangeError.message);
+
+    return NextResponse.redirect(`${origin}/?error=auth_failed`);
   }
 
-  //  Step 2: get user
+  // 2. Get authenticated user
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    return NextResponse.redirect(`${origin}/login`);
+  if (userError || !user) {
+    return NextResponse.redirect(`${origin}/`);
   }
 
-  // Use upsert to create user if not exist
-  const { error: profileError } = await supabase.from("profiles").upsert(
-    {
-      id: user.id,
-      email: user.email,
-      display_name: user.user_metadata?.full_name,
-      avatar_url: user.user_metadata?.avatar_url,
-    },
-    {
-      onConflict: "id",
-    }
-  );
+  // 3. Create/update profile and return onboarding state
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .upsert(
+      {
+        id: user.id,
+        email: user.email,
+        display_name: user.user_metadata?.full_name ?? null,
+        avatar_url: user.user_metadata?.avatar_url ?? null,
+      },
+      {
+        onConflict: "id",
+      }
+    )
+    .select("id, onboarding_completed_at")
+    .single();
 
-  // upsert user stats
+  if (profileError || !profile) {
+    console.error("Profile init error:", profileError?.message);
+
+    return NextResponse.redirect(`${origin}/?error=profile_failed`);
+  }
+
+  // 4. Initialize stats
   const { error: statsError } = await supabase.from("user_stats").upsert(
     {
       user_id: user.id,
@@ -57,9 +71,15 @@ export async function GET(request: Request) {
     }
   );
 
-  if (profileError || statsError) {
-    console.error("Init user error:", profileError || statsError);
+  if (statsError) {
+    console.error("Stats init error:", statsError.message);
   }
 
+  // 5. New / unfinished onboarding
+  if (!profile.onboarding_completed_at) {
+    return NextResponse.redirect(`${origin}/onboarding`);
+  }
+
+  // 6. Existing user
   return NextResponse.redirect(redirectUrl);
 }

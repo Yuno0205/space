@@ -1,20 +1,10 @@
 "use client";
 
-import {
-  BookOpen,
-  BookText,
-  ChevronDown,
-  FileText,
-  Home,
-  LayoutDashboard,
-  Rocket,
-  Search,
-} from "lucide-react";
+import { BookOpen, BookText, ChevronDown, FileText, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Input } from "@/components/ui/input";
 import {
   Sidebar,
   SidebarContent,
@@ -30,15 +20,16 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { cn } from "@/utils";
+import { CommandSearch, type CommandSearchItem } from "./command-search";
 
 // Navigation data
 const navigationItems = [
-  {
-    title: "Home",
-    icon: Home,
-    href: "/",
-    items: [],
-  },
+  // {
+  //   title: "Home",
+  //   icon: Home,
+  //   href: "/",
+  //   items: [],
+  // },
   {
     title: "Dashboard",
     icon: LayoutDashboard,
@@ -82,28 +73,26 @@ const navigationItems = [
       { title: "Explore", href: "/courses/explore" },
     ],
   },
-  {
-    title: "Projects",
-    icon: Rocket,
-    href: "/projects",
-    items: [
-      { title: "In Progress", href: "/projects/current" },
-      { title: "Ideas", href: "/projects/ideas" },
-      { title: "Completed", href: "/projects/completed" },
-    ],
-  },
-  // {
-  //   title: "Tài liệu",
-  //   icon: ImageIcon,
-  //   href: "/resources",
-  //   items: [
-  //     { title: "Bài viết", href: "/resources/articles" },
-  //     { title: "Video", href: "/resources/videos" },
-  //     { title: "Sách", href: "/resources/books" },
-  //     { title: "Mã nguồn", href: "/resources/code" },
-  //   ],
-  // },
 ];
+
+function toSearchItems(sections: typeof navigationItems): CommandSearchItem[] {
+  return sections.flatMap((section) =>
+    section.items.length > 0
+      ? section.items.map((item) => ({
+          title: item.title,
+          href: item.href,
+          icon: section.icon,
+          group: section.title,
+        }))
+      : [
+          {
+            title: section.title,
+            href: section.href,
+            icon: section.icon,
+          },
+        ]
+  );
+}
 
 export function MainSidebar() {
   const pathname = usePathname();
@@ -112,14 +101,7 @@ export function MainSidebar() {
     <Sidebar>
       <SidebarHeader>
         <div className="px-2 py-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="w-full bg-background pl-8 text-sm"
-            />
-          </div>
+          <CommandSearch items={toSearchItems(navigationItems)} />
         </div>
       </SidebarHeader>
 

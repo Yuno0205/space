@@ -1,7 +1,6 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
-import Link from "next/link";
 import { useRef, useState } from "react";
 
 import {
@@ -13,6 +12,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/utils";
+import { useRouter } from "next/navigation";
 
 export type CommandSearchItem = {
   title: string;
@@ -30,6 +30,8 @@ export function CommandSearch({ items }: CommandSearchProps) {
   const [search, setSearch] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const router = useRouter();
+
   const handleClose = () => {
     setOpen(false);
     setSearch("");
@@ -45,8 +47,6 @@ export function CommandSearch({ items }: CommandSearchProps) {
   return (
     <div ref={containerRef} className="relative">
       <Command
-        value={search}
-        onValueChange={setSearch}
         className={cn(
           "overflow-visible rounded-lg bg-background text-foreground border",
           open ? "border-border shadow-sm" : "border-transparent shadow-none",
@@ -57,6 +57,8 @@ export function CommandSearch({ items }: CommandSearchProps) {
         )}
       >
         <CommandInput
+          value={search}
+          onValueChange={setSearch}
           placeholder="Search..."
           onFocus={() => setOpen(true)}
           onBlur={() => {
@@ -79,15 +81,16 @@ export function CommandSearch({ items }: CommandSearchProps) {
                     <CommandItem
                       key={item.href}
                       value={`${item.group ?? ""} ${item.title}`}
-                      onSelect={handleClose}
+                      onSelect={() => {
+                        handleClose();
+                        router.push(item.href);
+                      }}
                       onMouseDown={(e) => e.preventDefault()}
-                      asChild
+                      // asChild
                       className="cursor-pointer"
                     >
-                      <Link href={item.href}>
-                        <Icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
+                      <Icon className="h-4 w-4" />
+                      <span>{item.title}</span>
                     </CommandItem>
                   );
                 })}

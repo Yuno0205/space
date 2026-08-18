@@ -53,6 +53,7 @@ export default async function HomeLayout({ children }: { children: React.ReactNo
           </div>
 
           <div className="flex-1" />
+
           <DailyGoals profile={profile} />
 
           <ThemeToggle />

@@ -1,4 +1,4 @@
-export type SkillCode = "flashcard" | "listening" | "reading" | "speaking" | "writing";
+export type SkillCode = "recognition" | "listening" | "reading" | "speaking" | "writing";
 
 type ActivityCode =
   | "mcq_meaning"

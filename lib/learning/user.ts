@@ -1,7 +1,7 @@
-import type { ProficiencyLevel } from "@/lib/learning/levels";
-import { createClient } from "../supabase/server";
+import { createClient } from "@/lib/supabase/server";
+import { isProficiencyLevel, type ProficiencyLevel } from "@/lib/learning/levels";
 
-export async function getCurrentUserLevel(): Promise<ProficiencyLevel | null> {
+export async function getCurrentUserLevel(): Promise<ProficiencyLevel> {
   const supabase = await createClient();
 
   const {
@@ -9,12 +9,8 @@ export async function getCurrentUserLevel(): Promise<ProficiencyLevel | null> {
     error: userError,
   } = await supabase.auth.getUser();
 
-  if (userError) {
-    throw userError;
-  }
-
-  if (!user) {
-    return null;
+  if (userError || !user) {
+    throw new Error("User not authenticated");
   }
 
   const { data: profile, error: profileError } = await supabase
@@ -24,8 +20,12 @@ export async function getCurrentUserLevel(): Promise<ProficiencyLevel | null> {
     .single();
 
   if (profileError) {
-    throw profileError;
+    throw new Error(`Failed to load user profile: ${profileError.message}`);
   }
 
-  return profile.proficiency_level as ProficiencyLevel;
+  if (!isProficiencyLevel(profile.proficiency_level)) {
+    throw new Error(`Invalid proficiency level: ${profile.proficiency_level}`);
+  }
+
+  return profile.proficiency_level;
 }

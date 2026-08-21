@@ -4,7 +4,7 @@ import { getCurrentUserLevel } from "@/lib/learning/user";
 import { createClient } from "@/lib/supabase/server";
 import { notFound, redirect } from "next/navigation";
 
-export default async function SpeakingPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PronunciationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   const phonemeId = Number(id);

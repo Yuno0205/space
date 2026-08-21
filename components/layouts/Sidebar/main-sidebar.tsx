@@ -50,7 +50,7 @@ const navigationItems = [
     ],
   },
   {
-    title: "Vitual Lab",
+    title: "Virtual Lab",
     icon: Sparkles,
     href: "/virtual-lab",
     items: [

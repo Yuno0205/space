@@ -12,6 +12,7 @@ interface Phoneme {
   id: number;
   symbol: string;
   type: "vowel" | "diphthong" | "consonant";
+  example_word: string;
   description: string;
   progress?: number; // Calculated later based on user activity
 }
@@ -32,11 +33,13 @@ const PhonemeCard = ({ phoneme }: { phoneme: Phoneme }) => {
     audio.play().catch((err) => console.error("Audio play failed:", err));
   };
 
+  console.log(phoneme);
+
   return (
     <div className="relative group min-w-32">
       {/* The navigable card */}
       <Link
-        href={`/english/speaking/${phoneme.id}`}
+        href={`/english/pronunciation/${phoneme.id}`}
         className="flex flex-col rounded-lg border border-primary/20 bg-card/40 backdrop-blur-sm transition-all duration-300 hover:bg-accent hover:border-primary/60 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(var(--primary),0.15)]"
       >
         <div className="flex-grow p-4 flex flex-col items-center justify-center">
@@ -44,7 +47,7 @@ const PhonemeCard = ({ phoneme }: { phoneme: Phoneme }) => {
             {phoneme.symbol}
           </span>
           <span className="text-xs text-muted-foreground mt-1 uppercase tracking-tighter">
-            {phoneme.description || "mission"}
+            {phoneme.example_word || "mission"}
           </span>
         </div>
         <div className="px-3 pb-3">
@@ -73,7 +76,7 @@ const PhonemeCard = ({ phoneme }: { phoneme: Phoneme }) => {
 
 //MAIN PAGE: Speaking System Dashboard
 
-export default function SpeakingPage() {
+export default function PronunciationPage() {
   const supabase = useMemo(() => createClient(), []);
   const [phonemes, setPhonemes] = useState<GroupedPhonemes>({
     monophthongs: [],

@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, BookText, ChevronDown, FileText, LayoutDashboard } from "lucide-react";
+import { BookOpen, BookText, ChevronDown, FileText, LayoutDashboard, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -24,22 +24,17 @@ import { CommandSearch, type CommandSearchItem } from "./command-search";
 
 // Navigation data
 const navigationItems = [
-  // {
-  //   title: "Home",
-  //   icon: Home,
-  //   href: "/",
-  //   items: [],
-  // },
   {
     title: "Dashboard",
     icon: LayoutDashboard,
     href: "/dashboard",
     items: [],
   },
+
   {
     title: "Learning Path",
     icon: BookText,
-    href: "/roadmap",
+    href: "/learn",
     items: [],
   },
   {
@@ -49,12 +44,19 @@ const navigationItems = [
     items: [
       { title: "Overview", href: "/english" },
       { title: "Vocabulary", href: "/english/vocabulary" },
-      { title: "Talk with EVI", href: "/english/dialogue" },
-      { title: "Speaking Practice", href: "/english/speaking" },
-      { title: "Listening Practice", href: "/english/listening" },
-      { title: "Reading Practice", href: "/english/reading" },
-      { title: "Writing Practice", href: "/english/writing" },
+      { title: "Pronunciation", href: "/english/pronunciation" },
+      { title: "Listening", href: "/english/listening" },
       { title: "Review", href: "/english/revise" },
+    ],
+  },
+  {
+    title: "Virtual Lab",
+    icon: Sparkles,
+    href: "/virtual-lab",
+    items: [
+      { title: "Talk with EVI", href: "/virtual-lab/dialogue" },
+      { title: "Reading", href: "/virtual-lab/reading" },
+      { title: "Writing", href: "/virtual-lab/writing" },
     ],
   },
   {
@@ -62,16 +64,6 @@ const navigationItems = [
     icon: FileText,
     href: "/blog",
     items: [],
-  },
-  {
-    title: "Courses",
-    icon: BookText,
-    href: "/courses",
-    items: [
-      { title: "In Progress", href: "/courses/current" },
-      { title: "Completed", href: "/courses/completed" },
-      { title: "Explore", href: "/courses/explore" },
-    ],
   },
 ];
 

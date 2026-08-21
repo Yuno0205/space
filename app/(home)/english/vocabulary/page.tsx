@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
 export default function VocabularyPage() {
-  redirect("/roadmap");
+  redirect("/learn");
   return null;
 }

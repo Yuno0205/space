@@ -31,7 +31,7 @@ export default async function EnglishPage() {
     .in("name", [...learningPathLevels])
     .order("name", { ascending: true })
     .order("letter", {
-      foreignTable: "lessons_with_progress",
+      referencedTable: "lessons",
       ascending: true,
     });
 

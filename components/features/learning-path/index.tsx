@@ -37,7 +37,7 @@ export function LearningPath({ levelsData }: LearningPathProps) {
 
       {formattedLevels.length === 0 && (
         <div className="py-8 text-center text-gray-600 dark:text-gray-400">
-          No lessons available.
+          No levels available for your current level.
         </div>
       )}
     </FadeIn>

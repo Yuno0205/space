@@ -59,8 +59,8 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
     const { error: upsertError } = await supabase.from("user_vocab_progress").upsert(
       {
         vocabulary_id: card.id,
-        next_review_at: tomorrow.toISOString().split("T")[0], // Định dạng YYYY-MM-DD
-        skill_code: "flashcard",
+        next_review_at: tomorrow.toISOString().split("T")[0], // YYYY-MM-DD
+        skill_code: "recognition",
       },
       { onConflict: "id" }
     );

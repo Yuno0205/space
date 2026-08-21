@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, Check, Clock3, Sparkles } from "lucide-react";
+import { BookOpen, Check, Clock3, Crosshair } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +29,7 @@ export default function DailyGoals({ profile }: { profile: Profile }) {
             aria-label="Open daily goals"
             className="rounded-md bg-card shadow-sm hover:bg-muted  border-none"
           >
-            <Sparkles aria-hidden="true" className="size-4" />
+            <Crosshair aria-hidden="true" className="size-4" />
           </Button>
         </PopoverTrigger>
         <PopoverContent

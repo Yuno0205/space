@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/utils";
-import { BookText, Cpu, Headphones, Mic } from "lucide-react";
+import { BookText, Cpu } from "lucide-react";
 import { Orbitron } from "next/font/google";
 import Link from "next/link";
 import ProgressRing from "./ProgressRing";
@@ -104,30 +104,10 @@ export function LessonNode({ left, lessonData, levelData, progress }: LessonNode
                       className="w-full group relative overflow-hidden justify-start bg-white/5 hover:bg-white/10 text-white border border-white/10"
                     >
                       <Link
-                        href={`/english/vocabulary/level/${levelData.id}/lesson/${lessonData.id}`}
+                        href={`/english/vocabulary/${levelData.name.toLowerCase()}/${lessonData.letter.toLowerCase()}`}
                       >
                         <BookText className="mr-3 h-5 w-5 text-cyan-400" />
                         <span className="relative z-10">Vocabulary Practice</span>
-                      </Link>
-                    </Button>
-
-                    <Button
-                      asChild
-                      className="w-full group relative overflow-hidden justify-start bg-white/5 hover:bg-white/10 text-white border border-white/10"
-                    >
-                      <Link href={`/english/speaking/lesson/${lessonData.id}`}>
-                        <Mic className="mr-3 h-5 w-5 text-green-400" />
-                        <span className="relative z-10">Speaking Practice</span>
-                      </Link>
-                    </Button>
-
-                    <Button
-                      asChild
-                      className="w-full group relative overflow-hidden justify-start bg-white/5 hover:bg-white/10 text-white border border-white/10"
-                    >
-                      <Link href={`/english/listening/lesson/${lessonData.id}`}>
-                        <Headphones className="mr-3 h-5 w-5 text-purple-400" />
-                        <span className="relative z-10">Listening Practice</span>
                       </Link>
                     </Button>
                   </div>

@@ -1,6 +1,7 @@
 import { VocabularyPractice } from "@/components/features/English/practice/vocabulary-practice";
 import { createClient } from "@/lib/supabase/server";
 import { VocabularyCard } from "@/types/vocabulary";
+import { filterUnqualifiedVocabularies } from "@/utils/Supabase/mastery-server";
 import { PostgrestError } from "@supabase/supabase-js";
 import { notFound } from "next/navigation";
 
@@ -61,9 +62,11 @@ export default async function VocabularyPage({
     );
   }
 
+  const learningVocabularies = await filterUnqualifiedVocabularies(vocabList ?? [], "recognition");
+
   return (
     <main className="container mx-auto px-2 py-8 sm:px-4">
-      <VocabularyPractice vocabularies={vocabList} />
+      <VocabularyPractice vocabularies={learningVocabularies} />
     </main>
   );
 }

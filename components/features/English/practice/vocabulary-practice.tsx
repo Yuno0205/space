@@ -14,6 +14,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { VocabularyCard } from "@/types/vocabulary";
 import { cn } from "@/utils";
+import { qualifyVocabSkill } from "@/utils/Supabase/action";
 import { motion } from "framer-motion";
 import { ArrowRight, BookText, Check, Volume2, X } from "lucide-react";
 import { useState } from "react";
@@ -44,14 +45,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
   const progress = cards.length > 0 ? ((currentCardIndex + 1) / cards.length) * 100 : 0;
 
   async function handleKnown(card: VocabularyCard) {
-    const { error: updateError } = await supabase
-      .from("vocabularies")
-      .update({ is_learned: true })
-      .eq("id", card.id);
-
-    if (updateError) {
-      console.error("Error updating vocabulary:", updateError);
-    }
+    await qualifyVocabSkill(currentCard.id, "recognition");
 
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);

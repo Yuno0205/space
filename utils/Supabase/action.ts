@@ -1,36 +1,19 @@
 import { createClient } from "@/lib/supabase/client";
+import { SkillCode } from "@/types/revise";
 const supabase = createClient();
 
-export async function updateProficiency(vocabId: string, key: string, value: boolean) {
-  const { error } = await supabase.rpc("update_proficiently_field", {
-    p_vocab_id: vocabId,
-    p_key: key,
-    p_value: value,
+export type QualifiableSkillCode = Extract<SkillCode, "recognition" | "speaking" | "listening">;
+
+export async function qualifyVocabSkill(vocabularyId: string, skillCode: QualifiableSkillCode) {
+  const { data, error } = await supabase.rpc("qualify_vocab_skill", {
+    p_vocabulary_id: vocabularyId,
+    p_skill_code: skillCode,
   });
 
   if (error) {
-    console.error("Error updating proficiency:", error);
-    throw error;
+    console.error("Failed to qualify vocabulary skill:", error);
+    throw new Error("Failed to qualify vocabulary skill");
   }
-}
 
-export async function updateCompletedWords(letter: string) {
-  const { data, error } = await supabase
-    .from("courses")
-    .select("completed_words")
-    .eq("letter", letter)
-    .single();
-
-  if (error) throw error;
-
-  const newCount = (data?.completed_words ?? 0) + 1;
-
-  const { error: updateError } = await supabase
-    .from("courses")
-    .update({ completed_words: newCount })
-    .eq("letter", letter);
-
-  console.log("Updated completed words for course:", letter, "to:", newCount);
-
-  if (updateError) throw updateError;
+  return data;
 }

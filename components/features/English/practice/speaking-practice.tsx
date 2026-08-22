@@ -21,7 +21,7 @@ import { Progress } from "@/components/ui/progress";
 import { createClient } from "@/lib/supabase/client";
 import { PronunciationResultState } from "@/types/pronunciation";
 import { VocabularyCard } from "@/types/vocabulary";
-import { updateProficiency } from "@/utils/Supabase/action";
+import { qualifyVocabSkill } from "@/utils/Supabase/action";
 import { analyzeSpeech, createNeutralWordDisplay } from "@/utils/pronunciation";
 
 interface SpeakingPracticeProps {
@@ -42,7 +42,7 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
   const supabase = createClient();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [showDefinition, setShowDefinition] = useState(false);
-  const [isMarkedMastered, setIsMarkedMastered] = useState(false);
+  const [isPronunciationQualified, setIsPronunciationQualified] = useState(false);
 
   const [pronunciationResult, setPronunciationResult] = useState<PronunciationResultState>(
     initialPronunciationResultState
@@ -184,7 +184,7 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
       wordsForDisplay: createNeutralWordDisplay(currentCard.word),
     });
     setShowDefinition(false);
-    setIsMarkedMastered(false);
+    setIsPronunciationQualified(false);
   }, [currentCard.word]);
 
   useEffect(() => {
@@ -219,10 +219,10 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
     if (
       pronunciationResult.overallScore !== null &&
       pronunciationResult.overallScore >= 85 &&
-      !isMarkedMastered
+      !isPronunciationQualified
     ) {
       try {
-        await updateProficiency(currentCard.id, "speaking", true);
+        await qualifyVocabSkill(currentCard.id, "speaking");
 
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
@@ -241,7 +241,7 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
           throw upsertError;
         }
 
-        setIsMarkedMastered(true);
+        setIsPronunciationQualified(true);
       } catch (dbError) {
         console.error("Error updating Supabase:", dbError);
         setPronunciationResult((prev) => ({
@@ -503,7 +503,7 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                               onClick={() => handleMasteredWord()}
                               className={cn(
                                 "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors duration-150 ease-in-out",
-                                isMarkedMastered
+                                isPronunciationQualified
                                   ? "bg-green-100 text-green-700 border-green-500 dark:bg-green-800/30 dark:text-green-400 dark:border-green-600 cursor-default"
                                   : pronunciationResult.overallScore !== null &&
                                       pronunciationResult.overallScore >= 85
@@ -511,7 +511,7 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                                     : "text-gray-400 dark:text-gray-500 border-gray-300 dark:border-gray-600 cursor-not-allowed"
                               )}
                               title={
-                                isMarkedMastered
+                                isPronunciationQualified
                                   ? "Marked as mastered for this attempt"
                                   : pronunciationResult.overallScore !== null &&
                                       pronunciationResult.overallScore >= 85
@@ -521,11 +521,11 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                               disabled={
                                 pronunciationResult.overallScore === null ||
                                 pronunciationResult.overallScore < 85 ||
-                                isMarkedMastered
+                                isPronunciationQualified
                               }
                             >
                               <CheckCircle className="mr-2 h-4 w-4" />
-                              {isMarkedMastered ? "Marked as Mastered" : "Mark as Mastered"}
+                              {isPronunciationQualified ? "Marked as Mastered" : "Mark as Mastered"}
                             </Button>
                           </div>
                         </div>

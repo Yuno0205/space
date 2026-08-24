@@ -154,22 +154,41 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
     }
   };
 
-  const playAudio = () => {
-    if (currentCard.audio_url) {
-      const audio = new Audio(currentCard.audio_url);
-      audio.play().catch((e) => console.error("Error playing audio URL:", e));
-    } else if ("speechSynthesis" in window && currentCard.word) {
-      if (speechSynthesis.speaking) speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(currentCard.word);
-      utterance.lang = "en-GB";
-      speechSynthesis.speak(utterance);
-    } else {
+  const speakWord = (word: string) => {
+    if (!("speechSynthesis" in window) || !word) {
       setPronunciationResult((prev) => ({
         ...prev,
         error: "No audio file available or your browser does not support speech synthesis.",
       }));
       setTimeout(() => setPronunciationResult((prev) => ({ ...prev, error: null })), 3000);
+      return;
     }
+
+    if (speechSynthesis.speaking) speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(word);
+    utterance.lang = "en-GB";
+    speechSynthesis.speak(utterance);
+  };
+
+  const playAudio = () => {
+    const audioUrl = currentCard.audio_url?.trim();
+
+    if (!audioUrl) {
+      speakWord(currentCard.word);
+      return;
+    }
+
+    const audio = new Audio(audioUrl);
+    let didFallback = false;
+
+    const fallbackToSpeech = () => {
+      if (didFallback) return;
+      didFallback = true;
+      speakWord(currentCard.word);
+    };
+
+    audio.onerror = fallbackToSpeech;
+    audio.play().catch(fallbackToSpeech);
   };
 
   const handleNextCard = () => {
@@ -215,42 +234,63 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
     return "text-red-500";
   };
 
-  const handleMasteredWord = async () => {
+  const handlePronunciationQualified = async () => {
     if (
-      pronunciationResult.overallScore !== null &&
-      pronunciationResult.overallScore >= 85 &&
-      !isPronunciationQualified
+      pronunciationResult.overallScore === null ||
+      pronunciationResult.overallScore < 85 ||
+      isPronunciationQualified
     ) {
-      try {
-        await qualifyVocabSkill(currentCard.id, "speaking");
+      return;
+    }
 
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
+    try {
+      // 1. Qualify pronunciation + mastery +1
+      await qualifyVocabSkill(currentCard.id, "speaking");
 
-        const { error: upsertError } = await supabase.from("user_vocab_progress").upsert(
-          {
-            vocabulary_id: currentCard.id,
-            next_review_at: tomorrow.toISOString().split("T")[0], // YYYY-MM-DD format
-            skill_code: "speaking",
-          },
-          { onConflict: "id" }
-        );
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-        if (upsertError) {
-          console.error("Error adding to review queue:", upsertError);
-          throw upsertError;
-        }
-
-        setIsPronunciationQualified(true);
-      } catch (dbError) {
-        console.error("Error updating Supabase:", dbError);
-        setPronunciationResult((prev) => ({
-          ...prev,
-          error: "Failed to save mastery status.",
-        }));
+      if (userError || !user) {
+        throw new Error("User not authenticated");
       }
+
+      // 2. Add to speaking review queue
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const { error } = await supabase.from("user_vocab_progress").upsert(
+        {
+          user_id: user.id,
+          vocabulary_id: currentCard.id,
+          skill_code: "speaking",
+          next_review_at: tomorrow.toISOString().split("T")[0],
+        },
+        {
+          onConflict: "user_id,vocabulary_id,skill_code",
+        }
+      );
+
+      if (error) {
+        throw error;
+      }
+
+      // 3. Update current UI
+      setIsPronunciationQualified(true);
+    } catch (error) {
+      console.error("Error qualifying pronunciation:", error);
+
+      setPronunciationResult((prev) => ({
+        ...prev,
+        error: "Failed to save pronunciation progress.",
+      }));
     }
   };
+
+  useEffect(() => {
+    setIsPronunciationQualified(false);
+  }, [currentCard.id]);
 
   if (cards.length === 0) {
     return (
@@ -500,7 +540,7 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleMasteredWord()}
+                              onClick={() => handlePronunciationQualified()}
                               className={cn(
                                 "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors duration-150 ease-in-out",
                                 isPronunciationQualified

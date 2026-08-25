@@ -43,6 +43,7 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [showDefinition, setShowDefinition] = useState(false);
   const [isPronunciationQualified, setIsPronunciationQualified] = useState(false);
+  const [isQualifying, setIsQualifying] = useState(false);
 
   const [pronunciationResult, setPronunciationResult] = useState<PronunciationResultState>(
     initialPronunciationResultState
@@ -238,10 +239,13 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
     if (
       pronunciationResult.overallScore === null ||
       pronunciationResult.overallScore < 85 ||
-      isPronunciationQualified
+      isPronunciationQualified ||
+      isQualifying
     ) {
       return;
     }
+
+    setIsQualifying(true);
 
     try {
       // 1. Qualify pronunciation + mastery +1
@@ -272,6 +276,8 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
         }
       );
 
+      setIsPronunciationQualified(true);
+
       if (error) {
         throw error;
       }
@@ -285,6 +291,8 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
         ...prev,
         error: "Failed to save pronunciation progress.",
       }));
+    } finally {
+      setIsQualifying(false);
     }
   };
 
@@ -614,7 +622,11 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                 variant="outline"
                 className="w-full px-8 py-4 border-input text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                 onClick={handleNextCard}
-                disabled={currentCardIndex >= cards.length - 1 || pronunciationResult.isListening}
+                disabled={
+                  currentCardIndex >= cards.length - 1 ||
+                  pronunciationResult.isListening ||
+                  isQualifying
+                }
               >
                 Next Word
                 <ArrowRight className="ml-2 h-4 w-4" />

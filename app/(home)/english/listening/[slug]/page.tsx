@@ -1,36 +1,39 @@
-import { FadeIn } from "@/components/animations/fade-in";
 import { ListeningPractice } from "@/components/features/English/practice/listening-practice";
+import { getCurrentLevels, isProficiencyLevel } from "@/lib/learning/levels";
+import { createClient } from "@/lib/supabase/server";
+import { filterUnqualifiedVocabularies } from "@/utils/Supabase/mastery-server";
+import { notFound } from "next/navigation";
 
-const myVocabularies = [
-  {
-    id: "1",
-    word: "diligent",
-    phonetic: "/ˈdɪlɪdʒənt/",
-    audio: "/audio/diligent.mp3", // Tùy chọn
-    wordtype: "adjective",
-    definition: "working hard and carefully",
-    translation: "siêng năng, cần cù",
-    example: "She is very diligent in her work.",
-  },
-  {
-    id: "2",
-    word: "efficient",
-    phonetic: "/ɪˈfɪʃənt/",
-    audio: "/audio/efficient.mp3",
-    wordtype: "adjective",
-    definition: "working well without wasting time or energy",
-    translation: "hiệu quả",
-    example: "The new system is more efficient.",
-  },
-  // ... thêm các từ vựng khác
-];
+export default async function ListeningLevelPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
 
-export default function ListeningPage() {
+  if (!isProficiencyLevel(slug)) {
+    notFound();
+  }
+
+  const databaseLevels = getCurrentLevels(slug).map((level) => level.toLowerCase());
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("vocabularies")
+    .select("*")
+    .in("level", databaseLevels)
+    .order("word", { ascending: true })
+    .limit(50);
+
+  if (error) {
+    throw new Error(`Failed to load listening vocabularies: ${error.message}`);
+  }
+
+  const learningVocabularies = await filterUnqualifiedVocabularies(data ?? [], "listening");
+
   return (
-    <div className="container mx-auto py-8 px-4">
-      <FadeIn>
-        <ListeningPractice vocabularies={myVocabularies} />
-      </FadeIn>
-    </div>
+    <main className="container mx-auto px-2 py-8 sm:px-4">
+      <ListeningPractice vocabularies={learningVocabularies ?? []} />
+    </main>
   );
 }

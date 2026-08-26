@@ -14,6 +14,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { VocabularyCard } from "@/types/vocabulary";
 import { cn } from "@/utils";
+import { qualifyVocabSkill } from "@/utils/Supabase/action";
 import { motion } from "framer-motion";
 import { ArrowRight, BookText, Check, Volume2, X } from "lucide-react";
 import { useState } from "react";
@@ -44,29 +45,35 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
   const progress = cards.length > 0 ? ((currentCardIndex + 1) / cards.length) * 100 : 0;
 
   async function handleKnown(card: VocabularyCard) {
-    const { error: updateError } = await supabase
-      .from("vocabularies")
-      .update({ is_learned: true })
-      .eq("id", card.id);
-
-    if (updateError) {
-      console.error("Error updating vocabulary:", updateError);
-    }
+    await qualifyVocabSkill(card.id, "recognition");
 
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const { error: upsertError } = await supabase.from("user_vocab_progress").upsert(
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new Error("User not authenticated");
+    }
+
+    const { error } = await supabase.from("user_vocab_progress").upsert(
       {
+        user_id: user.id,
         vocabulary_id: card.id,
-        next_review_at: tomorrow.toISOString().split("T")[0], // YYYY-MM-DD
         skill_code: "recognition",
+        next_review_at: tomorrow.toISOString(),
       },
-      { onConflict: "id" }
+      {
+        onConflict: "user_id,vocabulary_id,skill_code",
+      }
     );
 
-    if (upsertError) {
-      console.error("Error adding to review queue:", upsertError);
+    if (error) {
+      console.error("Error adding to review queue:", error.message, error.code, error.details);
+
+      throw error;
     }
   }
 
@@ -74,12 +81,19 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
     setIsFlipped(!isFlipped);
   };
 
-  const markAsKnown = () => {
+  const markAsKnown = async () => {
     if (!currentCard) return;
+    try {
+      await handleKnown(currentCard);
+    } catch (error) {
+      console.error("Error marking vocabulary as known:", error);
+      return;
+    }
+
     if (!knownWords.includes(currentCard.id)) {
       setKnownWords([...knownWords, currentCard.id]);
     }
-    handleKnown(currentCard);
+
     nextCard();
   };
 

@@ -2,6 +2,7 @@ import SpeakingPractice from "@/components/features/English/practice/speaking-pr
 import { getLearningPathLevels } from "@/lib/learning/levels";
 import { getCurrentUserLevel } from "@/lib/learning/user";
 import { createClient } from "@/lib/supabase/server";
+import { filterUnqualifiedVocabularies } from "@/utils/Supabase/mastery-server";
 import { notFound, redirect } from "next/navigation";
 
 export default async function PronunciationPage({ params }: { params: Promise<{ id: string }> }) {
@@ -54,9 +55,11 @@ export default async function PronunciationPage({ params }: { params: Promise<{ 
     throw new Error(`Failed to load speaking vocabularies: ${error.message}`);
   }
 
+  const learningVocabularies = await filterUnqualifiedVocabularies(data ?? [], "speaking");
+
   return (
     <main className="container max-w-full mx-auto py-10 px-4">
-      <SpeakingPractice cards={data ?? []} slug={phoneme} />
+      <SpeakingPractice cards={learningVocabularies ?? []} slug={phoneme} />
     </main>
   );
 }

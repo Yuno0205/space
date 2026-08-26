@@ -1,11 +1,10 @@
-import { AnimatedText } from "@/components/animations/animated-text";
-import { FadeIn } from "@/components/animations/fade-in";
 import { SimplifiedContact } from "@/app/(home)/_components/Contact";
 import { DashedHero } from "@/app/(home)/_components/HeroSection";
-import { Footer } from "@/components/layouts/Footer/footer";
 import PowerBy from "@/app/(home)/_components/PowerBy";
+import { AnimatedText } from "@/components/animations/animated-text";
+import { FadeIn } from "@/components/animations/fade-in";
+import { Footer } from "@/components/layouts/Footer/footer";
 import { ExploreCard } from "@/components/shared/Card/explore-card";
-import { MissionCard } from "@/components/shared/Card/mission-card";
 import { createClient } from "@/lib/supabase/server";
 import Stats from "./(home)/_components/Stats";
 
@@ -15,24 +14,6 @@ export default async function Home() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const { count } = await supabase
-    .from("vocabularies")
-    .select("*", { count: "exact", head: true })
-    .eq("is_learned", true);
-
-  const { data: progress } = await supabase
-    .from("courses")
-    .select("completed_words, total_words")
-    .eq("letter", "a")
-    .single();
-
-  const { data: unstartedCourse } = await supabase
-    .from("courses")
-    .select("*")
-    .eq("completed_words", 0)
-    .limit(1)
-    .maybeSingle();
 
   return (
     <div className="relative min-h-screen bg-center dark:bg-[url('/assets/images/stars_bg.jpg')] bg-none">
@@ -83,7 +64,7 @@ export default async function Home() {
         </div>
       </section>
       {/* Missions Section */}
-      <section className="relative py-16 px-4 border-t border-border">
+      {/* <section className="relative py-16 px-4 border-t border-border">
         <div className="container mx-auto max-w-5xl">
           <AnimatedText delay={0.1}>
             <div className="mb-12">
@@ -137,7 +118,8 @@ export default async function Home() {
             )}
           </div>
         </div>
-      </section>
+      </section> */}
+
       {/* Contact Section */}
       <section className="relative py-16 px-4 border-t border-border">
         <div className="container mx-auto max-w-5xl">

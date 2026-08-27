@@ -12,7 +12,8 @@ export async function qualifyVocabSkill(vocabularyId: string, skillCode: Qualifi
 
   if (error) {
     console.error("Failed to qualify vocabulary skill:", error);
-    throw new Error("Failed to qualify vocabulary skill");
+
+    throw error;
   }
 
   return data;

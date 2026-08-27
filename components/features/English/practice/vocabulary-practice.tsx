@@ -11,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { createClient } from "@/lib/supabase/client";
 import { VocabularyCard } from "@/types/vocabulary";
 import { cn } from "@/utils";
 import { qualifyVocabSkill } from "@/utils/Supabase/action";
@@ -20,13 +19,13 @@ import { ArrowRight, BookText, Check, Volume2, X } from "lucide-react";
 import { useState } from "react";
 
 export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyCard[] }) {
-  const supabase = createClient();
   const [cards] = useState<VocabularyCard[]>(vocabularies);
 
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [knownWords, setKnownWords] = useState<string[]>([]);
   const [unknownWords, setUnknownWords] = useState<string[]>([]);
+  const [isQualifying, setIsQualifying] = useState(false);
 
   if (cards.length === 0) {
     return (
@@ -44,59 +43,27 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
   const currentCard = cards[currentCardIndex];
   const progress = cards.length > 0 ? ((currentCardIndex + 1) / cards.length) * 100 : 0;
 
-  async function handleKnown(card: VocabularyCard) {
-    await qualifyVocabSkill(card.id, "recognition");
-
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      throw new Error("User not authenticated");
-    }
-
-    const { error } = await supabase.from("user_vocab_progress").upsert(
-      {
-        user_id: user.id,
-        vocabulary_id: card.id,
-        skill_code: "recognition",
-        next_review_at: tomorrow.toISOString(),
-      },
-      {
-        onConflict: "user_id,vocabulary_id,skill_code",
-      }
-    );
-
-    if (error) {
-      console.error("Error adding to review queue:", error.message, error.code, error.details);
-
-      throw error;
-    }
-  }
-
   const flipCard = () => {
     setIsFlipped(!isFlipped);
   };
 
   const markAsKnown = async () => {
-    if (!currentCard) return;
+    if (!currentCard || isQualifying) return;
+
+    setIsQualifying(true);
+
     try {
-      await handleKnown(currentCard);
+      await qualifyVocabSkill(currentCard.id, "recognition");
+
+      setKnownWords((prev) => (prev.includes(currentCard.id) ? prev : [...prev, currentCard.id]));
+
+      nextCard();
     } catch (error) {
       console.error("Error marking vocabulary as known:", error);
-      return;
+    } finally {
+      setIsQualifying(false);
     }
-
-    if (!knownWords.includes(currentCard.id)) {
-      setKnownWords([...knownWords, currentCard.id]);
-    }
-
-    nextCard();
   };
-
   const markAsUnknown = () => {
     if (!currentCard) return;
     if (!unknownWords.includes(currentCard.id)) {

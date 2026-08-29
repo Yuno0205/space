@@ -64,6 +64,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
       setIsQualifying(false);
     }
   };
+
   const markAsUnknown = () => {
     if (!currentCard) return;
     if (!unknownWords.includes(currentCard.id)) {

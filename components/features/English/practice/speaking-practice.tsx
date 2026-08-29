@@ -18,7 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { createClient } from "@/lib/supabase/client";
+
 import { PronunciationResultState } from "@/types/pronunciation";
 import { VocabularyCard } from "@/types/vocabulary";
 import { qualifyVocabSkill } from "@/utils/Supabase/action";
@@ -39,7 +39,6 @@ export const initialPronunciationResultState: PronunciationResultState = {
 };
 
 export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) {
-  const supabase = createClient();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [showDefinition, setShowDefinition] = useState(false);
   const [isPronunciationQualified, setIsPronunciationQualified] = useState(false);
@@ -251,38 +250,6 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
       // 1. Qualify pronunciation + mastery +1
       await qualifyVocabSkill(currentCard.id, "speaking");
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        throw new Error("User not authenticated");
-      }
-
-      // 2. Add to speaking review queue
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-
-      const { error } = await supabase.from("user_vocab_progress").upsert(
-        {
-          user_id: user.id,
-          vocabulary_id: currentCard.id,
-          skill_code: "speaking",
-          next_review_at: tomorrow.toISOString().split("T")[0],
-        },
-        {
-          onConflict: "user_id,vocabulary_id,skill_code",
-        }
-      );
-
-      setIsPronunciationQualified(true);
-
-      if (error) {
-        throw error;
-      }
-
-      // 3. Update current UI
       setIsPronunciationQualified(true);
     } catch (error) {
       console.error("Error qualifying pronunciation:", error);

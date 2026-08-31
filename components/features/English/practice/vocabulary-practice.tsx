@@ -210,7 +210,12 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
               whileTap={{ scale: 0.95 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
-              <Button onClick={markAsUnknown} variant="outline" className="flex items-center">
+              <Button
+                onClick={markAsUnknown}
+                disabled={isQualifying}
+                variant="outline"
+                className="flex items-center"
+              >
                 <X className="mr-2 h-4 w-4" />
                 <span className="hidden sm:inline"> Dont Know</span>
               </Button>
@@ -222,6 +227,7 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
             >
               <Button
                 onClick={nextCard}
+                disabled={isQualifying}
                 variant="outline"
                 className="flex items-center"
                 aria-label="Next card"
@@ -234,7 +240,12 @@ export function VocabularyPractice({ vocabularies }: { vocabularies: VocabularyC
               whileTap={{ scale: 0.95 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
-              <Button onClick={markAsKnown} variant="outline" className="flex items-center">
+              <Button
+                onClick={markAsKnown}
+                disabled={isQualifying}
+                variant="outline"
+                className="flex items-center"
+              >
                 <Check className="mr-2 h-4 w-4" />
                 <span className="hidden sm:inline">Know</span>
               </Button>

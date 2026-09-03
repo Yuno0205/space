@@ -68,19 +68,37 @@ export const ListeningPractice = ({ vocabularies }: { vocabularies: VocabularyCa
     }
   }, [currentIndex, currentExercise, cancel]);
 
-  const handlePlayAudio = useCallback(() => {
-    if (!currentExercise) return;
-    const textToSpeak = currentExercise.word;
-    const audioUrl = currentExercise.audio_url?.trim();
+  const handlePlayAudio = useCallback(
+    (e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      if (!currentExercise) return;
 
-    if (audioUrl) {
-      const audio = new Audio(audioUrl);
-      audio.play().catch(() => speak(textToSpeak));
-      return;
-    }
+      const textToSpeak = currentExercise.word;
+      const audioUrl = currentExercise.audio_url?.trim();
 
-    speak(textToSpeak);
-  }, [currentExercise, speak]);
+      if (audioUrl) {
+        const audio = new Audio(audioUrl);
+
+        const playPromise = audio.play();
+
+        // timeout maximum2 seconds
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error("Audio load timeout")), 2000);
+        });
+
+        Promise.race([playPromise, timeoutPromise]).catch((err) => {
+          console.warn("Audio failed or timed out, fallback to TTS:", err);
+          audio.pause(); // stop the request that is hanging
+          audio.src = ""; // cancel the load, avoid leaking network requests
+          speak(textToSpeak);
+        });
+        return;
+      }
+
+      speak(textToSpeak);
+    },
+    [currentExercise, speak]
+  );
 
   const handleSubmit = useCallback(() => {
     if (isSubmitted || !currentExercise || !userAnswer.trim()) return;
@@ -237,7 +255,9 @@ export const ListeningPractice = ({ vocabularies }: { vocabularies: VocabularyCa
                 </PopoverTrigger>
                 <PopoverContent className="w-auto">
                   <p className="font-mono text-base">
-                    {currentExercise.phonetic || currentExercise.translation || "No hint available."}
+                    {currentExercise.phonetic ||
+                      currentExercise.translation ||
+                      "No hint available."}
                   </p>
                 </PopoverContent>
               </Popover>

@@ -1,20 +1,26 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { CheckCircle, Lightbulb, Volume2, XCircle } from "lucide-react";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { SharedProgressCard } from "@/components/shared/Progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Progress } from "@/components/ui/progress";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { VocabularyCard } from "@/types/vocabulary";
+import { cn, shuffleArray } from "@/utils";
+import { motion } from "framer-motion";
+import { ArrowRight, Check, Headphones, Lightbulb, Volume2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { ScoreCard } from "../../../shared/Card/ScoreCard";
-import { shuffleArray } from "@/utils";
 
 export const ListeningPractice = ({ vocabularies }: { vocabularies: VocabularyCard[] }) => {
   const { speak, cancel, isSpeaking } = useSpeechSynthesis();
@@ -24,6 +30,7 @@ export const ListeningPractice = ({ vocabularies }: { vocabularies: VocabularyCa
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [score, setScore] = useState(0);
+  const [skippedWords, setSkippedWords] = useState<string[]>([]);
   const [showFinalScore, setShowFinalScore] = useState(false);
   const [userAnswer, setUserAnswer] = useState("");
 
@@ -32,12 +39,12 @@ export const ListeningPractice = ({ vocabularies }: { vocabularies: VocabularyCa
   const currentExercise = useMemo(() => exercises[currentIndex], [exercises, currentIndex]);
   const progress = exercises.length > 0 ? ((currentIndex + 1) / exercises.length) * 100 : 0;
 
-  // Khởi tạo và reset bài tập
   const setupExercises = useCallback(() => {
     if (vocabularies?.length > 0) {
       setExercises(shuffleArray(vocabularies));
       setCurrentIndex(0);
       setScore(0);
+      setSkippedWords([]);
       setShowFinalScore(false);
       setUserAnswer("");
       setIsSubmitted(false);
@@ -51,7 +58,6 @@ export const ListeningPractice = ({ vocabularies }: { vocabularies: VocabularyCa
     setupExercises();
   }, [setupExercises]);
 
-  // Chuẩn bị cho câu hỏi mới
   useEffect(() => {
     if (currentExercise) {
       setUserAnswer("");
@@ -62,18 +68,37 @@ export const ListeningPractice = ({ vocabularies }: { vocabularies: VocabularyCa
     }
   }, [currentIndex, currentExercise, cancel]);
 
-  const handlePlayAudio = useCallback(() => {
-    if (!currentExercise) return;
-    const textToSpeak = currentExercise.word;
-    const audioUrl = currentExercise.audio_url;
+  const handlePlayAudio = useCallback(
+    (e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      if (!currentExercise) return;
 
-    if (audioUrl) {
-      const audio = new Audio(audioUrl);
-      audio.play().catch(() => speak(textToSpeak));
-    } else {
+      const textToSpeak = currentExercise.word;
+      const audioUrl = currentExercise.audio_url?.trim();
+
+      if (audioUrl) {
+        const audio = new Audio(audioUrl);
+
+        const playPromise = audio.play();
+
+        // timeout maximum2 seconds
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error("Audio load timeout")), 2000);
+        });
+
+        Promise.race([playPromise, timeoutPromise]).catch((err) => {
+          console.warn("Audio failed or timed out, fallback to TTS:", err);
+          audio.pause(); // stop the request that is hanging
+          audio.src = ""; // cancel the load, avoid leaking network requests
+          speak(textToSpeak);
+        });
+        return;
+      }
+
       speak(textToSpeak);
-    }
-  }, [currentExercise, speak]);
+    },
+    [currentExercise, speak]
+  );
 
   const handleSubmit = useCallback(() => {
     if (isSubmitted || !currentExercise || !userAnswer.trim()) return;
@@ -87,13 +112,21 @@ export const ListeningPractice = ({ vocabularies }: { vocabularies: VocabularyCa
     }
   }, [isSubmitted, currentExercise, userAnswer]);
 
-  const handleNext = useCallback(() => {
+  const goToNext = useCallback(() => {
     if (currentIndex < exercises.length - 1) {
       setCurrentIndex((prev) => prev + 1);
     } else {
       setShowFinalScore(true);
     }
   }, [currentIndex, exercises.length]);
+
+  const handleSkip = useCallback(() => {
+    if (!currentExercise || isSubmitted) return;
+    if (!skippedWords.includes(currentExercise.id)) {
+      setSkippedWords((prev) => [...prev, currentExercise.id]);
+    }
+    goToNext();
+  }, [currentExercise, isSubmitted, skippedWords, goToNext]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -106,11 +139,14 @@ export const ListeningPractice = ({ vocabularies }: { vocabularies: VocabularyCa
 
   if (!vocabularies?.length || exercises.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <p className="text-muted-foreground">
-          {vocabularies === undefined ? "Loading exercises..." : "No vocabulary available."}
-        </p>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Listening Practice</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>No vocabulary cards available for practice at the moment.</p>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -123,109 +159,175 @@ export const ListeningPractice = ({ vocabularies }: { vocabularies: VocabularyCa
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <Card className="bg-card border-border shadow-lg">
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-lg font-medium text-muted-foreground">
-              Listen & Write
+    <div className="space-y-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Headphones className="mr-2 h-5 w-5" />
+                Listening Card
+              </div>
+              <div className="text-sm font-normal">
+                {currentIndex + 1}/{exercises.length}
+              </div>
             </CardTitle>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" disabled={isSubmitted} aria-label="Show hint">
-                  <Lightbulb className="h-5 w-5" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto">
-                <p className="font-mono text-base">
-                  {currentExercise.phonetic || currentExercise.translation || "No hint available."}
-                </p>
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div className="mt-2 space-y-2">
-            <Progress value={progress} className="h-2" />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>
-                Progress: {currentIndex + 1} / {exercises.length}
-              </span>
-              <span>Score: {score}</span>
-            </div>
-          </div>
-        </CardHeader>
+            <CardDescription>Play the audio and type the word you hear</CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center pb-0">
+            <div className="w-full max-w-md aspect-square relative rounded-xl border dark:border-white/10 border-black/20 bg-white/5 p-6 flex flex-col items-center justify-center">
+              {currentExercise.word_type && (
+                <Badge variant="outline" className="mb-4 capitalize px-4 py-2">
+                  {currentExercise.word_type}
+                </Badge>
+              )}
 
-        <CardContent className="flex flex-col items-center justify-center space-y-8 py-10">
-          {/* Hiển thị loại từ */}
-          {currentExercise.word_type && (
-            <Badge variant="outline" className="capitalize text-sm mb-4">
-              {currentExercise.word_type}
-            </Badge>
-          )}
-
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-            <Button
-              onClick={handlePlayAudio}
-              disabled={isSpeaking}
-              size="icon"
-              className="h-20 w-20 rounded-full shadow-xl bg-primary text-primary-foreground hover:bg-primary/90"
-              aria-label={isSpeaking ? "Playing audio..." : "Play audio"}
-            >
-              <Volume2 className="h-9 w-9" />
-            </Button>
-          </motion.div>
-
-          <Input
-            ref={inputRef}
-            type="text"
-            placeholder="Type what you hear..."
-            value={userAnswer}
-            onChange={(e) => setUserAnswer(e.target.value)}
-            onKeyDown={handleKeyDown}
-            disabled={isSubmitted}
-            className="text-center text-2xl h-16 max-w-sm"
-            autoComplete="off"
-            spellCheck="false"
-            aria-label="Your answer"
-          />
-
-          {isSubmitted && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="w-full max-w-sm"
-            >
-              <Alert
-                variant={isCorrect ? "default" : "destructive"}
-                className={
-                  isCorrect
-                    ? "border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-300"
-                    : ""
-                }
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
-                {isCorrect ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                <AlertTitle>{isCorrect ? "Correct!" : "Incorrect"}</AlertTitle>
-                <AlertDescription>
-                  {isCorrect
-                    ? currentExercise.definition
-                    : `The correct answer is: ${currentExercise.word}`}
-                </AlertDescription>
-              </Alert>
-            </motion.div>
-          )}
-        </CardContent>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handlePlayAudio}
+                  disabled={isSpeaking}
+                  className="h-16 w-16 rounded-full"
+                  aria-label={isSpeaking ? "Playing audio..." : "Play audio"}
+                >
+                  <Volume2 className="h-8 w-8" />
+                </Button>
+              </motion.div>
 
-        <CardFooter className="justify-center border-t pt-6">
-          {isSubmitted ? (
-            <Button onClick={handleNext} className="min-w-[150px]">
-              {currentIndex < exercises.length - 1 ? "Next" : "Finish"}
-            </Button>
-          ) : (
-            <Button onClick={handleSubmit} disabled={!userAnswer.trim()} className="min-w-[150px]">
-              Check
-            </Button>
-          )}
-        </CardFooter>
-      </Card>
+              <p className="text-sm text-gray-400 mt-2 mb-6">Tap to listen</p>
+
+              <Input
+                ref={inputRef}
+                type="text"
+                placeholder="Type what you hear..."
+                value={userAnswer}
+                onChange={(e) => setUserAnswer(e.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={isSubmitted}
+                className="text-center text-2xl h-14 max-w-sm"
+                autoComplete="off"
+                spellCheck="false"
+                aria-label="Your answer"
+              />
+
+              {isSubmitted && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4 text-center space-y-1"
+                >
+                  <p className={cn("font-medium", isCorrect ? "text-green-500" : "text-red-500")}>
+                    {isCorrect ? "Correct!" : `The correct answer is: ${currentExercise.word}`}
+                  </p>
+                  {currentExercise.definition && (
+                    <p className="text-sm text-gray-400">{currentExercise.definition}</p>
+                  )}
+                </motion.div>
+              )}
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-between pt-6">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            >
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="flex items-center"
+                    disabled={isSubmitted}
+                    aria-label="Show hint"
+                  >
+                    <Lightbulb className="mr-2 h-4 w-4" />
+                    <span className="hidden sm:inline">Hint</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto">
+                  <p className="font-mono text-base">
+                    {currentExercise.phonetic ||
+                      currentExercise.translation ||
+                      "No hint available."}
+                  </p>
+                </PopoverContent>
+              </Popover>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            >
+              <Button
+                onClick={handleSkip}
+                variant="outline"
+                className="flex items-center"
+                disabled={isSubmitted}
+                aria-label="Skip card"
+              >
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            >
+              {isSubmitted ? (
+                <Button onClick={goToNext} variant="outline" className="flex items-center">
+                  <Check className="mr-2 h-4 w-4" />
+                  <span className="hidden sm:inline">
+                    {currentIndex < exercises.length - 1 ? "Next" : "Finish"}
+                  </span>
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleSubmit}
+                  variant="outline"
+                  className="flex items-center"
+                  disabled={!userAnswer.trim()}
+                >
+                  <Check className="mr-2 h-4 w-4" />
+                  <span className="hidden sm:inline">Check</span>
+                </Button>
+              )}
+            </motion.div>
+          </CardFooter>
+        </Card>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+      >
+        <SharedProgressCard
+          title="Progress"
+          value={progress}
+          headerClassName="pb-3"
+          progressClassName="h-2"
+          statsClassName="flex flex-col sm:flex-row justify-between mt-2 text-sm text-gray-400"
+          stats={
+            <>
+              <div>Score: {score}</div>
+              <div>Skipped: {skippedWords.length}</div>
+              <div>
+                Remaining:{" "}
+                {exercises.length > 0 ? Math.max(exercises.length - currentIndex - 1, 0) : 0}
+              </div>
+            </>
+          }
+        />
+      </motion.div>
     </div>
   );
 };

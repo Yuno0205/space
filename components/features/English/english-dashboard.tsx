@@ -1,8 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
-import Link from "next/link";
-import { Headphones, BookOpen, Mic, Pencil, BookText, BarChart2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -11,8 +9,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { BarChart2, BookOpen, BookText, Headphones, Mic, Pencil } from "lucide-react";
+import Link from "next/link";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 export function EnglishDashboard() {
   const skills = [
@@ -58,13 +60,19 @@ export function EnglishDashboard() {
     },
   ];
 
-  // It's better to format dates dynamically or fetch them in English if possible.
-  // For this example, I'll translate them directly.
-  const recentActivities = [
-    { id: 1, name: "Listening Practice - Business Meeting", date: "2 hours ago", score: "8/10" },
-    { id: 2, name: "Vocabulary Quiz - Technology Terms", date: "Yesterday", score: "15/20" },
-    { id: 3, name: "Reading Comprehension - Science Article", date: "2 days ago", score: "90%" },
+  const vocabularyData = [
+    { day: "Mon", words: 8 },
+    { day: "Tue", words: 12 },
+    { day: "Wed", words: 6 },
+    { day: "Thu", words: 15 },
+    { day: "Fri", words: 11 },
+    { day: "Sat", words: 18 },
+    { day: "Sun", words: 14 },
   ];
+
+  const vocabularyConfig = {
+    words: { label: "Words learned", color: "hsl(var(--chart-1))" },
+  };
 
   return (
     <div className="space-y-6">
@@ -122,6 +130,7 @@ export function EnglishDashboard() {
           </Card>
         </motion.div>
 
+        {/* Daily words learned chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -130,29 +139,32 @@ export function EnglishDashboard() {
         >
           <Card>
             <CardHeader>
-              <CardTitle>Recent Activities</CardTitle>
-              <CardDescription>Your recently completed exercises</CardDescription>
+              <CardTitle>Words Learned</CardTitle>
+              <CardDescription>Your vocabulary progress over the last 7 days</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {recentActivities.map((activity) => (
-                  <div
-                    key={activity.id}
-                    className="flex justify-between items-center p-3 rounded-md border border-white/10 bg-white/5"
-                  >
-                    <div>
-                      <p className="font-medium">{activity.name}</p>
-                      <p className="text-sm text-gray-400">{activity.date}</p>
-                    </div>
-                    <div className="text-sm font-medium">{activity.score}</div>
-                  </div>
-                ))}
-              </div>
+              <ChartContainer config={vocabularyConfig} className="aspect-auto h-[240px] w-full">
+                <AreaChart data={vocabularyData} accessibilityLayer margin={{ left: 4, right: 8 }}>
+                  <CartesianGrid vertical={false} strokeDasharray="4 4" />
+                  <XAxis dataKey="day" tickLine={false} axisLine={false} tickMargin={8} />
+                  <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Area
+                    type="monotone"
+                    dataKey="words"
+                    stroke="var(--color-words)"
+                    fill="var(--color-words)"
+                    fillOpacity={0.2}
+                    strokeWidth={2}
+                    dot={{ r: 3, fill: "var(--color-words)", strokeWidth: 0 }}
+                    activeDot={{ r: 5 }}
+                  />
+                </AreaChart>
+              </ChartContainer>
             </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full">
-                View all activities
-              </Button>
+            <CardFooter className="justify-between text-sm text-muted-foreground">
+              <span>84 words this week</span>
+              <span className="text-foreground">+18% from last week</span>
             </CardFooter>
           </Card>
         </motion.div>

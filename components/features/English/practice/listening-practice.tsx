@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { VocabularyCard } from "@/types/vocabulary";
 import { cn, shuffleArray } from "@/utils";
 import { motion } from "framer-motion";
@@ -21,9 +20,10 @@ import { ArrowRight, Check, Headphones, Lightbulb, Volume2 } from "lucide-react"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ScoreCard } from "../../../shared/Card/ScoreCard";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 
 export const ListeningPractice = ({ vocabularies }: { vocabularies: VocabularyCard[] }) => {
-  const { speak, cancel, isSpeaking } = useSpeechSynthesis();
+  const { playAudio, isPlaying } = useSpeechSynthesis();
 
   const [exercises, setExercises] = useState<VocabularyCard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -63,42 +63,10 @@ export const ListeningPractice = ({ vocabularies }: { vocabularies: VocabularyCa
       setUserAnswer("");
       setIsSubmitted(false);
       setIsCorrect(null);
-      cancel();
+
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [currentIndex, currentExercise, cancel]);
-
-  const handlePlayAudio = useCallback(
-    (e?: React.MouseEvent) => {
-      e?.stopPropagation();
-      if (!currentExercise) return;
-
-      const textToSpeak = currentExercise.word;
-      const audioUrl = currentExercise.audio_url?.trim();
-
-      if (audioUrl) {
-        const audio = new Audio(audioUrl);
-
-        const playPromise = audio.play();
-
-        // timeout maximum2 seconds
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error("Audio load timeout")), 2000);
-        });
-
-        Promise.race([playPromise, timeoutPromise]).catch((err) => {
-          console.warn("Audio failed or timed out, fallback to TTS:", err);
-          audio.pause(); // stop the request that is hanging
-          audio.src = ""; // cancel the load, avoid leaking network requests
-          speak(textToSpeak);
-        });
-        return;
-      }
-
-      speak(textToSpeak);
-    },
-    [currentExercise, speak]
-  );
+  }, [currentIndex, currentExercise]);
 
   const handleSubmit = useCallback(() => {
     if (isSubmitted || !currentExercise || !userAnswer.trim()) return;
@@ -194,10 +162,12 @@ export const ListeningPractice = ({ vocabularies }: { vocabularies: VocabularyCa
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={handlePlayAudio}
-                  disabled={isSpeaking}
+                  onClick={() =>
+                    playAudio({ audioUrl: currentExercise.audio_url, text: currentExercise.word })
+                  }
+                  disabled={isPlaying}
                   className="h-16 w-16 rounded-full"
-                  aria-label={isSpeaking ? "Playing audio..." : "Play audio"}
+                  aria-label={isPlaying ? "Playing audio..." : "Play audio"}
                 >
                   <Volume2 className="h-8 w-8" />
                 </Button>

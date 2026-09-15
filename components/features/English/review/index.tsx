@@ -395,8 +395,6 @@ export function ReviewSession() {
           null
         );
 
-        console.log(dueOnly);
-
         if (firstValid) {
           setCurrentIndex(firstValid.index);
           setCurrentQuestion(firstValid.question);

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/utils";
-import { BookText, Cpu } from "lucide-react";
+import { BookText, Cpu, Headphones } from "lucide-react";
 import { Orbitron } from "next/font/google";
 import Link from "next/link";
 import ProgressRing from "./ProgressRing";
@@ -74,7 +74,7 @@ export function LessonNode({ left, lessonData, levelData, progress }: LessonNode
                         Lesson {lessonData.letter} - Level {levelData.name}
                       </h3>
                       <p className="text-xs text-white/60 font-mono">
-                        {lessonData.total_words} words to master
+                        {lessonData.total_words} words to complete
                       </p>
                     </div>
                   </div>
@@ -107,7 +107,18 @@ export function LessonNode({ left, lessonData, levelData, progress }: LessonNode
                         href={`/english/vocabulary/${levelData.name.toLowerCase()}/${lessonData.letter.toLowerCase()}`}
                       >
                         <BookText className="mr-3 h-5 w-5 text-cyan-400" />
-                        <span className="relative z-10">Vocabulary Practice</span>
+                        <span className="relative z-10">Recognition Practice</span>
+                      </Link>
+                    </Button>
+                    <Button
+                      asChild
+                      className="w-full group relative overflow-hidden justify-start bg-white/5 hover:bg-white/10 text-white border border-white/10"
+                    >
+                      <Link
+                        href={`/english/listening/${levelData.name.toLowerCase()}/${lessonData.letter.toLowerCase()}`}
+                      >
+                        <Headphones className="mr-3 h-5 w-5 text-cyan-400" />
+                        <span className="relative z-10">Dictation Practice</span>
                       </Link>
                     </Button>
                   </div>

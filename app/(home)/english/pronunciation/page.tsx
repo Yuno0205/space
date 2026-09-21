@@ -33,8 +33,6 @@ const PhonemeCard = ({ phoneme }: { phoneme: Phoneme }) => {
     audio.play().catch((err) => console.error("Audio play failed:", err));
   };
 
-  console.log(phoneme);
-
   return (
     <div className="relative group min-w-32">
       {/* The navigable card */}

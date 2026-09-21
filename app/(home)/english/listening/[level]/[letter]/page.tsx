@@ -1,12 +1,12 @@
-import { VocabularyPractice } from "@/components/features/English/practice/vocabulary-practice";
+import { ListeningPractice } from "@/components/features/English/practice/listening-practice";
 import { createClient } from "@/lib/supabase/server";
+import { VALID_LEVELS } from "@/types/levels";
 import { VocabularyCard } from "@/types/vocabulary";
 import { filterUnqualifiedVocabularies } from "@/utils/Supabase/mastery-server";
 import { PostgrestError } from "@supabase/supabase-js";
 import { notFound } from "next/navigation";
-import { VALID_LEVELS } from "@/types/levels";
 
-export default async function RecognitionPracticePage({
+export default async function DitactionPage({
   params,
 }: {
   params: Promise<{
@@ -61,11 +61,11 @@ export default async function RecognitionPracticePage({
     );
   }
 
-  const learningVocabularies = await filterUnqualifiedVocabularies(vocabList ?? [], "recognition");
+  const learningVocabularies = await filterUnqualifiedVocabularies(vocabList ?? [], "listening");
 
   return (
     <main className="container mx-auto px-2 py-8 sm:px-4">
-      <VocabularyPractice vocabularies={learningVocabularies} />
+      <ListeningPractice vocabularies={learningVocabularies} />
     </main>
   );
 }

@@ -23,6 +23,7 @@ import { PronunciationResultState } from "@/types/pronunciation";
 import { VocabularyCard } from "@/types/vocabulary";
 import { qualifyVocabSkill } from "@/utils/Supabase/action";
 import { analyzeSpeech, createNeutralWordDisplay } from "@/utils/pronunciation";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 
 interface SpeakingPracticeProps {
   cards?: VocabularyCard[];
@@ -43,12 +44,13 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
   const [showDefinition, setShowDefinition] = useState(false);
   const [isPronunciationQualified, setIsPronunciationQualified] = useState(false);
   const [isQualifying, setIsQualifying] = useState(false);
-
   const [pronunciationResult, setPronunciationResult] = useState<PronunciationResultState>(
     initialPronunciationResultState
   );
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+
+  const { playAudio, isPlaying, stopAudio } = useSpeechSynthesis();
 
   const currentCard = cards[currentCardIndex] || {
     id: "0",
@@ -154,43 +156,6 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
     }
   };
 
-  const speakWord = (word: string) => {
-    if (!("speechSynthesis" in window) || !word) {
-      setPronunciationResult((prev) => ({
-        ...prev,
-        error: "No audio file available or your browser does not support speech synthesis.",
-      }));
-      setTimeout(() => setPronunciationResult((prev) => ({ ...prev, error: null })), 3000);
-      return;
-    }
-
-    if (speechSynthesis.speaking) speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(word);
-    utterance.lang = "en-GB";
-    speechSynthesis.speak(utterance);
-  };
-
-  const playAudio = () => {
-    const audioUrl = currentCard.audio_url?.trim();
-
-    if (!audioUrl) {
-      speakWord(currentCard.word);
-      return;
-    }
-
-    const audio = new Audio(audioUrl);
-    let didFallback = false;
-
-    const fallbackToSpeech = () => {
-      if (didFallback) return;
-      didFallback = true;
-      speakWord(currentCard.word);
-    };
-
-    audio.onerror = fallbackToSpeech;
-    audio.play().catch(fallbackToSpeech);
-  };
-
   const handleNextCard = () => {
     if (currentCardIndex < cards.length - 1) {
       setCurrentCardIndex(currentCardIndex + 1);
@@ -198,13 +163,14 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
   };
 
   const resetPronunciationState = useCallback(() => {
+    stopAudio();
     setPronunciationResult({
       ...initialPronunciationResultState,
       wordsForDisplay: createNeutralWordDisplay(currentCard.word),
     });
     setShowDefinition(false);
     setIsPronunciationQualified(false);
-  }, [currentCard.word]);
+  }, [currentCard.word, stopAudio]);
 
   useEffect(() => {
     resetPronunciationState();
@@ -337,9 +303,16 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                     variant="ghost"
                     size="icon"
                     className="h-9 w-9 rounded-full dark:hover:bg-gray-700 hover:bg-gray-200"
-                    onClick={playAudio}
+                    onClick={() =>
+                      playAudio({
+                        audioUrl: currentCard.audio_url,
+                        text: currentCard.word,
+                        lang: "en-GB",
+                      })
+                    }
+                    disabled={isPlaying}
                     title="Listen to pronunciation"
-                    aria-label="Listen to pronunciation"
+                    aria-label={isPlaying ? "Playing audio..." : "Listen to pronunciation"}
                   >
                     <Volume2 className="h-5 w-5" />
                     <span className="sr-only">Play audio</span>

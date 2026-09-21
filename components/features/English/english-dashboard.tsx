@@ -60,6 +60,7 @@ export function EnglishDashboard() {
     },
   ];
 
+  // TODO: Get this data from the database
   const vocabularyData = [
     { day: "Mon", words: 8 },
     { day: "Tue", words: 12 },

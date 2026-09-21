@@ -20,10 +20,21 @@ export const useSpeechSynthesis = () => {
 
     const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
     loadVoices();
-
     window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
+
     return () => {
       window.speechSynthesis.removeEventListener("voiceschanged", loadVoices);
+
+      // Full cleanup on unmount: cancel TTS, clear pending timeout, stop URL audio
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+        audioRef.current = null;
+      }
       window.speechSynthesis.cancel();
     };
   }, []);
@@ -95,6 +106,19 @@ export const useSpeechSynthesis = () => {
       const audio = new Audio(trimmedUrl);
       audioRef.current = audio;
       audio.addEventListener("ended", () => setIsPlaying(false));
+
+      // Handle errors that occur AFTER playback has already started
+      audio.addEventListener(
+        "error",
+        () => {
+          if (audioRef.current !== audio) return; // a newer playback has taken over, ignore
+          console.warn("Audio playback error after start, fallback to TTS");
+          audio.src = "";
+          audioRef.current = null;
+          speakText(text, lang);
+        },
+        { once: true }
+      );
 
       const playPromise = audio.play();
       const timeoutPromise = new Promise((_, reject) => {

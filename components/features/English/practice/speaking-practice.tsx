@@ -18,11 +18,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { createClient } from "@/lib/supabase/client";
+
 import { PronunciationResultState } from "@/types/pronunciation";
 import { VocabularyCard } from "@/types/vocabulary";
-import { updateProficiency } from "@/utils/Supabase/action";
+import { qualifyVocabSkill } from "@/utils/Supabase/action";
 import { analyzeSpeech, createNeutralWordDisplay } from "@/utils/pronunciation";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 
 interface SpeakingPracticeProps {
   cards?: VocabularyCard[];
@@ -39,16 +40,17 @@ export const initialPronunciationResultState: PronunciationResultState = {
 };
 
 export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) {
-  const supabase = createClient();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [showDefinition, setShowDefinition] = useState(false);
-  const [isMarkedMastered, setIsMarkedMastered] = useState(false);
-
+  const [isPronunciationQualified, setIsPronunciationQualified] = useState(false);
+  const [isQualifying, setIsQualifying] = useState(false);
   const [pronunciationResult, setPronunciationResult] = useState<PronunciationResultState>(
     initialPronunciationResultState
   );
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+
+  const { playAudio, isPlaying, stopAudio } = useSpeechSynthesis();
 
   const currentCard = cards[currentCardIndex] || {
     id: "0",
@@ -154,24 +156,6 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
     }
   };
 
-  const playAudio = () => {
-    if (currentCard.audio_url) {
-      const audio = new Audio(currentCard.audio_url);
-      audio.play().catch((e) => console.error("Error playing audio URL:", e));
-    } else if ("speechSynthesis" in window && currentCard.word) {
-      if (speechSynthesis.speaking) speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(currentCard.word);
-      utterance.lang = "en-GB";
-      speechSynthesis.speak(utterance);
-    } else {
-      setPronunciationResult((prev) => ({
-        ...prev,
-        error: "No audio file available or your browser does not support speech synthesis.",
-      }));
-      setTimeout(() => setPronunciationResult((prev) => ({ ...prev, error: null })), 3000);
-    }
-  };
-
   const handleNextCard = () => {
     if (currentCardIndex < cards.length - 1) {
       setCurrentCardIndex(currentCardIndex + 1);
@@ -179,13 +163,14 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
   };
 
   const resetPronunciationState = useCallback(() => {
+    stopAudio();
     setPronunciationResult({
       ...initialPronunciationResultState,
       wordsForDisplay: createNeutralWordDisplay(currentCard.word),
     });
     setShowDefinition(false);
-    setIsMarkedMastered(false);
-  }, [currentCard.word]);
+    setIsPronunciationQualified(false);
+  }, [currentCard.word, stopAudio]);
 
   useEffect(() => {
     resetPronunciationState();
@@ -215,42 +200,38 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
     return "text-red-500";
   };
 
-  const handleMasteredWord = async () => {
+  const handlePronunciationQualified = async () => {
     if (
-      pronunciationResult.overallScore !== null &&
-      pronunciationResult.overallScore >= 85 &&
-      !isMarkedMastered
+      pronunciationResult.overallScore === null ||
+      pronunciationResult.overallScore < 85 ||
+      isPronunciationQualified ||
+      isQualifying
     ) {
-      try {
-        await updateProficiency(currentCard.id, "speaking", true);
+      return;
+    }
 
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
+    setIsQualifying(true);
 
-        const { error: upsertError } = await supabase.from("user_vocab_progress").upsert(
-          {
-            vocabulary_id: currentCard.id,
-            next_review_at: tomorrow.toISOString().split("T")[0], // YYYY-MM-DD format
-            skill_code: "speaking",
-          },
-          { onConflict: "id" }
-        );
+    try {
+      // 1. Qualify pronunciation + mastery +1
+      await qualifyVocabSkill(currentCard.id, "speaking");
 
-        if (upsertError) {
-          console.error("Error adding to review queue:", upsertError);
-          throw upsertError;
-        }
+      setIsPronunciationQualified(true);
+    } catch (error) {
+      console.error("Error qualifying pronunciation:", error);
 
-        setIsMarkedMastered(true);
-      } catch (dbError) {
-        console.error("Error updating Supabase:", dbError);
-        setPronunciationResult((prev) => ({
-          ...prev,
-          error: "Failed to save mastery status.",
-        }));
-      }
+      setPronunciationResult((prev) => ({
+        ...prev,
+        error: "Failed to save pronunciation progress.",
+      }));
+    } finally {
+      setIsQualifying(false);
     }
   };
+
+  useEffect(() => {
+    setIsPronunciationQualified(false);
+  }, [currentCard.id]);
 
   if (cards.length === 0) {
     return (
@@ -322,9 +303,16 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                     variant="ghost"
                     size="icon"
                     className="h-9 w-9 rounded-full dark:hover:bg-gray-700 hover:bg-gray-200"
-                    onClick={playAudio}
+                    onClick={() =>
+                      playAudio({
+                        audioUrl: currentCard.audio_url,
+                        text: currentCard.word,
+                        lang: "en-GB",
+                      })
+                    }
+                    disabled={isPlaying}
                     title="Listen to pronunciation"
-                    aria-label="Listen to pronunciation"
+                    aria-label={isPlaying ? "Playing audio..." : "Listen to pronunciation"}
                   >
                     <Volume2 className="h-5 w-5" />
                     <span className="sr-only">Play audio</span>
@@ -500,10 +488,10 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleMasteredWord()}
+                              onClick={() => handlePronunciationQualified()}
                               className={cn(
                                 "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors duration-150 ease-in-out",
-                                isMarkedMastered
+                                isPronunciationQualified
                                   ? "bg-green-100 text-green-700 border-green-500 dark:bg-green-800/30 dark:text-green-400 dark:border-green-600 cursor-default"
                                   : pronunciationResult.overallScore !== null &&
                                       pronunciationResult.overallScore >= 85
@@ -511,7 +499,7 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                                     : "text-gray-400 dark:text-gray-500 border-gray-300 dark:border-gray-600 cursor-not-allowed"
                               )}
                               title={
-                                isMarkedMastered
+                                isPronunciationQualified
                                   ? "Marked as mastered for this attempt"
                                   : pronunciationResult.overallScore !== null &&
                                       pronunciationResult.overallScore >= 85
@@ -521,11 +509,11 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                               disabled={
                                 pronunciationResult.overallScore === null ||
                                 pronunciationResult.overallScore < 85 ||
-                                isMarkedMastered
+                                isPronunciationQualified
                               }
                             >
                               <CheckCircle className="mr-2 h-4 w-4" />
-                              {isMarkedMastered ? "Marked as Mastered" : "Mark as Mastered"}
+                              {isPronunciationQualified ? "Marked as Mastered" : "Mark as Mastered"}
                             </Button>
                           </div>
                         </div>
@@ -574,7 +562,11 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                 variant="outline"
                 className="w-full px-8 py-4 border-input text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                 onClick={handleNextCard}
-                disabled={currentCardIndex >= cards.length - 1 || pronunciationResult.isListening}
+                disabled={
+                  currentCardIndex >= cards.length - 1 ||
+                  pronunciationResult.isListening ||
+                  isQualifying
+                }
               >
                 Next Word
                 <ArrowRight className="ml-2 h-4 w-4" />

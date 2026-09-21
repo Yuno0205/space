@@ -1,0 +1,1 @@
+export const VALID_LEVELS = ["a1", "a2", "b1", "b2", "c1", "c2"] as const;

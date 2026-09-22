@@ -18,3 +18,19 @@ export interface PronunciationResultState {
   error?: string | null;
   isListening?: boolean;
 }
+
+// Phonemes
+export interface Phoneme {
+  id: number;
+  symbol: string;
+  type: "vowel" | "diphthong" | "consonant";
+  example_word: string;
+  description: string;
+  progress?: number;
+}
+
+export interface GroupedPhonemes {
+  monophthongs: Phoneme[];
+  diphthongs: Phoneme[];
+  consonants: Phoneme[];
+}

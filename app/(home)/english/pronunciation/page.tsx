@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2, Volume2 } from "lucide-react";
 import Link from "next/link";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface Phoneme {
   id: number;
@@ -81,14 +81,12 @@ export default function PronunciationPage() {
     diphthongs: [],
     consonants: [],
   });
-  const [loading, setLoading] = useState(true);
+  const loading = useRef(true);
   const [error, setError] = useState<string | null>(null);
 
   //Fetch phonemes from Supabase and group them by type
-
   const fetchAndGroupPhonemes = useCallback(async () => {
     try {
-      setLoading(true);
       setError(null);
       const { data, error } = await supabase
         .from("phonemes")
@@ -113,7 +111,7 @@ export default function PronunciationPage() {
       console.error("System Error: Failed to initialize phoneme data", err);
       setError("Failed to initialize phoneme data");
     } finally {
-      setLoading(false);
+      loading.current = false;
     }
   }, [supabase]);
 

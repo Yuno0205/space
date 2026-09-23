@@ -10,10 +10,9 @@ import { shuffleArray } from "@/utils";
 interface ListeningQuestionProps {
   exercise: VocabularyCard;
   onNext: () => void;
-  onSkip: () => void;
 }
 
-function ListeningQuestion({ exercise, onNext, onSkip }: ListeningQuestionProps) {
+function ListeningQuestion({ exercise, onNext }: ListeningQuestionProps) {
   const [userAnswer, setUserAnswer] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -57,7 +56,7 @@ function ListeningQuestion({ exercise, onNext, onSkip }: ListeningQuestionProps)
 
       {!isSubmitted ? (
         <>
-          <Button onClick={onSkip}>Skip</Button>
+          <Button onClick={onNext}>Skip</Button>
 
           <Button onClick={handleSubmit} disabled={!userAnswer.trim()}>
             Check
@@ -86,11 +85,6 @@ export function ListeningPractice({ vocabularies }: { vocabularies: VocabularyCa
   }
 
   return (
-    <ListeningQuestion
-      key={currentExercise.id}
-      exercise={currentExercise}
-      onNext={goToNext}
-      onSkip={goToNext}
-    />
+    <ListeningQuestion key={currentExercise.id} exercise={currentExercise} onNext={goToNext} />
   );
 }

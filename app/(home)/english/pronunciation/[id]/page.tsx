@@ -59,7 +59,7 @@ export default async function PronunciationPage({ params }: { params: Promise<{ 
 
   return (
     <main className="container max-w-full mx-auto py-10 px-4">
-      <SpeakingPractice cards={learningVocabularies ?? []} slug={phoneme} />
+      <SpeakingPractice cards={learningVocabularies ?? []} />
     </main>
   );
 }

@@ -11,61 +11,36 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { IWordpressPost } from "@/types/post";
 import { motion } from "framer-motion";
 import { Calendar, Search, Tag } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import DOMPurify from "dompurify";
-import { IWordpressPost } from "@/types/post";
+import { useState } from "react";
 
 type BlogListProps = {
   initialPosts: IWordpressPost[];
   category?: string;
 };
 
-// Tạo một component con để xử lý việc sanitize và dangerouslySetInnerHTML
-const SanitizedHtml = ({ htmlContent }: { htmlContent: string }) => {
-  const [sanitizedHtml, setSanitizedHtml] = useState("");
-
-  useEffect(() => {
-    // DOMPurify chỉ chạy ở client-side
-    if (typeof window !== "undefined") {
-      setSanitizedHtml(DOMPurify.sanitize(htmlContent));
-    }
-  }, [htmlContent]);
-
-  // Quan trọng: Chỉ render khi sanitizedHtml đã có giá trị
-  // để tránh hydration mismatch nếu server render ra chuỗi rỗng
-  // và client render ra HTML đã sanitize.
-  if (!sanitizedHtml && typeof window === "undefined") {
-    // Hoặc return một placeholder an toàn cho SSR
-    // Hoặc nếu bạn muốn giữ nguyên HTML gốc (không an toàn) cho SSR,
-    // thì cần cân nhắc kỹ lưỡng về XSS.
-    // Tốt nhất là không render gì hoặc placeholder cho SSR nếu nội dung cần sanitize.
-    return null;
-  }
-
-  // Hoặc nếu muốn nội dung gốc hiển thị trên server (không khuyến khích nếu chưa tin tưởng nguồn dữ liệu)
-  // const displayHtml = typeof window === 'undefined' ? htmlContent : sanitizedHtml;
-
-  return <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
-};
+function stripHtml(html: string) {
+  return html
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&#8217;/g, "'")
+    .replace(/&#8220;|&#8221;/g, '"');
+}
 
 export function BlogList({ initialPosts, category }: BlogListProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [blogPosts, setBlogPosts] = useState<IWordpressPost[]>(initialPosts);
+  const normalizedSearchQuery = searchQuery.toLowerCase().trim();
 
-  useEffect(() => {
-    const filteredPosts = initialPosts.filter(
-      (post) =>
-        post.title.rendered.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.excerpt.rendered.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.categories?.some((cat) =>
-          String(cat).toLowerCase().includes(searchQuery.toLowerCase())
-        )
-    );
-    setBlogPosts(filteredPosts);
-  }, [searchQuery, initialPosts]);
+  const blogPosts = initialPosts.filter(
+    (post) =>
+      stripHtml(post.title.rendered).toLowerCase().includes(normalizedSearchQuery) ||
+      stripHtml(post.excerpt.rendered).toLowerCase().includes(normalizedSearchQuery) ||
+      post.categories?.some((cat) => String(cat).toLowerCase().includes(normalizedSearchQuery))
+  );
 
   const filteredByCategory = category
     ? blogPosts.filter((post) => post.categories?.map(String).includes(category))
@@ -121,9 +96,8 @@ export function BlogList({ initialPosts, category }: BlogListProps) {
                       )}
                       <div className={post.jetpack_featured_media_url ? "md:w-2/3" : "w-full"}>
                         <CardHeader>
-                          {/* Sử dụng component SanitizedHtml */}
                           <CardTitle className="text-xl">
-                            <SanitizedHtml htmlContent={post.title.rendered} />
+                            {stripHtml(post.title.rendered)}
                           </CardTitle>
                           <CardDescription className="flex items-center text-sm space-x-4">
                             <span className="flex items-center">
@@ -133,10 +107,7 @@ export function BlogList({ initialPosts, category }: BlogListProps) {
                           </CardDescription>
                         </CardHeader>
                         <CardContent>
-                          {/* Sử dụng component SanitizedHtml */}
-                          <div className="text-gray-400">
-                            <SanitizedHtml htmlContent={post.excerpt.rendered} />
-                          </div>
+                          <div className="text-gray-400">{stripHtml(post.excerpt.rendered)}</div>
                         </CardContent>
                         <CardFooter>
                           <div className="flex flex-wrap gap-2">
@@ -205,9 +176,8 @@ export function BlogList({ initialPosts, category }: BlogListProps) {
                   {initialPosts.slice(0, 3).map((post) => (
                     <Link key={post.id} href={`/blog/${post.slug}`} className="block">
                       <div className="group">
-                        {/* Không cần sanitize title ở đây nếu nó chỉ là text */}
                         <h3 className="font-medium group-hover:text-white transition-colors">
-                          {post.title.rendered}
+                          {stripHtml(post.title.rendered)}
                         </h3>
                         <p className="text-sm text-gray-400">
                           {new Date(post.date).toLocaleDateString("vi-VN")}

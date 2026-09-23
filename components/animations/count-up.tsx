@@ -1,52 +1,65 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from "react"
-import { useInView } from "framer-motion"
+import { useEffect, useRef, useState } from "react";
+import { useInView } from "framer-motion";
 
 interface CountUpProps {
-  end: number
-  duration?: number
-  delay?: number
-  prefix?: string
-  suffix?: string
+  end: number;
+  duration?: number;
+  delay?: number;
+  prefix?: string;
+  suffix?: string;
 }
 
 export function CountUp({ end, duration = 2, delay = 0, prefix = "", suffix = "" }: CountUpProps) {
-  const [count, setCount] = useState(0)
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: "-100px" })
-  const [hasStarted, setHasStarted] = useState(false)
+  const [count, setCount] = useState(0);
+
+  const ref = useRef<HTMLSpanElement>(null);
+  const hasStarted = useRef(false);
+
+  const isInView = useInView(ref, {
+    once: true,
+    margin: "-100px",
+  });
 
   useEffect(() => {
-    if (isInView && !hasStarted) {
-      setHasStarted(true)
-
-      // Delay the start of the animation
-      const delayTimeout = setTimeout(() => {
-        let startTime: number
-        let animationFrame: number
-
-        const animate = (timestamp: number) => {
-          if (!startTime) startTime = timestamp
-          const progress = Math.min((timestamp - startTime) / (duration * 1000), 1)
-
-          setCount(Math.floor(progress * end))
-
-          if (progress < 1) {
-            animationFrame = requestAnimationFrame(animate)
-          }
-        }
-
-        animationFrame = requestAnimationFrame(animate)
-
-        return () => {
-          cancelAnimationFrame(animationFrame)
-        }
-      }, delay * 1000)
-
-      return () => clearTimeout(delayTimeout)
+    if (!isInView || hasStarted.current) {
+      return;
     }
-  }, [isInView, end, duration, delay, hasStarted])
+
+    hasStarted.current = true;
+
+    let animationFrame: number | undefined;
+    let startTime: number | undefined;
+
+    const delayTimeout = window.setTimeout(() => {
+      const animate = (timestamp: number) => {
+        if (startTime === undefined) {
+          startTime = timestamp;
+        }
+
+        const elapsed = timestamp - startTime;
+
+        const progress = Math.min(elapsed / (duration * 1000), 1);
+
+        setCount(Math.floor(progress * end));
+
+        if (progress < 1) {
+          animationFrame = requestAnimationFrame(animate);
+        }
+      };
+
+      animationFrame = requestAnimationFrame(animate);
+    }, delay * 1000);
+
+    return () => {
+      window.clearTimeout(delayTimeout);
+
+      if (animationFrame !== undefined) {
+        cancelAnimationFrame(animationFrame);
+      }
+    };
+  }, [isInView, end, duration, delay]);
 
   return (
     <span ref={ref}>
@@ -54,5 +67,5 @@ export function CountUp({ end, duration = 2, delay = 0, prefix = "", suffix = ""
       {count}
       {suffix}
     </span>
-  )
+  );
 }

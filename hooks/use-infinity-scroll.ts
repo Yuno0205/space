@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useRef } from "react";
 
 export function useInfinityScroll<T>(
@@ -10,10 +11,16 @@ export function useInfinityScroll<T>(
   const lastItemRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const currentElement = lastItemRef.current;
+
+    if (!currentElement) {
+      return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loading) {
-          loadMore();
+          void loadMore();
         }
       },
       {
@@ -22,14 +29,11 @@ export function useInfinityScroll<T>(
       }
     );
 
-    if (lastItemRef.current) {
-      observer.observe(lastItemRef.current);
-    }
+    observer.observe(currentElement);
 
     return () => {
-      if (lastItemRef.current) {
-        observer.unobserve(lastItemRef.current);
-      }
+      observer.unobserve(currentElement);
+      observer.disconnect();
     };
   }, [items.length, loadMore, hasMore, loading]);
 

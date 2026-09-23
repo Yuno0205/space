@@ -93,7 +93,7 @@ export const useSpeechSynthesis = () => {
 
   // Main API: play audio if available; fall back to TTS on error/timeout or if no audioUrl
   const playAudio = useCallback(
-    ({ audioUrl, text, timeoutMs = 2000, lang }: PlayAudioOptions) => {
+    ({ audioUrl, text, timeoutMs = 3000, lang }: PlayAudioOptions) => {
       stopAudio();
       setIsPlaying(true); // set immediately to prevent spamming from the start
 

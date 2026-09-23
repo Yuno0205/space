@@ -15,6 +15,11 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
+    localPatterns: [
+      {
+        pathname: "/assets/**",
+      },
+    ],
   },
 };
 

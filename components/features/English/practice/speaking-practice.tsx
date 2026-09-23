@@ -3,7 +3,7 @@
 import { cn } from "@/utils";
 import { motion } from "framer-motion";
 import { AlertTriangle, ArrowRight, CheckCircle, Mic, RefreshCw, Volume2 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { SharedProgressCard } from "@/components/shared/Progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -27,7 +27,13 @@ import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 
 interface SpeakingPracticeProps {
   cards?: VocabularyCard[];
-  slug: string;
+}
+
+interface SpeakingQuestionProps {
+  card: VocabularyCard;
+  onNext: () => void;
+  currentPosition: number;
+  totalCards: number;
 }
 
 export const initialPronunciationResultState: PronunciationResultState = {
@@ -39,114 +45,122 @@ export const initialPronunciationResultState: PronunciationResultState = {
   isListening: false,
 };
 
-export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) {
-  const [currentCardIndex, setCurrentCardIndex] = useState(0);
+function SpeakingQuestion({ card, onNext, currentPosition, totalCards }: SpeakingQuestionProps) {
   const [showDefinition, setShowDefinition] = useState(false);
   const [isPronunciationQualified, setIsPronunciationQualified] = useState(false);
   const [isQualifying, setIsQualifying] = useState(false);
-  const [pronunciationResult, setPronunciationResult] = useState<PronunciationResultState>(
-    initialPronunciationResultState
-  );
+  const [pronunciationResult, setPronunciationResult] = useState<PronunciationResultState>(() => ({
+    ...initialPronunciationResultState,
+    wordsForDisplay: createNeutralWordDisplay(card.word),
+  }));
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   const { playAudio, isPlaying, stopAudio } = useSpeechSynthesis();
 
-  const currentCard = cards[currentCardIndex] || {
-    id: "0",
-    word: "No words available",
-    phonetic: "",
-    definition: "There are no words in this list.",
-    example: "",
-    translation: "",
-    word_type: "",
-    audio_url: "",
+  const analyzePronunciation = (spokenText: string, confidence: number) => {
+    const result = analyzeSpeech(card.word, spokenText, confidence);
+
+    setPronunciationResult((prev) => ({
+      ...prev,
+      transcript: spokenText,
+      overallScore: result.overallScore,
+      detailScores: result.details,
+      wordsForDisplay: result.wordsForDisplay,
+    }));
   };
-  const progress = cards.length > 0 ? ((currentCardIndex + 1) / cards.length) * 100 : 0;
 
-  const analyzePronunciation = useCallback(
-    (currentTargetText: string, spokenText: string, sttConfidence: number) => {
-      const result = analyzeSpeech(currentTargetText, spokenText, sttConfidence);
+  const resetCurrentAttempt = () => {
+    stopAudio();
 
-      setPronunciationResult((prev: PronunciationResultState) => ({
-        ...prev,
-        transcript: spokenText,
-        overallScore: result.overallScore,
-        detailScores: result.details,
-        wordsForDisplay: result.wordsForDisplay,
-      }));
-    },
-    []
-  );
+    recognitionRef.current?.abort();
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+    setPronunciationResult({
+      ...initialPronunciationResultState,
+      wordsForDisplay: createNeutralWordDisplay(card.word),
+    });
+
+    setShowDefinition(false);
+  };
+
+  const startListening = () => {
+    if (pronunciationResult.isListening) return;
 
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+
     if (!SpeechRecognitionAPI) {
       setPronunciationResult((prev) => ({
         ...prev,
         error: "Your browser does not support the Web Speech API. Please try Chrome or Edge.",
       }));
+
       return;
     }
-    const srInstance = new SpeechRecognitionAPI();
-    srInstance.continuous = false;
-    srInstance.interimResults = false;
-    srInstance.lang = "en-GB";
 
-    srInstance.onstart = () => {
-      setPronunciationResult((prev) => ({ ...prev, isListening: true, error: null }));
-    };
+    if (!recognitionRef.current) {
+      const recognition = new SpeechRecognitionAPI();
 
-    srInstance.onresult = (event: SpeechRecognitionEvent) => {
-      const bestAlternative = event.results[0][0];
-      const spokenText = bestAlternative.transcript.trim();
-      const confidence = bestAlternative.confidence;
-      analyzePronunciation(currentCard.word, spokenText, confidence);
-    };
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = "en-GB";
 
-    srInstance.onerror = (event: SpeechRecognitionErrorEvent) => {
-      let errorText = `Speech recognition error: ${event.error}`;
-      if (event.error === "no-speech") errorText = "No speech detected. Please try again.";
-      else if (event.error === "audio-capture")
-        errorText = "Microphone not found. Please check your device.";
-      else if (event.error === "not-allowed")
-        errorText = "Microphone access denied. Please grant permission.";
+      recognition.onstart = () => {
+        setPronunciationResult((prev) => ({
+          ...prev,
+          isListening: true,
+          error: null,
+        }));
+      };
 
-      setPronunciationResult((prev) => ({ ...prev, isListening: false, error: errorText }));
-      setTimeout(() => setPronunciationResult((prev) => ({ ...prev, error: null })), 7000);
-    };
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        const bestAlternative = event.results[0][0];
 
-    srInstance.onend = () => {
-      setPronunciationResult((prev) => ({ ...prev, isListening: false }));
-    };
-    recognitionRef.current = srInstance;
-    return () => {
-      recognitionRef.current?.abort();
-    };
-  }, [currentCard.word, analyzePronunciation]);
+        const spokenText = bestAlternative.transcript.trim();
 
-  const startListening = () => {
-    if (recognitionRef.current && !pronunciationResult.isListening) {
-      setPronunciationResult((prev) => ({
-        ...prev,
-        transcript: "",
-        overallScore: null,
-        detailScores: null,
-        wordsForDisplay: createNeutralWordDisplay(currentCard.word),
-        error: null,
-      }));
-      try {
-        recognitionRef.current.start();
-      } catch (e: unknown) {
-        console.error("Error starting recognition:", e);
-        const errorText =
-          e instanceof Error && e.name === "InvalidStateError"
-            ? "Recognition state error, please try again shortly."
-            : "Could not start speech recognition.";
-        setPronunciationResult((prev) => ({ ...prev, isListening: false, error: errorText }));
-      }
+        analyzePronunciation(spokenText, bestAlternative.confidence);
+      };
+
+      recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+        let errorText = `Speech recognition error: ${event.error}`;
+
+        if (event.error === "no-speech") {
+          errorText = "No speech detected. Please try again.";
+        } else if (event.error === "audio-capture") {
+          errorText = "Microphone not found. Please check your device.";
+        } else if (event.error === "not-allowed") {
+          errorText = "Microphone access denied. Please grant permission.";
+        }
+
+        setPronunciationResult((prev) => ({
+          ...prev,
+          isListening: false,
+          error: errorText,
+        }));
+      };
+
+      recognition.onend = () => {
+        setPronunciationResult((prev) => ({
+          ...prev,
+          isListening: false,
+        }));
+      };
+
+      recognitionRef.current = recognition;
+    }
+
+    setPronunciationResult((prev) => ({
+      ...prev,
+      transcript: "",
+      overallScore: null,
+      detailScores: null,
+      wordsForDisplay: createNeutralWordDisplay(card.word),
+      error: null,
+    }));
+
+    try {
+      recognitionRef.current.start();
+    } catch (error) {
+      console.error("Error starting recognition:", error);
     }
   };
 
@@ -156,31 +170,36 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
     }
   };
 
-  const handleNextCard = () => {
-    if (currentCardIndex < cards.length - 1) {
-      setCurrentCardIndex(currentCardIndex + 1);
+  const handlePronunciationQualified = async () => {
+    if (
+      pronunciationResult.overallScore === null ||
+      pronunciationResult.overallScore < 85 ||
+      isPronunciationQualified ||
+      isQualifying
+    ) {
+      return;
+    }
+
+    setIsQualifying(true);
+
+    try {
+      // 1. Qualify pronunciation + mastery +1
+      await qualifyVocabSkill(card.id, "speaking");
+
+      setIsPronunciationQualified(true);
+    } catch (error) {
+      console.error("Error qualifying pronunciation:", error);
+
+      setPronunciationResult((prev) => ({
+        ...prev,
+        error: "Failed to save pronunciation progress.",
+      }));
+    } finally {
+      setIsQualifying(false);
     }
   };
 
-  const resetPronunciationState = useCallback(() => {
-    stopAudio();
-    setPronunciationResult({
-      ...initialPronunciationResultState,
-      wordsForDisplay: createNeutralWordDisplay(currentCard.word),
-    });
-    setShowDefinition(false);
-    setIsPronunciationQualified(false);
-  }, [currentCard.word, stopAudio]);
-
-  useEffect(() => {
-    resetPronunciationState();
-  }, [currentCard.id, resetPronunciationState]);
-
-  const resetCurrentCardPractice = () => {
-    resetPronunciationState();
-  };
-
-  const toggleDefinition = () => setShowDefinition(!showDefinition);
+  const toggleDefinition = () => setShowDefinition((prev) => !prev);
 
   const getFeedbackMessage = (score: number | null): string => {
     if (score === null) return "Press the microphone to start.";
@@ -200,50 +219,15 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
     return "text-red-500";
   };
 
-  const handlePronunciationQualified = async () => {
-    if (
-      pronunciationResult.overallScore === null ||
-      pronunciationResult.overallScore < 85 ||
-      isPronunciationQualified ||
-      isQualifying
-    ) {
-      return;
-    }
-
-    setIsQualifying(true);
-
-    try {
-      // 1. Qualify pronunciation + mastery +1
-      await qualifyVocabSkill(currentCard.id, "speaking");
-
-      setIsPronunciationQualified(true);
-    } catch (error) {
-      console.error("Error qualifying pronunciation:", error);
-
-      setPronunciationResult((prev) => ({
-        ...prev,
-        error: "Failed to save pronunciation progress.",
-      }));
-    } finally {
-      setIsQualifying(false);
-    }
-  };
-
   useEffect(() => {
-    setIsPronunciationQualified(false);
-  }, [currentCard.id]);
-
-  if (cards.length === 0) {
-    return (
-      <Card className="text-center p-6 bg-gray-800 text-white">
-        <CardTitle className="mb-4">No Words Available</CardTitle>
-        <CardDescription>There are no words in this list to practice.</CardDescription>
-      </Card>
-    );
-  }
+    return () => {
+      recognitionRef.current?.abort();
+      stopAudio();
+    };
+  }, [stopAudio]);
 
   return (
-    <div className="space-y-6 sm:p-4 p-2  bg-white text-black min-h-screen dark:bg-transparent dark:text-white">
+    <div>
       {pronunciationResult.error && (
         <Alert
           variant="destructive"
@@ -255,7 +239,7 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
       )}
 
       <motion.div
-        key={currentCard.id}
+        key={card.id}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -269,7 +253,7 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                 Speaking Practice
               </div>
               <div className="text-sm font-normal text-gray-500 dark:text-gray-400 hidden sm:block">
-                {currentCardIndex + 1}/{cards.length}
+                {currentPosition + 1}/{totalCards}
               </div>
             </CardTitle>
             <CardDescription className="text-gray-500 dark:text-gray-400">
@@ -294,10 +278,8 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                   ))}
                 </div>
                 <div className="flex items-center justify-center gap-2 mt-2">
-                  {currentCard.phonetic && (
-                    <p className="dark:text-gray-400 text-gray-500 text-lg">
-                      {currentCard.phonetic}
-                    </p>
+                  {card.phonetic && (
+                    <p className="dark:text-gray-400 text-gray-500 text-lg">{card.phonetic}</p>
                   )}
                   <Button
                     variant="ghost"
@@ -305,8 +287,8 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                     className="h-9 w-9 rounded-full dark:hover:bg-gray-700 hover:bg-gray-200"
                     onClick={() =>
                       playAudio({
-                        audioUrl: currentCard.audio_url,
-                        text: currentCard.word,
+                        audioUrl: card.audio_url,
+                        text: card.word,
                         lang: "en-GB",
                       })
                     }
@@ -318,12 +300,12 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                     <span className="sr-only">Play audio</span>
                   </Button>
                 </div>
-                {currentCard.word_type && (
+                {card.word_type && (
                   <Badge
                     variant="outline"
                     className="mt-3 bg-gray-100 border-gray-300 text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
                   >
-                    {currentCard.word_type}
+                    {card.word_type}
                   </Badge>
                 )}
               </div>
@@ -472,7 +454,7 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={resetCurrentCardPractice}
+                              onClick={resetCurrentAttempt}
                               className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
                             >
                               <RefreshCw className="mr-2 h-4 w-4" /> Try Again
@@ -533,20 +515,20 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
                       <h4 className="font-medium mb-1 text-gray-800 dark:text-gray-200">
                         Definition:
                       </h4>
-                      <p className="text-gray-600 dark:text-gray-300">{currentCard.definition}</p>
-                      {currentCard.translation && (
+                      <p className="text-gray-600 dark:text-gray-300">{card.definition}</p>
+                      {card.translation && (
                         <p className="text-gray-500 dark:text-gray-400 italic mt-1">
-                          ({currentCard.translation})
+                          ({card.translation})
                         </p>
                       )}
                     </div>
-                    {currentCard.example && (
+                    {card.example && (
                       <div>
                         <h4 className="font-medium mb-1 text-gray-800 dark:text-gray-200">
                           Example:
                         </h4>
                         <p className="text-gray-600 dark:text-gray-300 italic">
-                          &quot;{currentCard.example}&quot;
+                          &quot;{card.example}&quot;
                         </p>
                       </div>
                     )}
@@ -561,9 +543,9 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
               <Button
                 variant="outline"
                 className="w-full px-8 py-4 border-input text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={handleNextCard}
+                onClick={onNext}
                 disabled={
-                  currentCardIndex >= cards.length - 1 ||
+                  currentPosition >= totalCards - 1 ||
                   pronunciationResult.isListening ||
                   isQualifying
                 }
@@ -575,7 +557,40 @@ export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) 
           </CardFooter>
         </Card>
       </motion.div>
+    </div>
+  );
+}
 
+export default function SpeakingPractice({ cards = [] }: SpeakingPracticeProps) {
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
+
+  const currentCard = cards[currentCardIndex];
+  const progress = cards.length > 0 ? ((currentCardIndex + 1) / cards.length) * 100 : 0;
+
+  const handleNextCard = () => {
+    if (currentCardIndex >= cards.length - 1) return;
+
+    setCurrentCardIndex((prev) => prev + 1);
+  };
+
+  if (cards.length === 0) {
+    return (
+      <Card className="text-center p-6 bg-gray-800 text-white">
+        <CardTitle className="mb-4">No Words Available</CardTitle>
+        <CardDescription>There are no words in this list to practice.</CardDescription>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6 sm:p-4 p-2  bg-white text-black min-h-screen dark:bg-transparent dark:text-white">
+      <SpeakingQuestion
+        key={currentCard.id}
+        card={currentCard}
+        onNext={handleNextCard}
+        currentPosition={currentCardIndex}
+        totalCards={cards.length}
+      />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

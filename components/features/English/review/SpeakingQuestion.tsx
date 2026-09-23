@@ -7,7 +7,7 @@ import { cn, sentenceToIPA } from "@/utils";
 import { analyzeSpeech, createNeutralWordDisplay } from "@/utils/pronunciation";
 import { motion } from "framer-motion";
 import { AlertTriangle, Mic, RefreshCw } from "lucide-react";
-import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { ReviewResult } from ".";
 import { initialPronunciationResultState } from "../practice/speaking-practice";
 import { DetailScores, PronunciationResultState } from "@/types/pronunciation";
@@ -33,19 +33,114 @@ export function SpeakingQuestion({
   onSubmit,
   setResult,
 }: SpeakingQuestionProps) {
-  const [pronunciationResult, setPronunciationResult] = useState<PronunciationResultState>(
-    initialPronunciationResultState
-  );
+  const targetText = question.meta?.sentence?.trim() || question.prompt.trim();
+
+  const [pronunciationResult, setPronunciationResult] = useState<PronunciationResultState>(() => ({
+    ...initialPronunciationResultState,
+    wordsForDisplay: createNeutralWordDisplay(targetText),
+  }));
+
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+
   const isSubmitted = useRef(false);
 
-  const targetText = useMemo(
-    () => question.meta?.sentence?.trim() || question.prompt.trim(),
-    [question.meta?.sentence, question.prompt]
-  );
+  const handlePronunciationResult = (spokenText: string, sttConfidence: number) => {
+    const analyzed = analyzeSpeech(targetText, spokenText, sttConfidence);
 
-  const resetWordDisplay = useCallback(() => {
-    setPronunciationResult((prev: PronunciationResultState) => ({
+    setPronunciationResult((prev) => ({
+      ...prev,
+      transcript: spokenText,
+      overallScore: analyzed.overallScore,
+      detailScores: analyzed.details as unknown as DetailScores | null,
+      wordsForDisplay: analyzed.wordsForDisplay,
+    }));
+
+    if (isSubmitted.current || submitting) {
+      return;
+    }
+
+    isSubmitted.current = true;
+
+    const score = analyzed.overallScore ?? 0;
+
+    // Persist review attempt
+    onSubmit();
+
+    // Update review UI
+    setResult({
+      correctAnswer: "",
+      isCorrect: score >= 70,
+      score,
+      outcome: "completed",
+    });
+  };
+
+  const startListening = () => {
+    if (pronunciationResult.isListening) {
+      return;
+    }
+
+    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognitionAPI) {
+      setPronunciationResult((prev) => ({
+        ...prev,
+        error: "Your browser does not support the Web Speech API. Please try Chrome or Edge.",
+      }));
+
+      return;
+    }
+
+    if (!recognitionRef.current) {
+      const recognition = new SpeechRecognitionAPI();
+
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = "en-GB";
+
+      recognition.onstart = () => {
+        setPronunciationResult((prev) => ({
+          ...prev,
+          isListening: true,
+          error: null,
+        }));
+      };
+
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        const bestAlternative = event.results[0][0];
+
+        handlePronunciationResult(bestAlternative.transcript.trim(), bestAlternative.confidence);
+      };
+
+      recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+        let errorText = `Speech recognition error: ${event.error}`;
+
+        if (event.error === "no-speech") {
+          errorText = "No speech detected. Please try again.";
+        } else if (event.error === "audio-capture") {
+          errorText = "Microphone not found. Please check your device.";
+        } else if (event.error === "not-allowed") {
+          errorText = "Microphone access denied. Please grant permission.";
+        }
+
+        setPronunciationResult((prev) => ({
+          ...prev,
+          isListening: false,
+          error: errorText,
+        }));
+      };
+
+      recognition.onend = () => {
+        setPronunciationResult((prev) => ({
+          ...prev,
+          isListening: false,
+        }));
+      };
+
+      recognitionRef.current = recognition;
+    }
+
+    setPronunciationResult((prev) => ({
       ...prev,
       transcript: "",
       overallScore: null,
@@ -53,93 +148,20 @@ export function SpeakingQuestion({
       error: null,
       wordsForDisplay: createNeutralWordDisplay(targetText),
     }));
-  }, [targetText]);
 
-  const analyzePronunciation = useCallback(
-    (spokenText: string, sttConfidence: number) => {
-      const analyzed = analyzeSpeech(targetText, spokenText, sttConfidence);
-      setPronunciationResult((prev: PronunciationResultState) => ({
-        ...prev,
-        transcript: spokenText,
-        overallScore: analyzed.overallScore,
-        detailScores: analyzed.details as unknown as DetailScores | null,
-        wordsForDisplay: analyzed.wordsForDisplay,
-      }));
-    },
-    [targetText]
-  );
+    try {
+      recognitionRef.current.start();
+    } catch (error) {
+      const errorText =
+        error instanceof Error && error.name === "InvalidStateError"
+          ? "Recognition state error, please try again shortly."
+          : "Could not start speech recognition.";
 
-  useEffect(() => {
-    resetWordDisplay();
-    isSubmitted.current = false;
-  }, [resetWordDisplay]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognitionAPI) {
       setPronunciationResult((prev) => ({
         ...prev,
-        error: "Your browser does not support the Web Speech API. Please try Chrome or Edge.",
+        isListening: false,
+        error: errorText,
       }));
-      return;
-    }
-
-    const srInstance = new SpeechRecognitionAPI();
-    srInstance.continuous = false;
-    srInstance.interimResults = false;
-    srInstance.lang = "en-GB";
-
-    srInstance.onstart = () => {
-      setPronunciationResult((prev) => ({ ...prev, isListening: true, error: null }));
-    };
-
-    srInstance.onresult = (event: SpeechRecognitionEvent) => {
-      const bestAlternative = event.results[0][0];
-      analyzePronunciation(bestAlternative.transcript.trim(), bestAlternative.confidence);
-    };
-
-    srInstance.onerror = (event: SpeechRecognitionErrorEvent) => {
-      let errorText = `Speech recognition error: ${event.error}`;
-      if (event.error === "no-speech") errorText = "No speech detected. Please try again.";
-      else if (event.error === "audio-capture")
-        errorText = "Microphone not found. Please check your device.";
-      else if (event.error === "not-allowed")
-        errorText = "Microphone access denied. Please grant permission.";
-
-      setPronunciationResult((prev) => ({ ...prev, isListening: false, error: errorText }));
-    };
-
-    srInstance.onend = () => {
-      setPronunciationResult((prev) => ({ ...prev, isListening: false }));
-    };
-
-    recognitionRef.current = srInstance;
-    return () => {
-      recognitionRef.current?.abort();
-    };
-  }, [analyzePronunciation]);
-
-  useEffect(() => {
-    if (!submitting && pronunciationResult.transcript && !isSubmitted.current) {
-      isSubmitted.current = true;
-      onSubmit();
-    }
-  }, [onSubmit, pronunciationResult.transcript, submitting]);
-
-  const startListening = () => {
-    if (recognitionRef.current && !pronunciationResult.isListening) {
-      resetWordDisplay();
-      try {
-        recognitionRef.current.start();
-      } catch (e: unknown) {
-        const errorText =
-          e instanceof Error && e.name === "InvalidStateError"
-            ? "Recognition state error, please try again shortly."
-            : "Could not start speech recognition.";
-        setPronunciationResult((prev) => ({ ...prev, isListening: false, error: errorText }));
-      }
     }
   };
 
@@ -149,9 +171,14 @@ export function SpeakingQuestion({
     }
   };
 
-  const resetPractice = () => {
+  const resetCurrentAttempt = () => {
     isSubmitted.current = false;
-    resetWordDisplay();
+
+    setPronunciationResult({
+      ...initialPronunciationResultState,
+      wordsForDisplay: createNeutralWordDisplay(targetText),
+    });
+
     setResult(null);
   };
 
@@ -173,15 +200,10 @@ export function SpeakingQuestion({
   };
 
   useEffect(() => {
-    if (!isSubmitted.current) return;
-    const score = pronunciationResult.overallScore ?? 0;
-    setResult({
-      correctAnswer: "",
-      isCorrect: score >= 70,
-      score,
-      outcome: "completed",
-    });
-  }, [pronunciationResult.overallScore, setResult]);
+    return () => {
+      recognitionRef.current?.abort();
+    };
+  }, []);
 
   return (
     <div className="space-y-6 bg-white p-2 text-black sm:p-4 dark:bg-transparent dark:text-white">
@@ -311,7 +333,7 @@ export function SpeakingQuestion({
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={resetPractice}
+                          onClick={resetCurrentAttempt}
                           className="border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-100"
                         >
                           <RefreshCw className="mr-2 h-4 w-4" /> Try Again

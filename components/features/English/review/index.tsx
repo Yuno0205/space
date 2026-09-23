@@ -604,6 +604,7 @@ export function ReviewSession() {
     <div className="mx-auto max-w-full space-y-6 text-slate-900 dark:text-slate-100">
       <div>
         <QuestionRenderer
+          key={`${currentQuestion.progress.id}-${currentQuestion.activity.id}`}
           question={currentQuestion}
           result={result}
           setResult={setResult}

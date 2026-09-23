@@ -42,7 +42,6 @@ const navigationItems = [
     icon: BookOpen,
     href: "/english",
     items: [
-      { title: "Overview", href: "/english" },
       { title: "Vocabulary", href: "/english/vocabulary" },
       { title: "Pronunciation", href: "/english/pronunciation" },
       { title: "Listening", href: "/english/listening" },

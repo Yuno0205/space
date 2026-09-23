@@ -2,9 +2,8 @@
 
 import spaceshipAnimationData from "@/public/animations/spaceship.json";
 import { motion, Variants } from "framer-motion";
-import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import type { LottieComponentProps } from "lottie-react";
+import dynamic from "next/dynamic";
 
 // Dynamic import component Lottie
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
@@ -40,12 +39,6 @@ const LoadingAnimation = () => {
     autoplay: true,
   };
 
-  // Chỉ render Lottie ở client để tránh lỗi hydration
-  const [isClient, setIsClient] = useState(false);
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   return (
     <motion.div
       className="fixed inset-0 z-50 flex flex-col items-center justify-center dark:bg-black bg-white text-gray-200 font-inter p-5"
@@ -62,7 +55,7 @@ const LoadingAnimation = () => {
         initial="initial"
         animate="animate"
       >
-        {isClient && <Lottie {...lottieOptions} style={{ width: "100%", height: "100%" }} />}
+        <Lottie {...lottieOptions} style={{ width: "100%", height: "100%" }} />
       </motion.div>
 
       <motion.p

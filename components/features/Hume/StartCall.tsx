@@ -4,7 +4,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Phone } from "lucide-react";
 import { Button } from "../../ui/button";
 
-export default function StartCall() {
+export default function StartCall({
+  accessToken,
+  configId,
+}: {
+  accessToken: string;
+  configId?: string;
+}) {
   const { status, connect } = useVoice();
 
   return (
@@ -32,7 +38,10 @@ export default function StartCall() {
               <Button
                 className={"z-50 flex items-center gap-1.5"}
                 onClick={() => {
-                  connect()
+                  connect({
+                    auth: { type: "accessToken", value: accessToken },
+                    ...(configId ? { configId } : {}),
+                  })
                     .then(() => {
                       // Connection successful, no additional action needed
                     })

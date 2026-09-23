@@ -303,97 +303,130 @@ export function ReviewSession() {
     return ((currentIndex + 1) / dueProgress.length) * 100;
   }, [currentIndex, dueProgress.length]);
 
-  const loadReviewData = useCallback(async () => {
+  const fetchReviewData = useCallback(async () => {
+    const nowIso = new Date().toISOString();
+
+    const [progressRes, activitiesRes] = await Promise.all([
+      supabase
+        .from("user_vocab_progress")
+        .select(
+          `
+          *,
+          vocabulary:vocabularies (*)
+        `
+        )
+        .or(`next_review_at.lte.${nowIso},next_review_at.is.null`)
+        .order("next_review_at", { ascending: true })
+        .limit(20),
+
+      supabase
+        .from("activity_types")
+        .select("id, code, name, skill_code")
+        .order("created_at", { ascending: true }),
+    ]);
+
+    if (progressRes.error) {
+      throw progressRes.error;
+    }
+
+    if (activitiesRes.error) {
+      throw activitiesRes.error;
+    }
+
+    const progressData = (progressRes.data ?? []) as TProgress[];
+
+    const activitiesData = (activitiesRes.data ?? []) as ActivityType[];
+
+    const now = new Date();
+
+    const dueOnly = progressData.filter((item) => {
+      if (!item.next_review_at) return true;
+
+      const nextReviewAt = new Date(item.next_review_at);
+
+      if (Number.isNaN(nextReviewAt.getTime())) {
+        return false;
+      }
+
+      return nextReviewAt <= now;
+    });
+
+    const dueLevels = [
+      ...new Set(
+        dueOnly
+          .map((row) => row.vocabulary?.level)
+          .filter((level): level is string => typeof level === "string" && level.trim().length > 0)
+      ),
+    ];
+
+    const wordTypes = [
+      ...new Set(
+        dueOnly
+          .map((row) => row.vocabulary?.word_type)
+          .filter(
+            (wordType): wordType is string =>
+              typeof wordType === "string" && wordType.trim().length > 0
+          )
+      ),
+    ];
+
+    let vocabData: VocabularyCard[] = [];
+
+    if (dueLevels.length > 0 && wordTypes.length > 0) {
+      const { data, error } = await supabase.rpc("roll_distractor", {
+        p_levels: dueLevels,
+        p_limit: 10,
+        p_include_word_types: wordTypes,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      vocabData = (data ?? []) as VocabularyCard[];
+    }
+
+    const firstValid = dueOnly.reduce<{
+      index: number;
+      question: TQuestion;
+    } | null>((acc, item, index) => {
+      if (acc) return acc;
+
+      const question = generateQuestion(item, activitiesData, vocabData);
+
+      return question ? { index, question } : null;
+    }, null);
+
+    return {
+      dueOnly,
+      activitiesData,
+      vocabData,
+      firstValid,
+    };
+  }, [supabase]);
+
+  const handleReloadReviewData = () => {
     setLoading(true);
     setError(null);
 
-    try {
-      const nowIso = new Date().toISOString();
+    void fetchReviewData();
+  };
 
-      const [progressRes, activitiesRes] = await Promise.all([
-        supabase
-          .from("user_vocab_progress")
-          .select(
-            `
-            *,
-            vocabulary:vocabularies (*) 
-          `
-          )
-          .or(`next_review_at.lte.${nowIso},next_review_at.is.null`)
-          .order("next_review_at", { ascending: true })
-          .limit(20),
+  useEffect(() => {
+    let cancelled = false;
 
-        supabase
-          .from("activity_types")
-          .select("id, code, name, skill_code")
-          .order("created_at", { ascending: true }),
-      ]);
+    void fetchReviewData()
+      .then(({ dueOnly, activitiesData, vocabData, firstValid }) => {
+        if (cancelled) return;
 
-      if (progressRes.error) throw progressRes.error;
-      if (activitiesRes.error) throw activitiesRes.error;
+        setDueProgress(dueOnly);
+        setAllActivities(activitiesData);
+        setAllVocabularies(vocabData);
 
-      const progressData = (progressRes.data ?? []) as TProgress[];
-      const activitiesData = (activitiesRes.data ?? []) as ActivityType[];
-
-      const now = new Date();
-
-      //Get all list of words due date to review
-      const dueOnly = progressData.filter((item) => {
-        if (!item.next_review_at) return true;
-        const nextReviewAt = new Date(item.next_review_at);
-        if (Number.isNaN(nextReviewAt.getTime())) return false;
-        return nextReviewAt <= now;
-      });
-
-      //Map all level have in list of words has to review
-      const dueLevels = [
-        ...new Set(
-          dueOnly
-            .map((row) => row.vocabulary?.level)
-            .filter((lv): lv is string => typeof lv === "string" && lv.trim().length > 0)
-        ),
-      ];
-
-      // Unique word_types present in the due list
-      const mapWordType = [
-        ...new Set(
-          dueOnly
-            .map((row) => row.vocabulary?.word_type)
-            .filter((wt): wt is string => typeof wt === "string" && wt.trim().length > 0)
-        ),
-      ];
-
-      let vocabData: VocabularyCard[] = [];
-
-      // Base on map of level and word_type to random array of distractor ( to MQC questions)
-      if (dueLevels.length > 0 && mapWordType.length > 0) {
-        const { data, error } = await supabase.rpc("roll_distractor", {
-          p_levels: dueLevels,
-          p_limit: 10,
-          p_include_word_types: mapWordType,
-        });
-
-        if (error) throw error;
-        vocabData = (data ?? []) as VocabularyCard[];
-      }
-
-      setDueProgress(dueOnly);
-      setAllActivities(activitiesData);
-      setAllVocabularies(vocabData);
-      setSelectedOption(null);
-      setTypedAnswer("");
-      setResult(null);
-      setSessionComplete(false);
-
-      if (dueOnly.length) {
-        const firstValid = dueOnly.reduce<{ index: number; question: TQuestion } | null>(
-          (acc, item, index) => {
-            if (acc) return acc;
-            const question = generateQuestion(item, activitiesData, vocabData);
-            return question ? { index, question } : null;
-          },
-          null
-        );
+        setSelectedOption(null);
+        setTypedAnswer("");
+        setResult(null);
+        setSessionComplete(false);
 
         if (firstValid) {
           setCurrentIndex(firstValid.index);
@@ -402,22 +435,25 @@ export function ReviewSession() {
           setCurrentIndex(0);
           setCurrentQuestion(null);
         }
-      } else {
-        setCurrentIndex(0);
-        setCurrentQuestion(null);
-      }
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Unable to load your review data. Please try again.";
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase]);
+      })
+      .catch((err) => {
+        if (cancelled) return;
 
-  useEffect(() => {
-    void loadReviewData();
-  }, [loadReviewData]);
+        const message =
+          err instanceof Error ? err.message : "Unable to load your review data. Please try again.";
+
+        setError(message);
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchReviewData]);
 
   const goToNextQuestion = useCallback(() => {
     const nextValid = getNextValidQuestion(currentIndex + 1, dueProgress);
@@ -536,7 +572,7 @@ export function ReviewSession() {
         <p className="text-sm font-medium text-red-800 dark:text-red-200">{error}</p>
         <button
           type="button"
-          onClick={() => void loadReviewData()}
+          onClick={() => void handleReloadReviewData()}
           className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
         >
           Retry
@@ -570,7 +606,7 @@ export function ReviewSession() {
         </p>
         <button
           type="button"
-          onClick={() => void loadReviewData()}
+          onClick={() => void fetchReviewData()}
           className="mt-4 rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
         >
           Start new session
@@ -591,7 +627,7 @@ export function ReviewSession() {
         </p>
         <button
           type="button"
-          onClick={() => void loadReviewData()}
+          onClick={() => void fetchReviewData()}
           className="mt-4 rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
         >
           Refresh list
@@ -653,7 +689,7 @@ export function ReviewSession() {
 
               <button
                 type="button"
-                onClick={() => void loadReviewData()}
+                onClick={() => void fetchReviewData()}
                 className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-900 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900/40 dark:text-slate-100 dark:shadow-none dark:hover:border-slate-500 dark:hover:bg-slate-800/60"
               >
                 Refresh list

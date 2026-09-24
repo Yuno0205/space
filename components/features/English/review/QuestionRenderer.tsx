@@ -1,21 +1,19 @@
 "use client";
 
-import { Dispatch, SetStateAction } from "react";
-import { ReviewResult, TQuestion } from ".";
-import { McqQuestion } from "./McqQuestion";
-import { SpeakingQuestion } from "./SpeakingQuestion";
-import { TypingQuestion } from "./TypingQuestion";
+import { McqQuestion } from "./questions/McqQuestion";
+import { SpeakingQuestion } from "./questions/SpeakingQuestion";
+import { TypingQuestion } from "./questions/TypingQuestion";
+import { ReviewResult, ReviewSubmission, TQuestion } from "./types";
 
 type QuestionRendererProps = {
   question: TQuestion;
   result: ReviewResult;
-  setResult: Dispatch<SetStateAction<ReviewResult>>;
   submitting: boolean;
   selectedOption: string | null;
   typedAnswer: string;
   setSelectedOption: (value: string | null) => void;
   setTypedAnswer: (value: string) => void;
-  onSubmit: () => void;
+  onSubmit: (submission?: ReviewSubmission) => Promise<boolean>;
 };
 
 export function QuestionRenderer({
@@ -27,7 +25,6 @@ export function QuestionRenderer({
   setSelectedOption,
   setTypedAnswer,
   onSubmit,
-  setResult,
 }: QuestionRendererProps) {
   switch (question.type) {
     case "mcq":
@@ -55,14 +52,7 @@ export function QuestionRenderer({
       );
 
     case "speaking":
-      return (
-        <SpeakingQuestion
-          question={question}
-          setResult={setResult}
-          submitting={submitting}
-          onSubmit={onSubmit}
-        />
-      );
+      return <SpeakingQuestion question={question} submitting={submitting} onSubmit={onSubmit} />;
 
     default:
       return null;

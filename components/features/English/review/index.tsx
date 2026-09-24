@@ -1,284 +1,41 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
-import { normalizeToken, pickRandom, shuffleArray } from "@/utils";
-import { VocabularyCard } from "@/types/vocabulary";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { QuestionRenderer } from "./QuestionRenderer";
-import { ActivityType, SkillCode } from "@/types/revise";
 import { SharedProgressCard } from "@/components/shared/Progress";
+import { createClient } from "@/lib/supabase/client";
+import { normalizeToken } from "@/utils";
+import { useRouter } from "next/navigation";
+import { useCallback, useMemo, useState } from "react";
+import { generateQuestion } from "./_lib/question-generator";
+import { QuestionRenderer } from "./QuestionRenderer";
+import { ReviewResult, ReviewSessionData, ReviewSubmission, TProgress, TQuestion } from "./types";
 
-type TProgress = {
-  id: string;
-  skill_code: SkillCode;
-  last_reviewed_at: string | null;
-  next_review_at: string | null;
-  correct_count: number;
-  wrong_count: number;
-  created_at: string;
-  updated_at: string;
-  vocabulary?: VocabularyCard | null;
+type ReviewSessionProps = {
+  initialData: ReviewSessionData;
 };
 
-type QuestionBase = {
-  progress: TProgress;
-  activity: ActivityType;
-  prompt: string;
-  meta?: {
-    audioUrl?: string | null;
-    sentence?: string | null;
-  };
-};
-
-export type TQuestion =
-  | (QuestionBase & {
-      type: "mcq";
-      options: string[];
-      correctAnswer: string;
-    })
-  | (QuestionBase & {
-      type: "typing";
-      correctAnswer: string;
-    })
-  | (QuestionBase & {
-      type: "speaking";
-    });
-
-export type ReviewResult = {
-  isCorrect: boolean;
-  correctAnswer: string;
-  score?: number;
-  outcome?: "answered" | "completed";
-} | null;
-
-function buildFillBlankSentence(example: string, word: string) {
-  if (!example || !word) return null;
-
-  const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const regex = new RegExp(`\\b${escapedWord}\\b`, "i");
-
-  if (!regex.test(example)) return null;
-
-  return example.replace(regex, "_____");
-}
-
-function computeNextReviewDate(correctCountBeforeUpdate: number, isCorrect: boolean) {
-  const now = new Date();
-
-  if (!isCorrect) {
-    now.setHours(now.getHours() + 12);
-    return now.toISOString();
-  }
-
-  if (correctCountBeforeUpdate === 0) {
-    now.setDate(now.getDate() + 1);
-    return now.toISOString();
-  }
-
-  if (correctCountBeforeUpdate === 1) {
-    now.setDate(now.getDate() + 3);
-    return now.toISOString();
-  }
-
-  if (correctCountBeforeUpdate === 2) {
-    now.setDate(now.getDate() + 7);
-    return now.toISOString();
-  }
-
-  now.setDate(now.getDate() + 14);
-  return now.toISOString();
-}
-
-function generateQuestion(
-  progress: TProgress,
-  activities: ActivityType[],
-  vocabularies: VocabularyCard[]
-): TQuestion | null {
-  const vocab = progress.vocabulary;
-
-  if (!vocab) return null;
-
-  const skillActivities = activities.filter((a) => a.skill_code === progress.skill_code);
-  if (!skillActivities.length) return null;
-
-  const supportedActivities = skillActivities.filter((a) =>
-    [
-      "mcq_meaning",
-      "mcq_word",
-      "listen_choose",
-      "listen_type",
-      "fill_blank",
-      "context_mcq",
-      "listen_repeat",
-    ].includes(a.code)
-  );
-
-  if (!supportedActivities.length) return null;
-
-  const activity = pickRandom<ActivityType>(supportedActivities);
-  if (!activity) return null;
-
-  const sameLevelVocabs = vocabularies.filter(
-    (v) => v.id !== vocab.id && (!!v.level ? v.level === vocab.level : true)
-  );
-
-  switch (activity.code) {
-    case "mcq_meaning": {
-      if (!vocab.translation) return null;
-
-      const distractors = shuffleArray(
-        sameLevelVocabs
-          .map((v) => v.translation)
-          .filter((t): t is string => !!t && t !== vocab.translation)
-      ).slice(0, 3);
-
-      const options = shuffleArray([vocab.translation, ...distractors]);
-      if (options.length < 2) return null;
-
-      return {
-        type: "mcq",
-        progress,
-        activity,
-        prompt: `What does "${vocab.word}" mean?`,
-        options,
-        correctAnswer: vocab.translation,
-      };
-    }
-
-    case "mcq_word": {
-      if (!vocab.translation) return null;
-
-      const distractors = shuffleArray(
-        sameLevelVocabs.map((v) => v.word).filter((w) => !!w && w !== vocab.word)
-      ).slice(0, 3);
-
-      const options = shuffleArray([vocab.word, ...distractors]);
-      if (options.length < 2) return null;
-
-      return {
-        type: "mcq",
-        progress,
-        activity,
-        prompt: `Which English word means "${vocab.translation}"?`,
-        options,
-        correctAnswer: vocab.word,
-      };
-    }
-
-    case "listen_choose": {
-      if (!vocab.audio_url) return null;
-
-      const distractors = shuffleArray(
-        sameLevelVocabs.map((v) => v.word).filter((w) => !!w && w !== vocab.word)
-      ).slice(0, 3);
-
-      const options = shuffleArray([vocab.word, ...distractors]);
-      if (options.length < 2) return null;
-
-      return {
-        type: "mcq",
-        progress,
-        activity,
-        prompt: "Listen to the audio and choose the correct word:",
-        options,
-        correctAnswer: vocab.word,
-        meta: {
-          audioUrl: vocab.audio_url,
-        },
-      };
-    }
-
-    case "listen_type": {
-      if (!vocab.audio_url) return null;
-
-      return {
-        type: "typing",
-        progress,
-        activity,
-        prompt: "Listen to the audio and type the word you hear:",
-        correctAnswer: vocab.word,
-        meta: {
-          audioUrl: vocab.audio_url,
-        },
-      };
-    }
-
-    case "listen_repeat": {
-      if (!vocab.example) return null;
-
-      return {
-        type: "speaking",
-        progress,
-        activity,
-        prompt: "Listen to the word and repeat it clearly:",
-        meta: {
-          sentence: vocab.example,
-        },
-      };
-    }
-
-    case "fill_blank": {
-      if (!vocab.example) return null;
-
-      const blanked = buildFillBlankSentence(vocab.example, vocab.word);
-      if (!blanked) return null;
-
-      return {
-        type: "typing",
-        progress,
-        activity,
-        prompt: "Fill in the blank with the missing word:",
-        correctAnswer: vocab.word,
-        meta: {
-          sentence: blanked,
-        },
-      };
-    }
-
-    case "context_mcq": {
-      if (!vocab.example || !vocab.translation) return null;
-
-      const distractors = shuffleArray(
-        sameLevelVocabs
-          .map((v) => v.translation)
-          .filter((t): t is string => !!t && t !== vocab.translation)
-      ).slice(0, 3);
-
-      const options = shuffleArray([vocab.translation, ...distractors]);
-      if (options.length < 2) return null;
-
-      return {
-        type: "mcq",
-        progress,
-        activity,
-        prompt: `In the following sentence, what is the closest meaning of "${vocab.word}"?\n\n${vocab.example}`,
-        options,
-        correctAnswer: vocab.translation,
-      };
-    }
-
-    default:
-      return null;
-  }
-}
-
-export function ReviewSession() {
+export function ReviewSession({ initialData }: ReviewSessionProps) {
   const supabase = useMemo(() => createClient(), []);
-  const [loading, setLoading] = useState(true);
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [dueProgress, setDueProgress] = useState<TProgress[]>([]);
-  const [allActivities, setAllActivities] = useState<ActivityType[]>([]);
-  const [allVocabularies, setAllVocabularies] = useState<VocabularyCard[]>([]);
+  const [dueProgress, setDueProgress] = useState<TProgress[]>(initialData.dueProgress);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState<TQuestion | null>(null);
+  const allActivities = initialData.activities;
+  const allVocabularies = initialData.vocabularies;
+
+  const [currentIndex, setCurrentIndex] = useState(initialData.initialIndex);
+
+  const [currentQuestion, setCurrentQuestion] = useState<TQuestion | null>(
+    initialData.initialQuestion
+  );
   const [sessionComplete, setSessionComplete] = useState(false);
 
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [typedAnswer, setTypedAnswer] = useState("");
   const [result, setResult] = useState<ReviewResult>(null);
+
+  const router = useRouter();
 
   const getNextValidQuestion = useCallback(
     (startIndex: number, progressList: TProgress[]) => {
@@ -303,158 +60,6 @@ export function ReviewSession() {
     return ((currentIndex + 1) / dueProgress.length) * 100;
   }, [currentIndex, dueProgress.length]);
 
-  const fetchReviewData = useCallback(async () => {
-    const nowIso = new Date().toISOString();
-
-    const [progressRes, activitiesRes] = await Promise.all([
-      supabase
-        .from("user_vocab_progress")
-        .select(
-          `
-          *,
-          vocabulary:vocabularies (*)
-        `
-        )
-        .or(`next_review_at.lte.${nowIso},next_review_at.is.null`)
-        .order("next_review_at", { ascending: true })
-        .limit(20),
-
-      supabase
-        .from("activity_types")
-        .select("id, code, name, skill_code")
-        .order("created_at", { ascending: true }),
-    ]);
-
-    if (progressRes.error) {
-      throw progressRes.error;
-    }
-
-    if (activitiesRes.error) {
-      throw activitiesRes.error;
-    }
-
-    const progressData = (progressRes.data ?? []) as TProgress[];
-
-    const activitiesData = (activitiesRes.data ?? []) as ActivityType[];
-
-    const now = new Date();
-
-    const dueOnly = progressData.filter((item) => {
-      if (!item.next_review_at) return true;
-
-      const nextReviewAt = new Date(item.next_review_at);
-
-      if (Number.isNaN(nextReviewAt.getTime())) {
-        return false;
-      }
-
-      return nextReviewAt <= now;
-    });
-
-    const dueLevels = [
-      ...new Set(
-        dueOnly
-          .map((row) => row.vocabulary?.level)
-          .filter((level): level is string => typeof level === "string" && level.trim().length > 0)
-      ),
-    ];
-
-    const wordTypes = [
-      ...new Set(
-        dueOnly
-          .map((row) => row.vocabulary?.word_type)
-          .filter(
-            (wordType): wordType is string =>
-              typeof wordType === "string" && wordType.trim().length > 0
-          )
-      ),
-    ];
-
-    let vocabData: VocabularyCard[] = [];
-
-    if (dueLevels.length > 0 && wordTypes.length > 0) {
-      const { data, error } = await supabase.rpc("roll_distractor", {
-        p_levels: dueLevels,
-        p_limit: 10,
-        p_include_word_types: wordTypes,
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      vocabData = (data ?? []) as VocabularyCard[];
-    }
-
-    const firstValid = dueOnly.reduce<{
-      index: number;
-      question: TQuestion;
-    } | null>((acc, item, index) => {
-      if (acc) return acc;
-
-      const question = generateQuestion(item, activitiesData, vocabData);
-
-      return question ? { index, question } : null;
-    }, null);
-
-    return {
-      dueOnly,
-      activitiesData,
-      vocabData,
-      firstValid,
-    };
-  }, [supabase]);
-
-  const handleReloadReviewData = () => {
-    setLoading(true);
-    setError(null);
-
-    void fetchReviewData();
-  };
-
-  useEffect(() => {
-    let cancelled = false;
-
-    void fetchReviewData()
-      .then(({ dueOnly, activitiesData, vocabData, firstValid }) => {
-        if (cancelled) return;
-
-        setDueProgress(dueOnly);
-        setAllActivities(activitiesData);
-        setAllVocabularies(vocabData);
-
-        setSelectedOption(null);
-        setTypedAnswer("");
-        setResult(null);
-        setSessionComplete(false);
-
-        if (firstValid) {
-          setCurrentIndex(firstValid.index);
-          setCurrentQuestion(firstValid.question);
-        } else {
-          setCurrentIndex(0);
-          setCurrentQuestion(null);
-        }
-      })
-      .catch((err) => {
-        if (cancelled) return;
-
-        const message =
-          err instanceof Error ? err.message : "Unable to load your review data. Please try again.";
-
-        setError(message);
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [fetchReviewData]);
-
   const goToNextQuestion = useCallback(() => {
     const nextValid = getNextValidQuestion(currentIndex + 1, dueProgress);
 
@@ -472,99 +77,119 @@ export function ReviewSession() {
     setCurrentQuestion(nextValid.question);
   }, [currentIndex, dueProgress, getNextValidQuestion]);
 
-  const handleSubmit = useCallback(async () => {
-    if (!currentQuestion || submitting || result) return;
-
-    let isCorrect = false;
-    let answerToShow = "";
-    let outcome: "answered" | "completed" = "answered";
-    let shouldAffectCounts = true;
-
-    if (currentQuestion.type === "mcq") {
-      if (!selectedOption) return;
-      isCorrect = normalizeToken(selectedOption) === normalizeToken(currentQuestion.correctAnswer);
-      answerToShow = currentQuestion.correctAnswer;
-    } else if (currentQuestion.type === "typing") {
-      if (!typedAnswer.trim()) return;
-      isCorrect = normalizeToken(typedAnswer) === normalizeToken(currentQuestion.correctAnswer);
-      answerToShow = currentQuestion.correctAnswer;
-    } else if (currentQuestion.type === "speaking") {
-      isCorrect = false;
-      answerToShow = "";
-      outcome = "completed";
-      shouldAffectCounts = false;
-    }
-
-    setSubmitting(true);
-    setError(null);
-
-    try {
-      const progress = currentQuestion.progress;
-
-      const attemptInsert = await supabase.from("review_attempts").insert({
-        vocabulary_id: progress.vocabulary?.id,
-        skill_code: progress.skill_code,
-        activity_type_id: currentQuestion.activity.id,
-        is_correct: isCorrect,
-      });
-
-      if (attemptInsert.error) throw attemptInsert.error;
-
-      const nextReviewAt = computeNextReviewDate(progress.correct_count, isCorrect);
-
-      const progressUpdate = await supabase
-        .from("user_vocab_progress")
-        .update({
-          last_reviewed_at: new Date().toISOString(),
-          next_review_at: nextReviewAt,
-          correct_count:
-            shouldAffectCounts && isCorrect ? progress.correct_count + 1 : progress.correct_count,
-          wrong_count:
-            shouldAffectCounts && !isCorrect ? progress.wrong_count + 1 : progress.wrong_count,
-        })
-        .eq("id", progress.id);
-
-      if (progressUpdate.error) throw progressUpdate.error;
-
-      if (currentQuestion.type !== "speaking") {
-        setResult({
-          isCorrect,
-          correctAnswer: answerToShow,
-          outcome,
-        });
+  const handleSubmit = useCallback(
+    async (submission?: ReviewSubmission): Promise<boolean> => {
+      if (!currentQuestion || submitting || result) {
+        return false;
       }
 
-      setDueProgress((prev) =>
-        prev.map((item, index) =>
-          index === currentIndex
-            ? {
-                ...item,
-                last_reviewed_at: new Date().toISOString(),
-                next_review_at: nextReviewAt,
-                correct_count:
-                  shouldAffectCounts && isCorrect ? item.correct_count + 1 : item.correct_count,
-                wrong_count:
-                  shouldAffectCounts && !isCorrect ? item.wrong_count + 1 : item.wrong_count,
-              }
-            : item
-        )
-      );
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Unable to save your answer. Please try again.";
-      setError(message);
-    } finally {
-      setSubmitting(false);
-    }
-  }, [currentIndex, currentQuestion, result, selectedOption, submitting, supabase, typedAnswer]);
+      let reviewSubmission: ReviewSubmission;
+      let answerToShow = "";
+      let outcome: "answered" | "completed" = "answered";
 
-  if (loading) {
-    return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
-        Loading your review session...
-      </div>
-    );
-  }
+      // 1. Normalize answer thành ReviewSubmission
+      if (currentQuestion.type === "mcq") {
+        if (!selectedOption) {
+          return false;
+        }
+
+        reviewSubmission = {
+          isCorrect:
+            normalizeToken(selectedOption) === normalizeToken(currentQuestion.correctAnswer),
+          answer: selectedOption,
+        };
+
+        answerToShow = currentQuestion.correctAnswer;
+      } else if (currentQuestion.type === "typing") {
+        if (!typedAnswer.trim()) {
+          return false;
+        }
+
+        reviewSubmission = {
+          isCorrect: normalizeToken(typedAnswer) === normalizeToken(currentQuestion.correctAnswer),
+          answer: typedAnswer,
+        };
+
+        answerToShow = currentQuestion.correctAnswer;
+      } else {
+        // Speaking đã tự tính score/isCorrect và truyền lên
+        if (!submission) {
+          return false;
+        }
+
+        reviewSubmission = submission;
+        outcome = "completed";
+      }
+
+      setSubmitting(true);
+      setError(null);
+
+      try {
+        // 2. Gửi toàn bộ kết quả xuống DB
+        const { data, error } = await supabase.rpc("submit_review_attempt", {
+          p_progress_id: currentQuestion.progress.id,
+          p_activity_type_id: currentQuestion.activity.id,
+          p_is_correct: reviewSubmission.isCorrect,
+          p_score: reviewSubmission.score ?? null,
+          p_answer_text: reviewSubmission.answer ?? null,
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        const updatedProgress = data?.[0];
+
+        if (!updatedProgress) {
+          throw new Error("Review progress was not returned.");
+        }
+
+        // 3. Show kết quả cho user
+        setResult({
+          isCorrect: reviewSubmission.isCorrect,
+          correctAnswer: answerToShow,
+          score: reviewSubmission.score,
+          outcome,
+        });
+
+        // 4. Đồng bộ local state với kết quả RPC trả về
+        setDueProgress((prev) =>
+          prev.map((item) =>
+            item.id === updatedProgress.progress_id
+              ? {
+                  ...item,
+                  correct_streak: updatedProgress.correct_streak,
+                  lapse_count: updatedProgress.lapse_count,
+                  last_reviewed_at: updatedProgress.last_reviewed_at,
+                  next_review_at: updatedProgress.next_review_at,
+                }
+              : item
+          )
+        );
+
+        return true;
+      } catch (err) {
+        console.error("Review submit error:", err);
+
+        const message =
+          err instanceof Error
+            ? err.message
+            : typeof err === "object" &&
+                err !== null &&
+                "message" in err &&
+                typeof err.message === "string"
+              ? err.message
+              : "Unable to save your answer. Please try again.";
+
+        setError(message);
+
+        return false;
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [currentQuestion, result, selectedOption, submitting, supabase, typedAnswer]
+  );
 
   if (error) {
     return (
@@ -572,7 +197,7 @@ export function ReviewSession() {
         <p className="text-sm font-medium text-red-800 dark:text-red-200">{error}</p>
         <button
           type="button"
-          onClick={() => void handleReloadReviewData()}
+          onClick={() => router.refresh()}
           className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
         >
           Retry
@@ -606,7 +231,7 @@ export function ReviewSession() {
         </p>
         <button
           type="button"
-          onClick={() => void fetchReviewData()}
+          onClick={() => router.refresh()}
           className="mt-4 rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
         >
           Start new session
@@ -627,7 +252,7 @@ export function ReviewSession() {
         </p>
         <button
           type="button"
-          onClick={() => void fetchReviewData()}
+          onClick={() => router.refresh()}
           className="mt-4 rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
         >
           Refresh list
@@ -643,7 +268,6 @@ export function ReviewSession() {
           key={`${currentQuestion.progress.id}-${currentQuestion.activity.id}`}
           question={currentQuestion}
           result={result}
-          setResult={setResult}
           submitting={submitting}
           selectedOption={selectedOption}
           typedAnswer={typedAnswer}
@@ -689,7 +313,7 @@ export function ReviewSession() {
 
               <button
                 type="button"
-                onClick={() => void fetchReviewData()}
+                onClick={() => router.refresh()}
                 className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-900 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900/40 dark:text-slate-100 dark:shadow-none dark:hover:border-slate-500 dark:hover:bg-slate-800/60"
               >
                 Refresh list

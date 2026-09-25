@@ -3,14 +3,14 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DetailScores, PronunciationResultState } from "@/types/pronunciation";
 import { cn, sentenceToIPA } from "@/utils";
 import { analyzeSpeech, createNeutralWordDisplay } from "@/utils/pronunciation";
 import { motion } from "framer-motion";
 import { AlertTriangle, Mic, RefreshCw } from "lucide-react";
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
-import { ReviewResult } from ".";
-import { initialPronunciationResultState } from "../practice/speaking-practice";
-import { DetailScores, PronunciationResultState } from "@/types/pronunciation";
+import { useEffect, useRef, useState } from "react";
+import { initialPronunciationResultState } from "../../practice/speaking-practice";
+import { ReviewSubmission, SPEAKING_PASS_SCORE } from "../types";
 
 type SpeakingQuestionProps = {
   question: {
@@ -23,15 +23,15 @@ type SpeakingQuestionProps = {
   };
 
   submitting: boolean;
-  onSubmit: () => void;
-  setResult: Dispatch<SetStateAction<ReviewResult>>;
+  onSubmit: (submission: ReviewSubmission) => Promise<boolean>;
+  onFeedback: (score: number | null) => void;
 };
 
 export function SpeakingQuestion({
   question,
   submitting,
   onSubmit,
-  setResult,
+  onFeedback,
 }: SpeakingQuestionProps) {
   const targetText = question.meta?.sentence?.trim() || question.prompt.trim();
 
@@ -44,7 +44,7 @@ export function SpeakingQuestion({
 
   const isSubmitted = useRef(false);
 
-  const handlePronunciationResult = (spokenText: string, sttConfidence: number) => {
+  const handlePronunciationResult = async (spokenText: string, sttConfidence: number) => {
     const analyzed = analyzeSpeech(targetText, spokenText, sttConfidence);
 
     setPronunciationResult((prev) => ({
@@ -55,24 +55,25 @@ export function SpeakingQuestion({
       wordsForDisplay: analyzed.wordsForDisplay,
     }));
 
-    if (isSubmitted.current || submitting) {
+    const score = analyzed.overallScore ?? 0;
+
+    onFeedback(score);
+
+    if (isSubmitted.current) {
       return;
     }
 
     isSubmitted.current = true;
 
-    const score = analyzed.overallScore ?? 0;
-
-    // Persist review attempt
-    onSubmit();
-
-    // Update review UI
-    setResult({
-      correctAnswer: "",
-      isCorrect: score >= 70,
+    const saved = await onSubmit({
+      isCorrect: score >= SPEAKING_PASS_SCORE,
       score,
-      outcome: "completed",
+      answer: spokenText,
     });
+
+    if (!saved) {
+      isSubmitted.current = false;
+    }
   };
 
   const startListening = () => {
@@ -109,7 +110,10 @@ export function SpeakingQuestion({
       recognition.onresult = (event: SpeechRecognitionEvent) => {
         const bestAlternative = event.results[0][0];
 
-        handlePronunciationResult(bestAlternative.transcript.trim(), bestAlternative.confidence);
+        void handlePronunciationResult(
+          bestAlternative.transcript.trim(),
+          bestAlternative.confidence
+        );
       };
 
       recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
@@ -172,14 +176,12 @@ export function SpeakingQuestion({
   };
 
   const resetCurrentAttempt = () => {
-    isSubmitted.current = false;
-
     setPronunciationResult({
       ...initialPronunciationResultState,
       wordsForDisplay: createNeutralWordDisplay(targetText),
     });
-
-    setResult(null);
+    onFeedback(null);
+    startListening();
   };
 
   const getScoreColor = (score: number | null): string => {
@@ -188,15 +190,6 @@ export function SpeakingQuestion({
     if (score >= 70) return "text-emerald-500";
     if (score >= 50) return "text-amber-500";
     return "text-red-500";
-  };
-
-  const getFeedbackMessage = (score: number | null): string => {
-    if (score === null) return "Tap the microphone to start.";
-    if (score >= 90) return "Excellent pronunciation.";
-    if (score >= 80) return "Very good. Keep it up.";
-    if (score >= 70) return "Good. A little more practice.";
-    if (score >= 60) return "Pretty good. Try one more time.";
-    return "Needs improvement. Try again.";
   };
 
   useEffect(() => {
@@ -320,14 +313,6 @@ export function SpeakingQuestion({
                           {pronunciationResult.overallScore}
                         </span>
                       </div>
-                      <p
-                        className={cn(
-                          "text-center text-sm",
-                          getScoreColor(pronunciationResult.overallScore)
-                        )}
-                      >
-                        {getFeedbackMessage(pronunciationResult.overallScore)}
-                      </p>
 
                       <div className="mt-4 flex justify-center">
                         <Button

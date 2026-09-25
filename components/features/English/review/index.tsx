@@ -5,7 +5,7 @@ import { useReviewSession } from "@/hooks/use-review-session";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { QuestionRenderer } from "./QuestionRenderer";
-import { ReviewSessionData } from "./types";
+import { ReviewResult, ReviewSessionData, SPEAKING_PASS_SCORE } from "./types";
 
 type ReviewSessionProps = {
   initialData: ReviewSessionData;
@@ -31,6 +31,7 @@ export function ReviewSession({ initialData }: ReviewSessionProps) {
     error,
 
     goToNextQuestion,
+    hasNextQuestion,
     handleSubmit,
   } = useReviewSession(initialData);
 
@@ -45,6 +46,28 @@ export function ReviewSession({ initialData }: ReviewSessionProps) {
     if (!dueProgress.length) return 0;
     return ((currentIndex + 1) / dueProgress.length) * 100;
   }, [currentIndex, dueProgress.length]);
+
+  function getResultMessage(result: NonNullable<ReviewResult>) {
+    if (result.outcome === "completed") {
+      const score = result.score ?? 0;
+
+      if (result.isCorrect) {
+        return `Congratulations! You passed with a score of ${score}.`;
+      }
+
+      if (score >= 50) {
+        return `Good effort! Your score is ${score}. You need ${SPEAKING_PASS_SCORE} to pass — keep practising!`;
+      }
+
+      return `Your score is ${score}. Don't give up — try again to improve your pronunciation!`;
+    }
+
+    if (result.isCorrect) {
+      return "Correct!";
+    }
+
+    return `Not quite. The correct answer is: ${result.correctAnswer}`;
+  }
 
   if (error) {
     return (
@@ -141,20 +164,7 @@ export function ReviewSession({ initialData }: ReviewSessionProps) {
                   : "border-red-500 bg-red-50 text-red-900 dark:border-red-600 dark:bg-red-950/20 dark:text-red-100",
               ].join(" ")}
             >
-              {result.outcome === "completed"
-                ? (() => {
-                    const score = result.score ?? 0;
-                    if (score >= 70) {
-                      return `Congratulations! You passed with a score of ${score}.`;
-                    } else if (score >= 50) {
-                      return `Good effort! Your score is ${score}. You need 70 to pass — keep practising!`;
-                    } else {
-                      return `Your score is ${score}. Don't give up — try again to improve your pronunciation!`;
-                    }
-                  })()
-                : result.isCorrect
-                  ? "Correct!"
-                  : `Not quite. The correct answer is: ${result.correctAnswer}`}
+              {getResultMessage(result)}
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -163,7 +173,7 @@ export function ReviewSession({ initialData }: ReviewSessionProps) {
                 onClick={goToNextQuestion}
                 className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
               >
-                {currentIndex + 1 >= dueProgress.length ? "Finish session" : "Next question"}
+                {hasNextQuestion ? "Finish session" : "Next question"}
               </button>
 
               <button

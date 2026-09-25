@@ -61,6 +61,10 @@ export function useReviewSession(initialData: ReviewSessionData) {
     [activities, vocabularies]
   );
 
+  const hasNextQuestion = useMemo(() => {
+    return getNextValidQuestion(currentIndex + 1, dueProgress) !== null;
+  }, [currentIndex, dueProgress, getNextValidQuestion]);
+
   const goToNextQuestion = useCallback(() => {
     const nextValid = getNextValidQuestion(currentIndex + 1, dueProgress);
 
@@ -219,6 +223,7 @@ export function useReviewSession(initialData: ReviewSessionData) {
     setError,
 
     // Actions
+    hasNextQuestion,
     goToNextQuestion,
     handleSubmit,
   };

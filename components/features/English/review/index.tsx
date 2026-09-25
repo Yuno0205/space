@@ -5,7 +5,7 @@ import { useReviewSession } from "@/hooks/use-review-session";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { QuestionRenderer } from "./QuestionRenderer";
-import { ReviewResult, ReviewSessionData, SPEAKING_PASS_SCORE } from "./types";
+import { ReviewSessionData } from "./types";
 
 type ReviewSessionProps = {
   initialData: ReviewSessionData;
@@ -30,9 +30,12 @@ export function ReviewSession({ initialData }: ReviewSessionProps) {
     submitting,
     error,
 
+    feedback,
+
     goToNextQuestion,
     hasNextQuestion,
     handleSubmit,
+    updateSpeakingFeedback,
   } = useReviewSession(initialData);
 
   const router = useRouter();
@@ -46,28 +49,6 @@ export function ReviewSession({ initialData }: ReviewSessionProps) {
     if (!dueProgress.length) return 0;
     return ((currentIndex + 1) / dueProgress.length) * 100;
   }, [currentIndex, dueProgress.length]);
-
-  function getResultMessage(result: NonNullable<ReviewResult>) {
-    if (result.outcome === "completed") {
-      const score = result.score ?? 0;
-
-      if (result.isCorrect) {
-        return `Congratulations! You passed with a score of ${score}.`;
-      }
-
-      if (score >= 50) {
-        return `Good effort! Your score is ${score}. You need ${SPEAKING_PASS_SCORE} to pass — keep practising!`;
-      }
-
-      return `Your score is ${score}. Don't give up — try again to improve your pronunciation!`;
-    }
-
-    if (result.isCorrect) {
-      return "Correct!";
-    }
-
-    return `Not quite. The correct answer is: ${result.correctAnswer}`;
-  }
 
   if (error) {
     return (
@@ -152,38 +133,39 @@ export function ReviewSession({ initialData }: ReviewSessionProps) {
           setSelectedOption={setSelectedOption}
           setTypedAnswer={setTypedAnswer}
           onSubmit={handleSubmit}
+          onSpeakingFeedback={updateSpeakingFeedback}
         />
 
+        {feedback ? (
+          <div
+            className={[
+              "mt-6 rounded-xl border-2 p-4 text-sm font-medium",
+              feedback.isCorrect
+                ? "border-emerald-500 bg-emerald-50 text-emerald-900 dark:border-emerald-400/60 dark:bg-emerald-500/10 dark:text-emerald-100"
+                : "border-red-500 bg-red-50 text-red-900 dark:border-red-600 dark:bg-red-950/20 dark:text-red-100",
+            ].join(" ")}
+          >
+            {feedback.message}
+          </div>
+        ) : null}
+
         {result ? (
-          <div className="mt-6 space-y-4">
-            <div
-              className={[
-                "rounded-xl border-2 p-4 text-sm font-medium",
-                result.isCorrect
-                  ? "border-emerald-500 bg-emerald-50 text-emerald-900 dark:border-emerald-400/60 dark:bg-emerald-500/10 dark:text-emerald-100"
-                  : "border-red-500 bg-red-50 text-red-900 dark:border-red-600 dark:bg-red-950/20 dark:text-red-100",
-              ].join(" ")}
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={goToNextQuestion}
+              className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
             >
-              {getResultMessage(result)}
-            </div>
+              {hasNextQuestion ? "Next question" : "Finish session"}
+            </button>
 
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={goToNextQuestion}
-                className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
-              >
-                {hasNextQuestion ? "Finish session" : "Next question"}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => router.refresh()}
-                className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-900 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900/40 dark:text-slate-100 dark:shadow-none dark:hover:border-slate-500 dark:hover:bg-slate-800/60"
-              >
-                Refresh list
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => router.refresh()}
+              className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-900 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900/40 dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-800/60"
+            >
+              Refresh list
+            </button>
           </div>
         ) : null}
       </div>

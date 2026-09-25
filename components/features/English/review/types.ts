@@ -43,12 +43,19 @@ export type ReviewSubmission = {
   score?: number;
 };
 
-export type ReviewResult = {
+export type ReviewOutcome = {
   isCorrect: boolean;
-  correctAnswer: string;
   score?: number;
+};
+
+export type ReviewResult = ReviewOutcome & {
+  correctAnswer: string;
   outcome?: "answered" | "completed";
-} | null;
+};
+
+export type ReviewFeedback = ReviewOutcome & {
+  message: string;
+};
 
 export type ReviewSessionData = {
   dueProgress: TProgress[];

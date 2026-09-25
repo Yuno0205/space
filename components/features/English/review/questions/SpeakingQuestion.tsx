@@ -24,9 +24,15 @@ type SpeakingQuestionProps = {
 
   submitting: boolean;
   onSubmit: (submission: ReviewSubmission) => Promise<boolean>;
+  onFeedback: (score: number | null) => void;
 };
 
-export function SpeakingQuestion({ question, submitting, onSubmit }: SpeakingQuestionProps) {
+export function SpeakingQuestion({
+  question,
+  submitting,
+  onSubmit,
+  onFeedback,
+}: SpeakingQuestionProps) {
   const targetText = question.meta?.sentence?.trim() || question.prompt.trim();
 
   const [pronunciationResult, setPronunciationResult] = useState<PronunciationResultState>(() => ({
@@ -49,11 +55,13 @@ export function SpeakingQuestion({ question, submitting, onSubmit }: SpeakingQue
       wordsForDisplay: analyzed.wordsForDisplay,
     }));
 
+    const score = analyzed.overallScore ?? 0;
+
+    onFeedback(score);
+
     if (isSubmitted.current || submitting) {
       return;
     }
-
-    const score = analyzed.overallScore ?? 0;
 
     const saved = await onSubmit({
       isCorrect: score >= SPEAKING_PASS_SCORE,
@@ -169,6 +177,8 @@ export function SpeakingQuestion({ question, submitting, onSubmit }: SpeakingQue
       ...initialPronunciationResultState,
       wordsForDisplay: createNeutralWordDisplay(targetText),
     });
+    onFeedback(null);
+    startListening();
   };
 
   const getScoreColor = (score: number | null): string => {
@@ -177,15 +187,6 @@ export function SpeakingQuestion({ question, submitting, onSubmit }: SpeakingQue
     if (score >= 70) return "text-emerald-500";
     if (score >= 50) return "text-amber-500";
     return "text-red-500";
-  };
-
-  const getFeedbackMessage = (score: number | null): string => {
-    if (score === null) return "Tap the microphone to start.";
-    if (score >= 90) return "Excellent pronunciation.";
-    if (score >= 80) return "Very good. Keep it up.";
-    if (score >= 70) return "Good. A little more practice.";
-    if (score >= 60) return "Pretty good. Try one more time.";
-    return "Needs improvement. Try again.";
   };
 
   useEffect(() => {
@@ -309,14 +310,6 @@ export function SpeakingQuestion({ question, submitting, onSubmit }: SpeakingQue
                           {pronunciationResult.overallScore}
                         </span>
                       </div>
-                      <p
-                        className={cn(
-                          "text-center text-sm",
-                          getScoreColor(pronunciationResult.overallScore)
-                        )}
-                      >
-                        {getFeedbackMessage(pronunciationResult.overallScore)}
-                      </p>
 
                       <div className="mt-4 flex justify-center">
                         <Button

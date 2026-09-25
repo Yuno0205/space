@@ -7,13 +7,14 @@ import { ReviewResult, ReviewSubmission, TQuestion } from "./types";
 
 type QuestionRendererProps = {
   question: TQuestion;
-  result: ReviewResult;
+  result: ReviewResult | null;
   submitting: boolean;
   selectedOption: string | null;
   typedAnswer: string;
   setSelectedOption: (value: string | null) => void;
   setTypedAnswer: (value: string) => void;
   onSubmit: (submission?: ReviewSubmission) => Promise<boolean>;
+  onSpeakingFeedback: (score: number | null) => void;
 };
 
 export function QuestionRenderer({
@@ -25,6 +26,7 @@ export function QuestionRenderer({
   setSelectedOption,
   setTypedAnswer,
   onSubmit,
+  onSpeakingFeedback,
 }: QuestionRendererProps) {
   switch (question.type) {
     case "mcq":
@@ -52,7 +54,14 @@ export function QuestionRenderer({
       );
 
     case "speaking":
-      return <SpeakingQuestion question={question} submitting={submitting} onSubmit={onSubmit} />;
+      return (
+        <SpeakingQuestion
+          question={question}
+          submitting={submitting}
+          onSubmit={onSubmit}
+          onFeedback={onSpeakingFeedback}
+        />
+      );
 
     default:
       return null;

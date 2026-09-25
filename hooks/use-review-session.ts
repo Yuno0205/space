@@ -2,9 +2,11 @@
 
 import { generateQuestion } from "@/components/features/English/review/_lib/question-generator";
 import {
+  ReviewFeedback,
   ReviewResult,
   ReviewSessionData,
   ReviewSubmission,
+  SPEAKING_PASS_SCORE,
   TProgress,
   TQuestion,
 } from "@/components/features/English/review/types";
@@ -28,7 +30,8 @@ export function useReviewSession(initialData: ReviewSessionData) {
 
   const [typedAnswer, setTypedAnswer] = useState("");
 
-  const [result, setResult] = useState<ReviewResult>(null);
+  const [result, setResult] = useState<ReviewResult | null>(null);
+  const [feedback, setFeedback] = useState<ReviewFeedback | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
 
@@ -72,6 +75,7 @@ export function useReviewSession(initialData: ReviewSessionData) {
     setSelectedOption(null);
     setTypedAnswer("");
     setResult(null);
+    setFeedback(null);
     setError(null);
 
     if (!nextValid) {
@@ -156,6 +160,10 @@ export function useReviewSession(initialData: ReviewSessionData) {
           outcome,
         });
 
+        setFeedback(
+          getReviewFeedback(reviewSubmission.isCorrect, answerToShow, reviewSubmission.score)
+        );
+
         setDueProgress((prev) =>
           prev.map((item) =>
             item.id === updatedProgress.progress_id
@@ -194,6 +202,50 @@ export function useReviewSession(initialData: ReviewSessionData) {
     [currentQuestion, result, selectedOption, submitting, supabase, typedAnswer]
   );
 
+  function getReviewFeedback(
+    isCorrect: boolean,
+    correctAnswer: string,
+    score?: number
+  ): ReviewFeedback {
+    if (score !== undefined) {
+      if (isCorrect) {
+        return {
+          isCorrect: true,
+          score,
+          message: `Great job! Your pronunciation score is ${score}.`,
+        };
+      }
+
+      if (score >= 50) {
+        return {
+          isCorrect: false,
+          score,
+          message: `Good effort! Your score is ${score}. You need ${SPEAKING_PASS_SCORE} to pass.`,
+        };
+      }
+
+      return {
+        isCorrect: false,
+        score,
+        message: `Your score is ${score}. Keep practising and try again.`,
+      };
+    }
+
+    return {
+      isCorrect,
+      message: isCorrect ? "Correct!" : `Not quite. The correct answer is: ${correctAnswer}`,
+    };
+  }
+
+  const updateSpeakingFeedback = useCallback((score: number | null) => {
+    if (score === null) {
+      setFeedback(null);
+      return;
+    }
+
+    setFeedback(getReviewFeedback(score >= SPEAKING_PASS_SCORE, "", score));
+  }, []);
+
   return {
     // Session
     dueProgress,
@@ -222,9 +274,12 @@ export function useReviewSession(initialData: ReviewSessionData) {
     error,
     setError,
 
+    feedback,
+
     // Actions
     hasNextQuestion,
     goToNextQuestion,
     handleSubmit,
+    updateSpeakingFeedback,
   };
 }

@@ -62,7 +62,7 @@ export default function UnitHeader({ data }: { data: Level }) {
               DESTINATION REACHED:
             </p>
             <h1
-              className={cn("text-7xl md:text-8xl font-black text-white mt-2", orbitron.className)}
+              className={cn("text-5xl lg:text-7xl font-black text-white mt-2", orbitron.className)}
             >
               SECTOR {data.name}
             </h1>

@@ -76,8 +76,8 @@ export function DashedHero({ title, description, user }: DashedHeroProps) {
         <div className="absolute top-3 bottom-3 left-0 w-px border-l border-dashed border-white/30"></div>
         <div className="absolute top-3 bottom-3 right-0 w-px border-l border-dashed border-white/30"></div>
 
-        <div className="px-8 py-20 md:px-16 md:py-24">
-          <div className="flex flex-col items-center text-center">
+        <div className="px-4 py-16 sm:px-8 sm:py-20 md:px-16 md:py-24">
+          <div className="flex min-w-0 flex-col items-center text-center">
             {/* Title */}
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
@@ -134,31 +134,31 @@ export function DashedHero({ title, description, user }: DashedHeroProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="flex flex-col sm:flex-row justify-center gap-4 mb-12"
+              className="mb-12 flex w-full min-w-0 max-w-full flex-col items-stretch justify-center gap-4 sm:flex-row sm:items-center"
             >
               {user ? (
                 <Button
                   variant={"outline"}
-                  className="mx-4 flex h-12 w-full items-center justify-center gap-3 rounded-xl border-border bg-background px-6 text-md font-medium shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-muted hover:shadow-md active:translate-y-0 disabled:translate-y-0"
+                  className="flex h-auto min-h-12 w-full max-w-full min-w-0 items-center justify-center gap-3 whitespace-normal rounded-xl border-border bg-background px-4 py-2.5 text-sm font-medium shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-muted hover:shadow-md active:translate-y-0 disabled:translate-y-0 sm:w-auto sm:px-6 sm:text-md"
                 >
                   <Link href="/dashboard">Go to Dashboard?</Link>
                 </Button>
               ) : (
                 <Button
                   variant="outline"
-                  className="mx-4 flex h-12 w-full items-center justify-center gap-3 rounded-xl border-border bg-background px-6 text-md font-medium shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-muted hover:shadow-md active:translate-y-0 disabled:translate-y-0"
+                  className="flex h-auto min-h-12 w-full max-w-full min-w-0 items-center justify-center gap-2 whitespace-normal rounded-xl border-border bg-background px-4 py-2.5 text-sm font-medium shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-muted hover:shadow-md active:translate-y-0 disabled:translate-y-0 sm:w-auto sm:gap-3 sm:px-6 sm:text-md"
                   onClick={signInWithGoogle}
                   disabled={isSigningIn}
                 >
                   {isSigningIn ? (
                     <>
-                      <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      <span className="size-4 shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent" />
                       <span>Signing in...</span>
                     </>
                   ) : (
                     <>
                       {/* Google icon */}
-                      <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" className="size-5 shrink-0" aria-hidden="true">
                         <path
                           fill="#4285F4"
                           d="M21.35 12.23c0-.68-.06-1.36-.18-2H12v3.79h5.24a4.48 4.48 0 0 1-1.94 2.94v2.45h3.14c1.84-1.69 2.91-4.18 2.91-7.18Z"
@@ -177,7 +177,10 @@ export function DashedHero({ title, description, user }: DashedHeroProps) {
                         />
                       </svg>
 
-                      <span>Kick-start your journey with Google</span>
+                      <span className="min-w-0 text-balance leading-snug">
+                        <span className="sm:hidden">Continue with Google</span>
+                        <span className="hidden sm:inline">Kick-start your journey with Google</span>
+                      </span>
                     </>
                   )}
                 </Button>

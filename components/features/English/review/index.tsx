@@ -1,54 +1,40 @@
 "use client";
 
 import { SharedProgressCard } from "@/components/shared/Progress";
-import { createClient } from "@/lib/supabase/client";
-import { normalizeToken } from "@/utils";
+import { useReviewSession } from "@/hooks/use-review-session";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
-import { generateQuestion } from "./_lib/question-generator";
+import { useMemo } from "react";
 import { QuestionRenderer } from "./QuestionRenderer";
-import { ReviewResult, ReviewSessionData, ReviewSubmission, TProgress, TQuestion } from "./types";
+import { ReviewSessionData } from "./types";
 
 type ReviewSessionProps = {
   initialData: ReviewSessionData;
 };
 
 export function ReviewSession({ initialData }: ReviewSessionProps) {
-  const supabase = useMemo(() => createClient(), []);
+  const {
+    dueProgress,
 
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+    currentIndex,
+    currentQuestion,
 
-  const [dueProgress, setDueProgress] = useState<TProgress[]>(initialData.dueProgress);
+    sessionComplete,
 
-  const allActivities = initialData.activities;
-  const allVocabularies = initialData.vocabularies;
+    selectedOption,
+    setSelectedOption,
 
-  const [currentIndex, setCurrentIndex] = useState(initialData.initialIndex);
+    typedAnswer,
+    setTypedAnswer,
 
-  const [currentQuestion, setCurrentQuestion] = useState<TQuestion | null>(
-    initialData.initialQuestion
-  );
-  const [sessionComplete, setSessionComplete] = useState(false);
+    result,
+    submitting,
+    error,
 
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [typedAnswer, setTypedAnswer] = useState("");
-  const [result, setResult] = useState<ReviewResult>(null);
+    goToNextQuestion,
+    handleSubmit,
+  } = useReviewSession(initialData);
 
   const router = useRouter();
-
-  const getNextValidQuestion = useCallback(
-    (startIndex: number, progressList: TProgress[]) => {
-      for (let i = startIndex; i < progressList.length; i += 1) {
-        const question = generateQuestion(progressList[i], allActivities, allVocabularies);
-        if (question) {
-          return { index: i, question };
-        }
-      }
-      return null;
-    },
-    [allActivities, allVocabularies]
-  );
 
   const remainingCount = useMemo(
     () => Math.max(dueProgress.length - currentIndex, 0),
@@ -59,137 +45,6 @@ export function ReviewSession({ initialData }: ReviewSessionProps) {
     if (!dueProgress.length) return 0;
     return ((currentIndex + 1) / dueProgress.length) * 100;
   }, [currentIndex, dueProgress.length]);
-
-  const goToNextQuestion = useCallback(() => {
-    const nextValid = getNextValidQuestion(currentIndex + 1, dueProgress);
-
-    setSelectedOption(null);
-    setTypedAnswer("");
-    setResult(null);
-
-    if (!nextValid) {
-      setCurrentQuestion(null);
-      setSessionComplete(true);
-      return;
-    }
-
-    setCurrentIndex(nextValid.index);
-    setCurrentQuestion(nextValid.question);
-  }, [currentIndex, dueProgress, getNextValidQuestion]);
-
-  const handleSubmit = useCallback(
-    async (submission?: ReviewSubmission): Promise<boolean> => {
-      if (!currentQuestion || submitting || result) {
-        return false;
-      }
-
-      let reviewSubmission: ReviewSubmission;
-      let answerToShow = "";
-      let outcome: "answered" | "completed" = "answered";
-
-      // 1. Normalize answer thành ReviewSubmission
-      if (currentQuestion.type === "mcq") {
-        if (!selectedOption) {
-          return false;
-        }
-
-        reviewSubmission = {
-          isCorrect:
-            normalizeToken(selectedOption) === normalizeToken(currentQuestion.correctAnswer),
-          answer: selectedOption,
-        };
-
-        answerToShow = currentQuestion.correctAnswer;
-      } else if (currentQuestion.type === "typing") {
-        if (!typedAnswer.trim()) {
-          return false;
-        }
-
-        reviewSubmission = {
-          isCorrect: normalizeToken(typedAnswer) === normalizeToken(currentQuestion.correctAnswer),
-          answer: typedAnswer,
-        };
-
-        answerToShow = currentQuestion.correctAnswer;
-      } else {
-        // Speaking đã tự tính score/isCorrect và truyền lên
-        if (!submission) {
-          return false;
-        }
-
-        reviewSubmission = submission;
-        outcome = "completed";
-      }
-
-      setSubmitting(true);
-      setError(null);
-
-      try {
-        // 2. Gửi toàn bộ kết quả xuống DB
-        const { data, error } = await supabase.rpc("submit_review_attempt", {
-          p_progress_id: currentQuestion.progress.id,
-          p_activity_type_id: currentQuestion.activity.id,
-          p_is_correct: reviewSubmission.isCorrect,
-          p_score: reviewSubmission.score ?? null,
-          p_answer_text: reviewSubmission.answer ?? null,
-        });
-
-        if (error) {
-          throw error;
-        }
-
-        const updatedProgress = data?.[0];
-
-        if (!updatedProgress) {
-          throw new Error("Review progress was not returned.");
-        }
-
-        // 3. Show kết quả cho user
-        setResult({
-          isCorrect: reviewSubmission.isCorrect,
-          correctAnswer: answerToShow,
-          score: reviewSubmission.score,
-          outcome,
-        });
-
-        // 4. Đồng bộ local state với kết quả RPC trả về
-        setDueProgress((prev) =>
-          prev.map((item) =>
-            item.id === updatedProgress.progress_id
-              ? {
-                  ...item,
-                  correct_streak: updatedProgress.correct_streak,
-                  lapse_count: updatedProgress.lapse_count,
-                  last_reviewed_at: updatedProgress.last_reviewed_at,
-                  next_review_at: updatedProgress.next_review_at,
-                }
-              : item
-          )
-        );
-
-        return true;
-      } catch (err) {
-        console.error("Review submit error:", err);
-
-        const message =
-          err instanceof Error
-            ? err.message
-            : typeof err === "object" &&
-                err !== null &&
-                "message" in err &&
-                typeof err.message === "string"
-              ? err.message
-              : "Unable to save your answer. Please try again.";
-
-        setError(message);
-
-        return false;
-      } finally {
-        setSubmitting(false);
-      }
-    },
-    [currentQuestion, result, selectedOption, submitting, supabase, typedAnswer]
-  );
 
   if (error) {
     return (

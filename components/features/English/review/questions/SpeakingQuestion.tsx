@@ -59,17 +59,20 @@ export function SpeakingQuestion({
 
     onFeedback(score);
 
-    if (isSubmitted.current || submitting) {
+    if (isSubmitted.current) {
       return;
     }
+
+    isSubmitted.current = true;
 
     const saved = await onSubmit({
       isCorrect: score >= SPEAKING_PASS_SCORE,
       score,
+      answer: spokenText,
     });
 
-    if (saved) {
-      isSubmitted.current = true;
+    if (!saved) {
+      isSubmitted.current = false;
     }
   };
 

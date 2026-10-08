@@ -3,14 +3,16 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DetailScores, PronunciationResultState } from "@/types/pronunciation";
+import {
+  PronunciationRecognitionResult,
+  usePronunciationRecognition,
+} from "@/hooks/usePronunciationRecognition";
 import { cn, sentenceToIPA } from "@/utils";
-import { analyzeSpeech, createNeutralWordDisplay } from "@/utils/pronunciation";
 import { motion } from "framer-motion";
 import { AlertTriangle, Mic, RefreshCw } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { initialPronunciationResultState } from "../../practice/speaking-practice";
+import { useRef } from "react";
 import { ReviewSubmission, SPEAKING_PASS_SCORE } from "../types";
+import { getScoreColor } from "@/utils/pronunciation";
 
 type SpeakingQuestionProps = {
   question: {
@@ -34,35 +36,12 @@ export function SpeakingQuestion({
   onFeedback,
 }: SpeakingQuestionProps) {
   const targetText = question.meta?.sentence?.trim() || question.prompt.trim();
-
-  const [pronunciationResult, setPronunciationResult] = useState<PronunciationResultState>(() => ({
-    ...initialPronunciationResultState,
-    wordsForDisplay: createNeutralWordDisplay(targetText),
-  }));
-
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
-
   const isSubmitted = useRef(false);
 
-  const handlePronunciationResult = async (spokenText: string, sttConfidence: number) => {
-    const analyzed = analyzeSpeech(targetText, spokenText, sttConfidence);
-
-    setPronunciationResult((prev) => ({
-      ...prev,
-      transcript: spokenText,
-      overallScore: analyzed.overallScore,
-      detailScores: analyzed.details as unknown as DetailScores | null,
-      wordsForDisplay: analyzed.wordsForDisplay,
-    }));
-
-    const score = analyzed.overallScore ?? 0;
-
+  const handleResult = async ({ spokenText, score }: PronunciationRecognitionResult) => {
     onFeedback(score);
 
-    if (isSubmitted.current) {
-      return;
-    }
-
+    if (isSubmitted.current) return;
     isSubmitted.current = true;
 
     const saved = await onSubmit({
@@ -71,132 +50,16 @@ export function SpeakingQuestion({
       answer: spokenText,
     });
 
-    if (!saved) {
-      isSubmitted.current = false;
-    }
+    if (!saved) isSubmitted.current = false;
   };
 
-  const startListening = () => {
-    if (pronunciationResult.isListening) {
-      return;
-    }
-
-    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (!SpeechRecognitionAPI) {
-      setPronunciationResult((prev) => ({
-        ...prev,
-        error: "Your browser does not support the Web Speech API. Please try Chrome or Edge.",
-      }));
-
-      return;
-    }
-
-    if (!recognitionRef.current) {
-      const recognition = new SpeechRecognitionAPI();
-
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = "en-GB";
-
-      recognition.onstart = () => {
-        setPronunciationResult((prev) => ({
-          ...prev,
-          isListening: true,
-          error: null,
-        }));
-      };
-
-      recognition.onresult = (event: SpeechRecognitionEvent) => {
-        const bestAlternative = event.results[0][0];
-
-        void handlePronunciationResult(
-          bestAlternative.transcript.trim(),
-          bestAlternative.confidence
-        );
-      };
-
-      recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-        let errorText = `Speech recognition error: ${event.error}`;
-
-        if (event.error === "no-speech") {
-          errorText = "No speech detected. Please try again.";
-        } else if (event.error === "audio-capture") {
-          errorText = "Microphone not found. Please check your device.";
-        } else if (event.error === "not-allowed") {
-          errorText = "Microphone access denied. Please grant permission.";
-        }
-
-        setPronunciationResult((prev) => ({
-          ...prev,
-          isListening: false,
-          error: errorText,
-        }));
-      };
-
-      recognition.onend = () => {
-        setPronunciationResult((prev) => ({
-          ...prev,
-          isListening: false,
-        }));
-      };
-
-      recognitionRef.current = recognition;
-    }
-
-    setPronunciationResult((prev) => ({
-      ...prev,
-      transcript: "",
-      overallScore: null,
-      detailScores: null,
-      error: null,
-      wordsForDisplay: createNeutralWordDisplay(targetText),
-    }));
-
-    try {
-      recognitionRef.current.start();
-    } catch (error) {
-      const errorText =
-        error instanceof Error && error.name === "InvalidStateError"
-          ? "Recognition state error, please try again shortly."
-          : "Could not start speech recognition.";
-
-      setPronunciationResult((prev) => ({
-        ...prev,
-        isListening: false,
-        error: errorText,
-      }));
-    }
-  };
-
-  const stopListening = () => {
-    if (recognitionRef.current && pronunciationResult.isListening) {
-      recognitionRef.current.stop();
-    }
-  };
+  const { pronunciationResult, startListening, stopListening, resetPronunciation } =
+    usePronunciationRecognition({ targetText, onResult: handleResult });
 
   const resetCurrentAttempt = () => {
-    setPronunciationResult({
-      ...initialPronunciationResultState,
-      wordsForDisplay: createNeutralWordDisplay(targetText),
-    });
+    resetPronunciation();
     onFeedback(null);
-    startListening();
   };
-
-  const getScoreColor = (score: number | null): string => {
-    if (score === null) return "text-gray-400";
-    if (score >= 90) return "text-green-500";
-    if (score >= 70) return "text-emerald-500";
-    if (score >= 50) return "text-amber-500";
-    return "text-red-500";
-  };
-
-  useEffect(() => {
-    return () => {
-      recognitionRef.current?.abort();
-    };
-  }, []);
 
   return (
     <div className="space-y-6 bg-white p-2 text-black sm:p-4 dark:bg-transparent dark:text-white">

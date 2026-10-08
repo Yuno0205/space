@@ -24,6 +24,7 @@ import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { VocabularyCard } from "@/types/vocabulary";
 import { qualifyVocabSkill } from "@/utils/Supabase/action";
 import { SPEAKING_PASS_SCORE } from "../review/types";
+import { getFeedbackMessage, getScoreColor } from "@/utils/pronunciation";
 
 interface SpeakingPracticeProps {
   cards?: VocabularyCard[];
@@ -81,24 +82,6 @@ function SpeakingQuestion({ card, onNext, currentPosition, totalCards }: Speakin
   };
 
   const toggleDefinition = () => setShowDefinition((prev) => !prev);
-
-  const getFeedbackMessage = (score: number | null): string => {
-    if (score === null) return "Press the microphone to start.";
-    if (score >= 90) return "Excellent! Your pronunciation is very accurate.";
-    if (score >= 80) return "Very good! Your pronunciation is quite accurate.";
-    if (score >= 70) return "Good! Your pronunciation is mostly correct.";
-    if (score >= 60) return "Pretty good. Keep practicing!";
-    if (score >= 50) return "Needs improvement. Listen and try again.";
-    return "Listen to the correct pronunciation and try again.";
-  };
-
-  const getScoreColor = (score: number | null): string => {
-    if (score === null) return "text-gray-400";
-    if (score >= 90) return "text-green-500";
-    if (score >= 70) return "text-emerald-500";
-    if (score >= 50) return "text-amber-500";
-    return "text-red-500";
-  };
 
   useEffect(() => {
     return () => stopAudio();

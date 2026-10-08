@@ -147,8 +147,27 @@ export const analyzeSpeech = (targetText: string, spokenText: string, sttConfide
   };
 };
 
+// some mini ultils
 export const createNeutralWordDisplay = (targetText: string): WordDisplay[] =>
   targetText
     .split(/\s+/)
     .filter(Boolean)
     .map((word) => ({ text: word, color: "text-gray-300" }));
+
+export const getFeedbackMessage = (score: number | null): string => {
+  if (score === null) return "Press the microphone to start.";
+  if (score >= 90) return "Excellent! Your pronunciation is very accurate.";
+  if (score >= 80) return "Very good! Your pronunciation is quite accurate.";
+  if (score >= 70) return "Good! Your pronunciation is mostly correct.";
+  if (score >= 60) return "Pretty good. Keep practicing!";
+  if (score >= 50) return "Needs improvement. Listen and try again.";
+  return "Listen to the correct pronunciation and try again.";
+};
+
+export const getScoreColor = (score: number | null): string => {
+  if (score === null) return "text-gray-400";
+  if (score >= 90) return "text-green-500";
+  if (score >= 70) return "text-emerald-500";
+  if (score >= 50) return "text-amber-500";
+  return "text-red-500";
+};

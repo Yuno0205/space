@@ -12,6 +12,7 @@ import { motion } from "framer-motion";
 import { AlertTriangle, Mic, RefreshCw } from "lucide-react";
 import { useRef } from "react";
 import { ReviewSubmission, SPEAKING_PASS_SCORE } from "../types";
+import { getScoreColor } from "@/utils/pronunciation";
 
 type SpeakingQuestionProps = {
   question: {
@@ -58,14 +59,6 @@ export function SpeakingQuestion({
   const resetCurrentAttempt = () => {
     resetPronunciation();
     onFeedback(null);
-  };
-
-  const getScoreColor = (score: number | null): string => {
-    if (score === null) return "text-gray-400";
-    if (score >= 90) return "text-green-500";
-    if (score >= 70) return "text-emerald-500";
-    if (score >= 50) return "text-amber-500";
-    return "text-red-500";
   };
 
   return (

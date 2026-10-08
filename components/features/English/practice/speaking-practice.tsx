@@ -3,7 +3,7 @@
 import { cn } from "@/utils";
 import { motion } from "framer-motion";
 import { AlertTriangle, ArrowRight, CheckCircle, Mic, RefreshCw, Volume2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { SharedProgressCard } from "@/components/shared/Progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -19,11 +19,12 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
-import { PronunciationResultState } from "@/types/pronunciation";
+import { usePronunciationRecognition } from "@/hooks/usePronunciationRecognition";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { VocabularyCard } from "@/types/vocabulary";
 import { qualifyVocabSkill } from "@/utils/Supabase/action";
-import { analyzeSpeech, createNeutralWordDisplay } from "@/utils/pronunciation";
-import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
+import { SPEAKING_PASS_SCORE } from "../review/types";
+import { getFeedbackMessage, getScoreColor } from "@/utils/pronunciation";
 
 interface SpeakingPracticeProps {
   cards?: VocabularyCard[];
@@ -36,144 +37,31 @@ interface SpeakingQuestionProps {
   totalCards: number;
 }
 
-export const initialPronunciationResultState: PronunciationResultState = {
-  wordsForDisplay: [],
-  transcript: "",
-  overallScore: null,
-  detailScores: null,
-  error: null,
-  isListening: false,
-};
-
 function SpeakingQuestion({ card, onNext, currentPosition, totalCards }: SpeakingQuestionProps) {
   const [showDefinition, setShowDefinition] = useState(false);
   const [isPronunciationQualified, setIsPronunciationQualified] = useState(false);
   const [isQualifying, setIsQualifying] = useState(false);
-  const [pronunciationResult, setPronunciationResult] = useState<PronunciationResultState>(() => ({
-    ...initialPronunciationResultState,
-    wordsForDisplay: createNeutralWordDisplay(card.word),
-  }));
-
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   const { playAudio, isPlaying, stopAudio } = useSpeechSynthesis();
 
-  const analyzePronunciation = (spokenText: string, confidence: number) => {
-    const result = analyzeSpeech(card.word, spokenText, confidence);
+  const { pronunciationResult, startListening, stopListening, resetPronunciation } =
+    usePronunciationRecognition({ targetText: card.word });
 
-    setPronunciationResult((prev) => ({
-      ...prev,
-      transcript: spokenText,
-      overallScore: result.overallScore,
-      detailScores: result.details,
-      wordsForDisplay: result.wordsForDisplay,
-    }));
+  const handleStartListening = () => {
+    stopAudio();
+    startListening();
   };
 
   const resetCurrentAttempt = () => {
     stopAudio();
-
-    recognitionRef.current?.abort();
-
-    setPronunciationResult({
-      ...initialPronunciationResultState,
-      wordsForDisplay: createNeutralWordDisplay(card.word),
-    });
-
+    resetPronunciation();
     setShowDefinition(false);
-  };
-
-  const startListening = () => {
-    if (pronunciationResult.isListening) return;
-
-    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (!SpeechRecognitionAPI) {
-      setPronunciationResult((prev) => ({
-        ...prev,
-        error: "Your browser does not support the Web Speech API. Please try Chrome or Edge.",
-      }));
-
-      return;
-    }
-
-    if (!recognitionRef.current) {
-      const recognition = new SpeechRecognitionAPI();
-
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = "en-GB";
-
-      recognition.onstart = () => {
-        setPronunciationResult((prev) => ({
-          ...prev,
-          isListening: true,
-          error: null,
-        }));
-      };
-
-      recognition.onresult = (event: SpeechRecognitionEvent) => {
-        const bestAlternative = event.results[0][0];
-
-        const spokenText = bestAlternative.transcript.trim();
-
-        analyzePronunciation(spokenText, bestAlternative.confidence);
-      };
-
-      recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-        let errorText = `Speech recognition error: ${event.error}`;
-
-        if (event.error === "no-speech") {
-          errorText = "No speech detected. Please try again.";
-        } else if (event.error === "audio-capture") {
-          errorText = "Microphone not found. Please check your device.";
-        } else if (event.error === "not-allowed") {
-          errorText = "Microphone access denied. Please grant permission.";
-        }
-
-        setPronunciationResult((prev) => ({
-          ...prev,
-          isListening: false,
-          error: errorText,
-        }));
-      };
-
-      recognition.onend = () => {
-        setPronunciationResult((prev) => ({
-          ...prev,
-          isListening: false,
-        }));
-      };
-
-      recognitionRef.current = recognition;
-    }
-
-    setPronunciationResult((prev) => ({
-      ...prev,
-      transcript: "",
-      overallScore: null,
-      detailScores: null,
-      wordsForDisplay: createNeutralWordDisplay(card.word),
-      error: null,
-    }));
-
-    try {
-      recognitionRef.current.start();
-    } catch (error) {
-      console.error("Error starting recognition:", error);
-    }
-  };
-
-  const stopListening = () => {
-    if (recognitionRef.current && pronunciationResult.isListening) {
-      recognitionRef.current.stop();
-    }
   };
 
   const handlePronunciationQualified = async () => {
     if (
       pronunciationResult.overallScore === null ||
-      pronunciationResult.overallScore < 85 ||
+      pronunciationResult.overallScore < SPEAKING_PASS_SCORE ||
       isPronunciationQualified ||
       isQualifying
     ) {
@@ -185,15 +73,9 @@ function SpeakingQuestion({ card, onNext, currentPosition, totalCards }: Speakin
     try {
       // 1. Qualify pronunciation + mastery +1
       await qualifyVocabSkill(card.id, "speaking");
-
       setIsPronunciationQualified(true);
     } catch (error) {
       console.error("Error qualifying pronunciation:", error);
-
-      setPronunciationResult((prev) => ({
-        ...prev,
-        error: "Failed to save pronunciation progress.",
-      }));
     } finally {
       setIsQualifying(false);
     }
@@ -201,29 +83,8 @@ function SpeakingQuestion({ card, onNext, currentPosition, totalCards }: Speakin
 
   const toggleDefinition = () => setShowDefinition((prev) => !prev);
 
-  const getFeedbackMessage = (score: number | null): string => {
-    if (score === null) return "Press the microphone to start.";
-    if (score >= 90) return "Excellent! Your pronunciation is very accurate.";
-    if (score >= 80) return "Very good! Your pronunciation is quite accurate.";
-    if (score >= 70) return "Good! Your pronunciation is mostly correct.";
-    if (score >= 60) return "Pretty good. Keep practicing!";
-    if (score >= 50) return "Needs improvement. Listen and try again.";
-    return "Listen to the correct pronunciation and try again.";
-  };
-
-  const getScoreColor = (score: number | null): string => {
-    if (score === null) return "text-gray-400";
-    if (score >= 90) return "text-green-500";
-    if (score >= 70) return "text-emerald-500";
-    if (score >= 50) return "text-amber-500";
-    return "text-red-500";
-  };
-
   useEffect(() => {
-    return () => {
-      recognitionRef.current?.abort();
-      stopAudio();
-    };
+    return () => stopAudio();
   }, [stopAudio]);
 
   return (
@@ -239,7 +100,6 @@ function SpeakingQuestion({ card, onNext, currentPosition, totalCards }: Speakin
       )}
 
       <motion.div
-        key={card.id}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -331,7 +191,7 @@ function SpeakingQuestion({ card, onNext, currentPosition, totalCards }: Speakin
                         ? "bg-red-600 hover:bg-red-700 animate-pulse"
                         : "dark:bg-white bg-gray-800 text-white dark:text-black hover:bg-gray-700 dark:hover:bg-gray-200"
                     )}
-                    onClick={pronunciationResult.isListening ? stopListening : startListening}
+                    onClick={pronunciationResult.isListening ? stopListening : handleStartListening}
                     title={pronunciationResult.isListening ? "Stop recording" : "Start recording"}
                     aria-label={
                       pronunciationResult.isListening ? "Stop recording" : "Start recording"
@@ -476,7 +336,7 @@ function SpeakingQuestion({ card, onNext, currentPosition, totalCards }: Speakin
                                 isPronunciationQualified
                                   ? "bg-green-100 text-green-700 border-green-500 dark:bg-green-800/30 dark:text-green-400 dark:border-green-600 cursor-default"
                                   : pronunciationResult.overallScore !== null &&
-                                      pronunciationResult.overallScore >= 85
+                                      pronunciationResult.overallScore >= SPEAKING_PASS_SCORE
                                     ? "text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 border-blue-500 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/50"
                                     : "text-gray-400 dark:text-gray-500 border-gray-300 dark:border-gray-600 cursor-not-allowed"
                               )}
@@ -484,14 +344,15 @@ function SpeakingQuestion({ card, onNext, currentPosition, totalCards }: Speakin
                                 isPronunciationQualified
                                   ? "Marked as mastered for this attempt"
                                   : pronunciationResult.overallScore !== null &&
-                                      pronunciationResult.overallScore >= 85
+                                      pronunciationResult.overallScore >= SPEAKING_PASS_SCORE
                                     ? "Mark this word as proficiently pronounced"
-                                    : "Score 85 or above to mark as mastered"
+                                    : `Score ${SPEAKING_PASS_SCORE} or above to mark as mastered`
                               }
                               disabled={
                                 pronunciationResult.overallScore === null ||
-                                pronunciationResult.overallScore < 85 ||
-                                isPronunciationQualified
+                                pronunciationResult.overallScore < SPEAKING_PASS_SCORE ||
+                                isPronunciationQualified ||
+                                isQualifying
                               }
                             >
                               <CheckCircle className="mr-2 h-4 w-4" />

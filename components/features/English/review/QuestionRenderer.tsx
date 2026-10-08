@@ -32,6 +32,7 @@ export function QuestionRenderer({
     case "mcq":
       return (
         <McqQuestion
+          key={`${question.progress.id}-${question.activity.id}`}
           question={question}
           result={result}
           submitting={submitting}
@@ -44,6 +45,7 @@ export function QuestionRenderer({
     case "typing":
       return (
         <TypingQuestion
+          key={`${question.progress.id}-${question.activity.id}`}
           question={question}
           result={result}
           submitting={submitting}
@@ -56,6 +58,7 @@ export function QuestionRenderer({
     case "speaking":
       return (
         <SpeakingQuestion
+          key={`${question.progress.id}-${question.activity.id}`}
           question={question}
           submitting={submitting}
           onSubmit={onSubmit}

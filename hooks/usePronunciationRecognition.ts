@@ -42,10 +42,6 @@ export function usePronunciationRecognition({
   const onResultRef = useRef(onResult);
 
   useEffect(() => {
-    targetTextRef.current = targetText;
-  }, [targetText]);
-
-  useEffect(() => {
     onResultRef.current = onResult;
   }, [onResult]);
 
@@ -150,6 +146,10 @@ export function usePronunciationRecognition({
     const recognition = recognitionRef.current;
 
     if (!recognition) {
+      setPronunciationResult((prev) => ({
+        ...prev,
+        error: "Your browser does not support the Web Speech API. Please try Chrome or Edge.",
+      }));
       return;
     }
 

@@ -111,7 +111,7 @@ export function SpeakingQuestion({
               </div>
 
               <div className="flex justify-center">
-                <p className="text-gray-500 dark:text-gray-400 text-xl">
+                <p className="text-gray-500 dark:text-gray-400 text-xl text-center">
                   {sentenceToIPA(targetText)}
                 </p>
               </div>

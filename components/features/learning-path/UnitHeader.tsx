@@ -41,36 +41,43 @@ export default function UnitHeader({ data }: { data: Level }) {
     >
       {/* Decorative lines and grid */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 left-0 h-full w-px bg-gradient-to-b from-white/20 via-white/50 to-white/20"></div>
-        <div className="absolute top-0 right-0 h-full w-px bg-gradient-to-b from-white/20 via-white/50 to-white/20"></div>
-        <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+        <div className="absolute top-0 left-0 h-full w-px bg-gradient-to-b from-foreground/15 via-foreground/40 to-foreground/15"></div>
+        <div className="absolute top-0 right-0 h-full w-px bg-gradient-to-b from-foreground/15 via-foreground/40 to-foreground/15"></div>
+        <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-foreground/20 to-transparent"></div>
       </div>
 
       <div className="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Left side: Log Entry Info */}
         <div className="md:col-span-1 text-left">
           <motion.div variants={itemVariants}>
-            <p className="font-mono text-sm uppercase tracking-widest text-white/50">LOG ENTRY</p>
-            <p className="text-4xl font-bold text-white">0{data.id}</p>
+            <p className="font-mono text-sm uppercase tracking-widest text-muted-foreground">
+              LOG ENTRY
+            </p>
+            <p className="text-4xl font-bold text-foreground">0{data.id}</p>
           </motion.div>
         </div>
 
         {/* Right side: Destination Details */}
-        <div className="md:col-span-3 border-l-2 border-white/20 pl-8">
+        <div className="md:col-span-3 border-l-2 border-foreground/20 pl-8">
           <motion.div variants={itemVariants}>
-            <p className="font-mono text-sm uppercase tracking-widest text-white/50">
+            <p className="font-mono text-sm uppercase tracking-widest text-muted-foreground">
               DESTINATION REACHED:
             </p>
             <h1
-              className={cn("text-5xl lg:text-7xl font-black text-white mt-2", orbitron.className)}
+              className={cn(
+                "text-5xl lg:text-7xl font-black text-foreground mt-2",
+                orbitron.className
+              )}
             >
               SECTOR {data.name}
             </h1>
           </motion.div>
 
           <motion.div variants={itemVariants} className="mt-6">
-            <p className="font-mono text-sm uppercase tracking-widest text-white/50">ANALYSIS:</p>
-            <p className="mt-2 text-lg text-white/80 max-w-md">
+            <p className="font-mono text-sm uppercase tracking-widest text-muted-foreground">
+              ANALYSIS:
+            </p>
+            <p className="mt-2 text-lg text-foreground/80 max-w-md">
               {data.description || "The Oxford 3000 core vocabulary."}
             </p>
           </motion.div>

@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { Phoneme } from "@/types/pronunciation";
 import { Volume2 } from "lucide-react";
 import Link from "next/link";
@@ -13,18 +14,7 @@ interface PhonemeCardProps {
 
 export function PhonemeCard({ phoneme }: PhonemeCardProps) {
   const progress = phoneme.progress ?? 0;
-
-  const handlePlaySound = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    e.preventDefault();
-
-    const audio = new Audio(`/assets/audio/ipa/${phoneme.symbol}_uk.mp3`);
-
-    audio.play().catch((error) => {
-      console.error("Audio play failed:", error);
-    });
-  };
-
+  const { playAudio } = useSpeechSynthesis();
   return (
     <div className="group relative min-w-32">
       <Link
@@ -75,7 +65,13 @@ export function PhonemeCard({ phoneme }: PhonemeCardProps) {
           rounded-full
           hover:bg-primary/20
         "
-        onClick={handlePlaySound}
+        onClick={() =>
+          playAudio({
+            audioUrl: `/assets/audio/ipa/${phoneme.symbol}_uk.mp3`,
+            text: phoneme.example_word || "mission",
+            lang: "en-GB",
+          })
+        }
       >
         <Volume2 className="h-3.5 w-3.5" />
       </Button>

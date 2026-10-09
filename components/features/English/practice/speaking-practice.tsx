@@ -221,7 +221,7 @@ function SpeakingQuestion({ card, onNext, currentPosition, totalCards }: Speakin
                     pronunciationResult.detailScores && (
                       <div className="flex flex-col items-center space-y-4">
                         <div className="w-full">
-                          <div className="flex justify-between items-center mb-2">
+                          <div className="md:flex justify-between items-center mb-2 text-center">
                             <h4 className="font-medium text-gray-800 dark:text-gray-300">
                               Overall Pronunciation Score:
                             </h4>

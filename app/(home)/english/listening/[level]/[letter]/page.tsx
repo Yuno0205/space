@@ -44,28 +44,28 @@ export default async function DitactionPage({
 
   if (error) {
     return (
-      <main style={{ padding: "2rem" }}>
+      <div style={{ padding: "2rem" }}>
         <h1>Error fetching vocabularies</h1>
         <p>{error.message}</p>
-      </main>
+      </div>
     );
   }
 
   if (!vocabList || vocabList.length === 0) {
     return (
-      <main style={{ padding: "2rem" }}>
+      <div style={{ padding: "2rem" }}>
         <p>
           No vocabularies found for Level {normalizedLevel}, Lesson {normalizedLetter}.
         </p>
-      </main>
+      </div>
     );
   }
 
   const learningVocabularies = await filterUnqualifiedVocabularies(vocabList ?? [], "listening");
 
   return (
-    <main className="container mx-auto px-2 py-8 sm:px-4">
+    <div className="container mx-auto md:px-4 px-2 md:py-8 py-4">
       <ListeningPractice vocabularies={learningVocabularies} />
-    </main>
+    </div>
   );
 }

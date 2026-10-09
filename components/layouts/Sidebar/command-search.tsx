@@ -11,6 +11,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/utils";
 import { useRouter } from "next/navigation";
 
@@ -29,6 +30,7 @@ export function CommandSearch({ items }: CommandSearchProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
+  const { isMobile } = useSidebar();
 
   const router = useRouter();
 
@@ -58,9 +60,18 @@ export function CommandSearch({ items }: CommandSearchProps) {
       >
         <CommandInput
           value={search}
-          onValueChange={setSearch}
+          onValueChange={(value) => {
+            setSearch(value);
+            if (isMobile) {
+              setOpen(value.length > 0);
+            }
+          }}
           placeholder="Search..."
-          onFocus={() => setOpen(true)}
+          onFocus={() => {
+            if (!isMobile) {
+              setOpen(true);
+            }
+          }}
           onBlur={() => {
             setTimeout(() => {
               if (!containerRef.current?.contains(document.activeElement)) {

@@ -156,7 +156,7 @@ export default function OnboardingForm() {
     currentStep === 1 ? selectedLevel : currentStep === 2 ? selectedWords : selectedMinutes;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-5 py-8 text-foreground sm:p-8">
+    <div className="flex min-h-screen items-center justify-center bg-background px-5 py-8 text-foreground sm:p-8">
       {errorMessage && (
         <p role="alert" className="mt-4 text-sm text-destructive">
           {errorMessage}
@@ -245,6 +245,6 @@ export default function OnboardingForm() {
           )}
         </div>
       </div>
-    </main>
+    </div>
   );
 }

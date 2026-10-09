@@ -164,7 +164,7 @@ function ListeningQuestion({
               onChange={(event) => setUserAnswer(event.target.value)}
               onKeyDown={handleKeyDown}
               disabled={isSubmitted}
-              className="h-14 max-w-sm text-center text-2xl"
+              className="h-14 max-w-sm text-center text-base lg:text-2xl"
               autoComplete="off"
               spellCheck={false}
               aria-label="Your answer"

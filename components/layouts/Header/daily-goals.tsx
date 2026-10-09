@@ -20,7 +20,7 @@ export default function DailyGoals({ profile }: { profile: Profile }) {
 
   const wordsPercent = Math.min((learnedWords / profile.daily_new_words_goal!) * 100, 100);
   return (
-    <main className="flex items-center justify-center bg-background  font-sans text-foreground">
+    <div className="flex items-center justify-center bg-background  font-sans text-foreground">
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -68,7 +68,7 @@ export default function DailyGoals({ profile }: { profile: Profile }) {
           </div>
         </PopoverContent>
       </Popover>
-    </main>
+    </div>
   );
 }
 

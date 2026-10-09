@@ -61,7 +61,7 @@ export default async function HomeLayout({ children }: { children: React.ReactNo
           <UserDropdown initialUser={userData} />
         </header>
 
-        <main className="container mx-auto flex-grow px-4 py-8">
+        <main className="container mx-auto flex-grow md:px-4 px-2 md:py-8 py-4">
           <Breadcrumb className="mb-4" />
 
           {children}

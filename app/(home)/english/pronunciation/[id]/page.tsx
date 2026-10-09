@@ -58,8 +58,8 @@ export default async function PronunciationPage({ params }: { params: Promise<{ 
   const learningVocabularies = await filterUnqualifiedVocabularies(data ?? [], "speaking");
 
   return (
-    <main className="container max-w-full mx-auto py-10 px-4">
+    <div className="container max-w-full mx-auto md:py-10 py-4 md:px-4 px-2">
       <SpeakingPractice cards={learningVocabularies ?? []} />
-    </main>
+    </div>
   );
 }

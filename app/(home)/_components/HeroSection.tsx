@@ -139,14 +139,14 @@ export function DashedHero({ title, description, user }: DashedHeroProps) {
               {user ? (
                 <Button
                   variant={"outline"}
-                  className="flex h-auto min-h-12 w-full max-w-full min-w-0 items-center justify-center gap-3 whitespace-normal rounded-xl border-border bg-background px-4 py-2.5 text-sm font-medium shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-muted hover:shadow-md active:translate-y-0 disabled:translate-y-0 sm:w-auto sm:px-6 sm:text-md"
+                  className="flex h-auto min-h-12 w-full max-w-full min-w-0 items-center justify-center gap-3 whitespace-normal rounded-xl border-border bg-background px-4 py-2.5 text-sm font-medium shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-muted hover:shadow-md active:translate-y-0 disabled:translate-y-0 sm:w-auto sm:px-6 sm:text-base"
                 >
                   <Link href="/dashboard">Go to Dashboard?</Link>
                 </Button>
               ) : (
                 <Button
                   variant="outline"
-                  className="flex h-auto min-h-12 w-full max-w-full min-w-0 items-center justify-center gap-2 whitespace-normal rounded-xl border-border bg-background px-4 py-2.5 text-sm font-medium shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-muted hover:shadow-md active:translate-y-0 disabled:translate-y-0 sm:w-auto sm:gap-3 sm:px-6 sm:text-md"
+                  className="flex h-auto min-h-12 w-full max-w-full min-w-0 items-center justify-center gap-2 whitespace-normal rounded-xl border-border bg-background px-4 py-2.5 text-sm font-medium shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-muted hover:shadow-md active:translate-y-0 disabled:translate-y-0 sm:w-auto sm:gap-3 sm:px-6 sm:text-base"
                   onClick={signInWithGoogle}
                   disabled={isSigningIn}
                 >
@@ -179,7 +179,9 @@ export function DashedHero({ title, description, user }: DashedHeroProps) {
 
                       <span className="min-w-0 text-balance leading-snug">
                         <span className="sm:hidden">Continue with Google</span>
-                        <span className="hidden sm:inline">Kick-start your journey with Google</span>
+                        <span className="hidden sm:inline">
+                          Kick-start your journey with Google
+                        </span>
                       </span>
                     </>
                   )}
